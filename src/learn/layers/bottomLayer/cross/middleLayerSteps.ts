@@ -8,7 +8,7 @@ import {
   SLOT_DEF,
   slotSolved,
 } from './crossSlotModel'
-import { permuteDemoChangesState } from './directSolveSteps'
+import { demoChangesState } from '../../../lessonCore'
 import {
   edgeAlignedToSideCenter,
   findEdgeWithColors,
@@ -87,7 +87,7 @@ export function collectMiddleLayerPermuteCandidates(studentState: CubeState): Pe
     const alignedFace = edgeAlignedToSideCenter(studentState, edgePosition)
     const turnFace = alignedFace ?? SLOT_DEF[id].sideFace
     const step = buildMiddleLayerSideConnectStep(studentState, partner, turnFace, !!alignedFace)
-    if (!step.demoMoves?.length || !permuteDemoChangesState(studentState, step.demoMoves)) continue
+    if (!step.demoMoves?.length || !demoChangesState(studentState, step.demoMoves)) continue
     candidates.push({ id, step })
   }
   return candidates

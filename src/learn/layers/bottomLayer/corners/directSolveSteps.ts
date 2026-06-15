@@ -1,13 +1,7 @@
-import { applyMoves } from '../../../../cube/cubeState'
 import type { CubeState, Face, Move } from '../../../../cube/cubeState'
 import { parseFaceTurnAlgToMoves } from '../../../../cube/parseFaceTurnAlg'
 import { recognizeCornerCaseInFrdView } from './cornerCases'
-import {
-  cornerDemoChangesState,
-  findVerifiedCornerDemoForCornerId,
-  findVerifiedCornerDemoForCornerIdAsync,
-  type CornerBfsSearchConfig,
-} from './cornerSolveBfs'
+import { demoChangesState } from '../../../lessonCore'
 import { verifiedFrdDemoAtHold, studentHoldView } from './frdViewDemoBuild'
 import { formatColor, formatCornerLabel } from './cornerSlotModel'
 import type { CornerSlotId, WhiteCornersLessonStep } from './types'
@@ -26,10 +20,66 @@ const FRD_TWIST_FALLBACK_DEMOS: Move[][] = [
   [...FRD_WHITE_ON_F, ...FRD_WHITE_ON_R],
 ]
 
+type TwistDemoMatch = {
+  demo: Move[]
+  whiteOnFace: Face
+}
+
 function demoForFrdTwist(whiteOnFace: Face): Move[] | null {
   if (whiteOnFace === 'F') return FRD_WHITE_ON_F
   if (whiteOnFace === 'R') return FRD_WHITE_ON_R
   return null
+}
+
+function twistAlgsForCase(whiteOnFace: Face): Move[][] {
+  return [
+    demoForFrdTwist(whiteOnFace),
+    whiteOnFace === 'F' ? FRD_WHITE_ON_R : FRD_WHITE_ON_F,
+  ].filter((demo): demo is Move[] => !!demo?.length)
+}
+
+function searchTwistDemos(
+  studentState: CubeState,
+  id: CornerSlotId,
+  holdIndex: number,
+  solvedCornerIds: readonly CornerSlotId[] | undefined,
+  options: { useFallback: boolean; requireTwistedCase: boolean },
+): TwistDemoMatch[] {
+  const found: TwistDemoMatch[] = []
+  const twistSets = options.useFallback
+    ? FRD_TWIST_FALLBACK_DEMOS
+    : null
+
+  for (const uPrefix of U_LAYER_U_PREFIXES) {
+    const viewState = studentHoldView(studentState, holdIndex, uPrefix)
+    const cornerCase = recognizeCornerCaseInFrdView(viewState, id, holdIndex)
+
+    const twists =
+      twistSets ??
+      (cornerCase.kind === 'in-slot-twisted'
+        ? twistAlgsForCase(cornerCase.whiteOnFace)
+        : [])
+
+    if (options.requireTwistedCase && cornerCase.kind !== 'in-slot-twisted') {
+      continue
+    }
+
+    for (const twist of twists) {
+      const demo = verifiedFrdDemoAtHold(
+        studentState,
+        id,
+        holdIndex,
+        [...uPrefix, ...twist],
+        solvedCornerIds,
+      )
+      if (!demo) continue
+      const whiteOnFace =
+        cornerCase.kind === 'in-slot-twisted' ? cornerCase.whiteOnFace : 'F'
+      found.push({ demo, whiteOnFace })
+    }
+  }
+
+  return found
 }
 
 function buildTwistedInSlotStep(
@@ -73,7 +123,7 @@ function buildWrongDLayerStep(
   }
 }
 
-function buildBfsFallbackStep(cornerId: CornerSlotId, demo: Move[]): WhiteCornersLessonStep {
+function buildGenericSolveStep(cornerId: CornerSlotId, demo: Move[]): WhiteCornersLessonStep {
   return {
     kind: 'solve-corner',
     cornerId,
@@ -89,59 +139,12 @@ export function tryFrdTwistedInSlot(
   holdIndex = 0,
   solvedCornerIds?: readonly CornerSlotId[],
 ): WhiteCornersLessonStep | null {
-  for (const uPrefix of U_LAYER_U_PREFIXES) {
-    const viewState = studentHoldView(studentState, holdIndex, uPrefix)
-    const cornerCase = recognizeCornerCaseInFrdView(viewState, id, holdIndex)
-    if (cornerCase.kind !== 'in-slot-twisted') continue
-
-    const twistDemos = [
-      demoForFrdTwist(cornerCase.whiteOnFace),
-      cornerCase.whiteOnFace === 'F' ? FRD_WHITE_ON_R : FRD_WHITE_ON_F,
-    ].filter((demo): demo is Move[] => !!demo?.length)
-
-    for (const twist of twistDemos) {
-      const baseDemo = [...uPrefix, ...twist]
-      const demo = verifiedFrdDemoAtHold(
-        studentState,
-        id,
-        holdIndex,
-        baseDemo,
-        solvedCornerIds,
-      )
-      if (!demo) continue
-      return buildTwistedInSlotStep(studentState, id, cornerCase.whiteOnFace, demo)
-    }
-  }
-
-  return null
-}
-
-/** Last-resort fixed algs: try FRD twist inserts whenever they verify (e.g. wrong-D slot twist). */
-export function tryFrdTwistAlgFallback(
-  studentState: CubeState,
-  id: CornerSlotId,
-  holdIndex = 0,
-  solvedCornerIds?: readonly CornerSlotId[],
-): WhiteCornersLessonStep | null {
-  for (const uPrefix of U_LAYER_U_PREFIXES) {
-    for (const twist of FRD_TWIST_FALLBACK_DEMOS) {
-      const baseDemo = [...uPrefix, ...twist]
-      const viewState = studentHoldView(studentState, holdIndex, uPrefix)
-      const cornerCase = recognizeCornerCaseInFrdView(viewState, id, holdIndex)
-      const demo = verifiedFrdDemoAtHold(
-        studentState,
-        id,
-        holdIndex,
-        baseDemo,
-        solvedCornerIds,
-      )
-      if (!demo) continue
-      const whiteOnFace =
-        cornerCase.kind === 'in-slot-twisted' ? cornerCase.whiteOnFace : 'F'
-      return buildTwistedInSlotStep(studentState, id, whiteOnFace, demo)
-    }
-  }
-  return null
+  const match = searchTwistDemos(studentState, id, holdIndex, solvedCornerIds, {
+    useFallback: false,
+    requireTwistedCase: true,
+  })[0]
+  if (!match) return null
+  return buildTwistedInSlotStep(studentState, id, match.whiteOnFace, match.demo)
 }
 
 export function tryFrdULayerInsert(
@@ -177,73 +180,28 @@ function shortestVerifiedDemo(candidates: (Move[] | null | undefined)[]): Move[]
   return best
 }
 
-function collectTwistedDemos(
-  studentState: CubeState,
-  id: CornerSlotId,
-  holdIndex: number,
-  solvedCornerIds?: readonly CornerSlotId[],
-): Move[][] {
-  const found: Move[][] = []
-  for (const uPrefix of U_LAYER_U_PREFIXES) {
-    const viewState = studentHoldView(studentState, holdIndex, uPrefix)
-    const cornerCase = recognizeCornerCaseInFrdView(viewState, id, holdIndex)
-    if (cornerCase.kind !== 'in-slot-twisted') continue
-
-    const twistDemos = [
-      demoForFrdTwist(cornerCase.whiteOnFace),
-      cornerCase.whiteOnFace === 'F' ? FRD_WHITE_ON_R : FRD_WHITE_ON_F,
-    ].filter((demo): demo is Move[] => !!demo?.length)
-
-    for (const twist of twistDemos) {
-      const demo = verifiedFrdDemoAtHold(
-        studentState,
-        id,
-        holdIndex,
-        [...uPrefix, ...twist],
-        solvedCornerIds,
-      )
-      if (demo) found.push(demo)
-    }
-  }
-  return found
-}
-
-function collectTwistFallbackDemos(
-  studentState: CubeState,
-  id: CornerSlotId,
-  holdIndex: number,
-  solvedCornerIds?: readonly CornerSlotId[],
-): Move[][] {
-  const found: Move[][] = []
-  for (const uPrefix of U_LAYER_U_PREFIXES) {
-    for (const twist of FRD_TWIST_FALLBACK_DEMOS) {
-      const viewState = studentHoldView(studentState, holdIndex, uPrefix)
-      const cornerCase = recognizeCornerCaseInFrdView(viewState, id, holdIndex)
-      const demo = verifiedFrdDemoAtHold(
-        studentState,
-        id,
-        holdIndex,
-        [...uPrefix, ...twist],
-        solvedCornerIds,
-      )
-      if (demo) found.push(demo)
-    }
-  }
-  return found
-}
-
 function collectShortestFixedDemo(
   studentState: CubeState,
   id: CornerSlotId,
   holdIndex = 0,
   solvedCornerIds?: readonly CornerSlotId[],
 ): Move[] | null {
+  const twistDemos = [
+    ...searchTwistDemos(studentState, id, holdIndex, solvedCornerIds, {
+      useFallback: false,
+      requireTwistedCase: true,
+    }),
+    ...searchTwistDemos(studentState, id, holdIndex, solvedCornerIds, {
+      useFallback: true,
+      requireTwistedCase: false,
+    }),
+  ].map((match) => match.demo)
+
   return shortestVerifiedDemo(
     [
       buildFrdULayerDemo(studentState, 'URF', id, holdIndex, solvedCornerIds),
       buildFrdWrongDLayerDemo(studentState, 'FRD', id, holdIndex, solvedCornerIds),
-      ...collectTwistedDemos(studentState, id, holdIndex, solvedCornerIds),
-      ...collectTwistFallbackDemos(studentState, id, holdIndex, solvedCornerIds),
+      ...twistDemos,
     ].filter((demo): demo is Move[] => !!demo?.length),
   )
 }
@@ -265,48 +223,22 @@ function buildStepForDemo(
   const wDemo = buildFrdWrongDLayerDemo(studentState, 'FRD', id, holdIndex, solvedCornerIds)
   if (wDemo && demosEqual(wDemo, demo)) return buildWrongDLayerStep(id, demo)
 
-  for (const uPrefix of U_LAYER_U_PREFIXES) {
-    const viewState = studentHoldView(studentState, holdIndex, uPrefix)
-    const cornerCase = recognizeCornerCaseInFrdView(viewState, id, holdIndex)
-    if (cornerCase.kind === 'in-slot-twisted') {
-      for (const twist of [
-        demoForFrdTwist(cornerCase.whiteOnFace),
-        cornerCase.whiteOnFace === 'F' ? FRD_WHITE_ON_R : FRD_WHITE_ON_F,
-      ]) {
-        if (!twist) continue
-        const verified = verifiedFrdDemoAtHold(
-          studentState,
-          id,
-          holdIndex,
-          [...uPrefix, ...twist],
-          solvedCornerIds,
-        )
-        if (verified && demosEqual(verified, demo)) {
-          return buildTwistedInSlotStep(studentState, id, cornerCase.whiteOnFace, demo)
-        }
-      }
-    }
+  const twistMatch = [
+    ...searchTwistDemos(studentState, id, holdIndex, solvedCornerIds, {
+      useFallback: false,
+      requireTwistedCase: true,
+    }),
+    ...searchTwistDemos(studentState, id, holdIndex, solvedCornerIds, {
+      useFallback: true,
+      requireTwistedCase: false,
+    }),
+  ].find((match) => demosEqual(match.demo, demo))
+
+  if (twistMatch) {
+    return buildTwistedInSlotStep(studentState, id, twistMatch.whiteOnFace, demo)
   }
 
-  for (const uPrefix of U_LAYER_U_PREFIXES) {
-    for (const twist of FRD_TWIST_FALLBACK_DEMOS) {
-      const viewState = studentHoldView(studentState, holdIndex, uPrefix)
-      const cornerCase = recognizeCornerCaseInFrdView(viewState, id, holdIndex)
-      const verified = verifiedFrdDemoAtHold(
-        studentState,
-        id,
-        holdIndex,
-        [...uPrefix, ...twist],
-        solvedCornerIds,
-      )
-      if (!verified || !demosEqual(verified, demo)) continue
-      const whiteOnFace =
-        cornerCase.kind === 'in-slot-twisted' ? cornerCase.whiteOnFace : 'F'
-      return buildTwistedInSlotStep(studentState, id, whiteOnFace, demo)
-    }
-  }
-
-  return buildBfsFallbackStep(id, demo)
+  return buildGenericSolveStep(id, demo)
 }
 
 export function tryDirectSolveStepForCornerId(
@@ -314,49 +246,8 @@ export function tryDirectSolveStepForCornerId(
   id: CornerSlotId,
   holdIndex = 0,
   solvedCornerIds?: readonly CornerSlotId[],
-  cornerBfsSearch?: CornerBfsSearchConfig,
 ): WhiteCornersLessonStep | null {
   const fixedDemo = collectShortestFixedDemo(studentState, id, holdIndex, solvedCornerIds)
-  if (fixedDemo?.length && cornerDemoChangesState(studentState, fixedDemo)) {
-    return buildStepForDemo(studentState, id, holdIndex, fixedDemo, solvedCornerIds)
-  }
-
-  if (cornerBfsSearch === undefined) return null
-
-  const bfsDemo = findVerifiedCornerDemoForCornerId(
-    studentState,
-    id,
-    holdIndex,
-    cornerBfsSearch,
-    solvedCornerIds,
-  )
-  if (!bfsDemo?.length || !cornerDemoChangesState(studentState, bfsDemo)) return null
-
-  return buildStepForDemo(studentState, id, holdIndex, bfsDemo, solvedCornerIds)
-}
-
-export async function tryDirectSolveStepForCornerIdAsync(
-  studentState: CubeState,
-  id: CornerSlotId,
-  holdIndex = 0,
-  solvedCornerIds?: readonly CornerSlotId[],
-  cornerBfsSearch?: CornerBfsSearchConfig,
-): Promise<WhiteCornersLessonStep | null> {
-  const fixedDemo = collectShortestFixedDemo(studentState, id, holdIndex, solvedCornerIds)
-  if (fixedDemo?.length && cornerDemoChangesState(studentState, fixedDemo)) {
-    return buildStepForDemo(studentState, id, holdIndex, fixedDemo, solvedCornerIds)
-  }
-
-  if (cornerBfsSearch === undefined) return null
-
-  const bfsDemo = await findVerifiedCornerDemoForCornerIdAsync(
-    studentState,
-    id,
-    holdIndex,
-    cornerBfsSearch,
-    solvedCornerIds,
-  )
-  if (!bfsDemo?.length || !cornerDemoChangesState(studentState, bfsDemo)) return null
-
-  return buildStepForDemo(studentState, id, holdIndex, bfsDemo, solvedCornerIds)
+  if (!fixedDemo?.length || !demoChangesState(studentState, fixedDemo)) return null
+  return buildStepForDemo(studentState, id, holdIndex, fixedDemo, solvedCornerIds)
 }

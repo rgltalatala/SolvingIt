@@ -39,7 +39,6 @@ import {
   recognizeCornerCaseInFrdView,
   relativeY,
   resolveLessonStorageDemo,
-  setupMovesForWrongDSlot,
   simulateWhiteCornersLessonOnStorageCube,
   targetHoldIndex,
   type CornerSlotId,
@@ -48,6 +47,7 @@ import {
   WHITE_CORNERS_STEP_KINDS,
 } from "./index";
 import { CORNER_SLOT_DEF } from "./cornerSlotModel";
+import { setupMovesForWrongDSlotStorage } from "./wrongDLayerSteps";
 import { isWhiteCrossComplete } from "../cross/crossSlotModel";
 
 /** Storage scramble: cross intact on student frame, corners unsolved (FRD still solved). */
@@ -156,7 +156,7 @@ function frdInWrongDSlotStudent(
   dSlot: WrongDLayerSlotId,
   whiteOnFace: Face,
 ): CubeState {
-  const setup = setupMovesForWrongDSlot(dSlot);
+  const setup = setupMovesForWrongDSlotStorage(dSlot);
   const insert = insertMovesFromUrf(whiteOnFace);
   if (!insert) throw new Error(`unsupported white face ${whiteOnFace}`);
   return applyMoves(solvedStudent(), invertMoves([...setup, ...insert]));
@@ -168,7 +168,7 @@ function cornerInWrongDSlotAtHold(
   dSlot: WrongDLayerSlotId,
   whiteOnFace: Face,
 ): CubeState {
-  const setup = setupMovesForWrongDSlot(dSlot);
+  const setup = setupMovesForWrongDSlotStorage(dSlot);
   const insert = insertMovesFromUrf(whiteOnFace);
   if (!insert) throw new Error(`unsupported white face ${whiteOnFace}`);
   return cornerAtHoldStudent(cornerId, [...setup, ...insert]);
@@ -568,7 +568,7 @@ describe("white corners planner", () => {
     "returns FRD wrong-D-layer demo for $dSlot with white on $whiteOnFace",
     ({ dSlot, whiteOnFace }) => {
       const student = frdInWrongDSlotStudent(dSlot, whiteOnFace);
-      const setup = setupMovesForWrongDSlot(dSlot);
+      const setup = setupMovesForWrongDSlotStorage(dSlot);
       expect(isWhiteCrossComplete(applyMoves(student, setup))).toBe(true);
 
       const step = getWhiteCornerLessonStep(student);

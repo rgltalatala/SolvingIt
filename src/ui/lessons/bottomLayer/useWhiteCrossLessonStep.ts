@@ -23,9 +23,5 @@ export function useWhiteCrossLessonStep(studentFrame: CubeState | null) {
     countProgress,
   })
 
-  return {
-    ...result,
-    /** @deprecated Use isLessonComplete */
-    isCrossComplete: result.isLessonComplete,
-  }
+  return result
 }

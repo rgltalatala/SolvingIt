@@ -5,6 +5,8 @@ import {
   bfsShortestPath,
   bfsShortestPathAsync,
   createDemoCache,
+  findVerifiedDemoWithTiers,
+  findVerifiedDemoWithTiersAsync,
   registerLessonDemoCache,
 } from '../../../lessonCore'
 import {
@@ -99,28 +101,19 @@ export async function bfsSolveSlotPreservingOthersAsync(
   )
 }
 
-function cacheVerifiedDemo(cacheKey: string, demo: Move[] | null): Move[] | null {
-  verifiedDemoCache.set(cacheKey, demo)
-  return demo
-}
-
 export function findVerifiedSlotDemoForCrossId(
   studentState: CubeState,
   targetId: CrossEdgeId,
   searchTiers: SlotSolveSearchOptions[] = DEFAULT_SLOT_SEARCH_TIERS,
 ): Move[] | null {
   const cacheKey = verifiedDemoCacheKey(studentState, targetId)
-  if (verifiedDemoCache.has(cacheKey)) {
-    return verifiedDemoCache.get(cacheKey) ?? null
-  }
-
-  for (const tier of searchTiers) {
-    const demo = bfsSolveSlotPreservingOthers(studentState, targetId, tier)
-    if (demo && isVerifiedSlotDemo(studentState, targetId, demo)) {
-      return cacheVerifiedDemo(cacheKey, demo)
-    }
-  }
-  return cacheVerifiedDemo(cacheKey, null)
+  return findVerifiedDemoWithTiers({
+    cache: verifiedDemoCache,
+    cacheKey,
+    searchTiers,
+    solveTier: (tier) => bfsSolveSlotPreservingOthers(studentState, targetId, tier),
+    verifyDemo: (demo) => isVerifiedSlotDemo(studentState, targetId, demo),
+  })
 }
 
 export function findVerifiedSlotDemoForPartner(
@@ -138,17 +131,13 @@ export async function findVerifiedSlotDemoForCrossIdAsync(
   searchTiers: SlotSolveSearchOptions[] = DEFAULT_SLOT_SEARCH_TIERS,
 ): Promise<Move[] | null> {
   const cacheKey = verifiedDemoCacheKey(studentState, targetId)
-  if (verifiedDemoCache.has(cacheKey)) {
-    return verifiedDemoCache.get(cacheKey) ?? null
-  }
-
-  for (const tier of searchTiers) {
-    const demo = await bfsSolveSlotPreservingOthersAsync(studentState, targetId, tier)
-    if (demo && isVerifiedSlotDemo(studentState, targetId, demo)) {
-      return cacheVerifiedDemo(cacheKey, demo)
-    }
-  }
-  return cacheVerifiedDemo(cacheKey, null)
+  return findVerifiedDemoWithTiersAsync({
+    cache: verifiedDemoCache,
+    cacheKey,
+    searchTiers,
+    solveTier: (tier) => bfsSolveSlotPreservingOthersAsync(studentState, targetId, tier),
+    verifyDemo: (demo) => isVerifiedSlotDemo(studentState, targetId, demo),
+  })
 }
 
 export async function findVerifiedSlotDemoForPartnerAsync(

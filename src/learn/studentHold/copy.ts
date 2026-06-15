@@ -1,5 +1,5 @@
 import type { Color, Face, Move } from '../../cube/cubeState'
-import { studentLessonHoldFaceCenters } from '../../cube/cubeState'
+import { formatColorLabel, studentLessonHoldFaceCenters } from '../../cube/cubeState'
 import type { DemoStep } from './expandDemoSteps'
 import { FACE_MAP, getFaceFromMove, getModifierFromMove } from './translateMove'
 import type { StudentHold, YRotationStep } from './types'
@@ -51,7 +51,7 @@ export function getRotationText(
     return 'Rotate the whole cube 180° (y2) first — the Back face comes to the front so you never turn B directly.'
   }
   if (purpose === 'returnToInitialHold') {
-    const blue = formatColor(studentLessonHoldFaceCenters().F)
+    const blue = formatColorLabel(studentLessonHoldFaceCenters().F)
     return `Rotate the whole cube 180° (y2) again so ${blue} is on front — return to your usual lesson hold.`
   }
 
@@ -67,14 +67,11 @@ export function getRotationText(
   }
 }
 
-function formatColor(color: Color): string {
-  return color.charAt(0).toUpperCase() + color.slice(1)
-}
 
 export function getMoveText(move: Move, hold: StudentHold): string {
   const face = getFaceFromMove(move)
   const modifier = getModifierFromMove(move)
-  const color = formatColor(centersForHold(hold)[face])
+  const color = formatColorLabel(centersForHold(hold)[face])
   const position = FACE_POSITION[face]
   if (modifier === '2') {
     return `Turn the ${color} (${position}) face 180° (${face}2)`

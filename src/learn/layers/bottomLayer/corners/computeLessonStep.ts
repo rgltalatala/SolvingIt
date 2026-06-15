@@ -1,64 +1,64 @@
-import { isWhiteCrossComplete } from '../cross/crossSlotModel'
-import type { CubeState } from '../../../../cube/cubeState'
+import { isWhiteCrossComplete } from "../cross/crossSlotModel";
+import type { CubeState } from "../../../../cube/cubeState";
 import {
   formatHoldFaceLabel,
   relativeY,
   returnToBlueY,
   targetHoldIndex,
   type CornerHoldIndex,
-} from './cornerHold'
+} from "./cornerHold";
 import {
   activeCornerId,
   expectedCornerColors,
   formatColor,
   formatCornerLabel,
   isWhiteCornersComplete,
-} from './cornerSlotModel'
+} from "./cornerSlotModel";
 import {
   tryDirectSolveStepForCornerId,
-  tryDirectSolveStepForCornerIdAsync,
   tryFrdTwistedInSlot,
   tryFrdULayerInsert,
   tryFrdWrongDLayerExtract,
-} from './directSolveSteps'
-import type { CornerBfsSearchConfig } from './cornerSolveBfs'
+} from "./directSolveSteps";
 import type {
   CornerSlotId,
   WhiteCornerLessonStepOptions,
   WhiteCornersLessonStep,
-} from './types'
+} from "./types";
 
 const WHITE_CORNERS_COMPLETE_BODY =
-  'All four white corners are in place on the bottom layer (white on D, side colors matching centers). Hold the cube with the blue face toward you (white on bottom, yellow on top) and confirm it matches the diagram below.'
+  "All four white corners are in place on the bottom layer (white on D, side colors matching centers). Hold the cube with the blue face toward you (white on bottom, yellow on top) and confirm it matches the diagram below.";
 
 const CROSS_PREREQUISITE_BODY =
-  'Finish the white cross first—all four white edges must be on the bottom with their colored stickers matching the side centers. Return to the white cross lesson, then come back here.'
+  "Finish the white cross first—all four white edges must be on the bottom with their colored stickers matching the side centers. Return to the white cross lesson, then come back here.";
 
 function whiteCornersCompleteStep(): WhiteCornersLessonStep {
   return {
-    kind: 'complete',
-    title: 'White corners complete',
+    kind: "complete",
+    title: "White corners complete",
     body: WHITE_CORNERS_COMPLETE_BODY,
-  }
+  };
 }
 
 function crossPrerequisiteStep(): WhiteCornersLessonStep {
   return {
-    kind: 'cross-prerequisite',
-    title: 'Complete the white cross first',
+    kind: "cross-prerequisite",
+    title: "Complete the white cross first",
     body: CROSS_PREREQUISITE_BODY,
-  }
+  };
 }
 
-function buildReturnToBlueStep(currentHoldIndex: CornerHoldIndex): WhiteCornersLessonStep {
-  const demoMoves = returnToBlueY(currentHoldIndex)
+function buildReturnToBlueStep(
+  currentHoldIndex: CornerHoldIndex,
+): WhiteCornersLessonStep {
+  const demoMoves = returnToBlueY(currentHoldIndex);
   return {
-    kind: 'reorient-hold',
-    title: 'Face the blue side',
-    body: 'All four corners are done. Turn the cube so the blue face is toward you again—the same hold you started with (white on bottom, yellow on top).',
+    kind: "reorient-hold",
+    title: "Face the blue side",
+    body: "All four corners are done. Turn the cube so the blue face is toward you again—the same hold you started with (white on bottom, yellow on top).",
     demoMoves,
     returnToInitialHold: true,
-  }
+  };
 }
 
 function buildReorientHoldStep(
@@ -66,24 +66,24 @@ function buildReorientHoldStep(
   currentHoldIndex: number,
   targetHold: CornerHoldIndex,
 ): WhiteCornersLessonStep {
-  const demoMoves = relativeY(currentHoldIndex, targetHold)
-  const faceLabel = formatHoldFaceLabel(targetHold)
+  const demoMoves = relativeY(currentHoldIndex, targetHold);
+  const faceLabel = formatHoldFaceLabel(targetHold);
 
-  const delta = ((targetHold - currentHoldIndex) % 4 + 4) % 4
+  const delta = (((targetHold - currentHoldIndex) % 4) + 4) % 4;
   const skipNote =
     delta === 2
-      ? ' The next corner to solve is two steps ahead, so turn halfway around in one move.'
+      ? " The next corner to solve is two steps ahead, so turn halfway around in one move."
       : delta === 3
-        ? ' The next corner to solve is three steps ahead—use a single counter-clockwise turn.'
-        : ''
+        ? " The next corner to solve is three steps ahead—use a single counter-clockwise turn."
+        : "";
 
   return {
-    kind: 'reorient-hold',
+    kind: "reorient-hold",
     title: `Face the ${faceLabel.toLowerCase()} side`,
     body: `Turn the whole cube so the ${faceLabel} face is toward you (white stays on bottom, yellow on top). You will slot the ${formatCornerLabel(targetCornerId).toLowerCase()} into the front-right position.${skipNote}`,
     demoMoves,
     targetCornerId,
-  }
+  };
 }
 
 function buildSolveCornerPlaceholderStep(
@@ -95,13 +95,13 @@ function buildSolveCornerPlaceholderStep(
     studentState,
     cornerId,
     currentHoldIndex,
-  )
+  );
   return {
-    kind: 'solve-corner',
+    kind: "solve-corner",
     cornerId,
     title: formatCornerLabel(cornerId),
-    body: `Slot the White–${formatColor(colorA)}–${formatColor(colorB)} corner: white on the bottom (D), ${formatColor(colorA)} and ${formatColor(colorB)} matching their centers. Automated demos for recognizable cases are coming soon.`,
-  }
+    body: `Slot the White–${formatColor(colorA)}–${formatColor(colorB)} corner: white on the bottom (D), ${formatColor(colorA)} and ${formatColor(colorB)} matching their centers. Align the piece with its centers on your own, or reset the scramble and try again.`,
+  };
 }
 
 /** Interactive lesson: case-matched algs first, then fixed fallbacks; never BFS. */
@@ -112,17 +112,27 @@ function tryInteractiveCornerSolveStep(
   solvedCornerIds?: readonly CornerSlotId[],
 ): WhiteCornersLessonStep | null {
   const caseSteps = [
-    tryFrdULayerInsert(studentState, cornerId, currentHoldIndex, solvedCornerIds),
+    tryFrdULayerInsert(
+      studentState,
+      cornerId,
+      currentHoldIndex,
+      solvedCornerIds,
+    ),
     tryFrdWrongDLayerExtract(
       studentState,
       cornerId,
       currentHoldIndex,
       solvedCornerIds,
     ),
-    tryFrdTwistedInSlot(studentState, cornerId, currentHoldIndex, solvedCornerIds),
-  ]
+    tryFrdTwistedInSlot(
+      studentState,
+      cornerId,
+      currentHoldIndex,
+      solvedCornerIds,
+    ),
+  ];
   for (const step of caseSteps) {
-    if (step?.demoMoves?.length) return step
+    if (step?.demoMoves?.length) return step;
   }
 
   const fixed = tryDirectSolveStepForCornerId(
@@ -130,165 +140,121 @@ function tryInteractiveCornerSolveStep(
     cornerId,
     currentHoldIndex,
     solvedCornerIds,
-  )
-  if (fixed?.demoMoves?.length) return fixed
+  );
+  if (fixed?.demoMoves?.length) return fixed;
 
-  return null
-}
-
-async function tryCornerSolveStepAsync(
-  studentState: CubeState,
-  cornerId: CornerSlotId,
-  currentHoldIndex: CornerHoldIndex,
-  solvedCornerIds?: readonly CornerSlotId[],
-  cornerBfsSearch?: CornerBfsSearchConfig,
-): Promise<WhiteCornersLessonStep | null> {
-  const interactive = tryInteractiveCornerSolveStep(
-    studentState,
-    cornerId,
-    currentHoldIndex,
-    solvedCornerIds,
-  )
-  if (interactive?.demoMoves?.length) return interactive
-
-  if (cornerBfsSearch === undefined) return null
-
-  const bfs = await tryDirectSolveStepForCornerIdAsync(
-    studentState,
-    cornerId,
-    currentHoldIndex,
-    solvedCornerIds,
-    cornerBfsSearch,
-  )
-  if (bfs?.demoMoves?.length) return bfs
-
-  return null
-}
-
-function tryCornerSolveStepSync(
-  studentState: CubeState,
-  cornerId: CornerSlotId,
-  currentHoldIndex: CornerHoldIndex,
-  solvedCornerIds?: readonly CornerSlotId[],
-  cornerBfsSearch?: CornerBfsSearchConfig,
-): WhiteCornersLessonStep | null {
-  const interactive = tryInteractiveCornerSolveStep(
-    studentState,
-    cornerId,
-    currentHoldIndex,
-    solvedCornerIds,
-  )
-  if (interactive?.demoMoves?.length) return interactive
-
-  if (cornerBfsSearch === undefined) return null
-
-  const bfs = tryDirectSolveStepForCornerId(
-    studentState,
-    cornerId,
-    currentHoldIndex,
-    solvedCornerIds,
-    cornerBfsSearch,
-  )
-  if (bfs?.demoMoves?.length) return bfs
-
-  return null
+  return null;
 }
 
 function computeWhiteCornerLessonStepSync(
   studentState: CubeState,
   options?: WhiteCornerLessonStepOptions,
 ): WhiteCornersLessonStep {
-  const currentHoldIndex = (options?.currentHoldIndex ?? 0) as CornerHoldIndex
-  const solvedCornerIds = options?.solvedCornerIds
+  const currentHoldIndex = (options?.currentHoldIndex ?? 0) as CornerHoldIndex;
+  const solvedCornerIds = options?.solvedCornerIds;
 
   if (!isWhiteCrossComplete(studentState)) {
-    return crossPrerequisiteStep()
+    return crossPrerequisiteStep();
   }
 
   if (isWhiteCornersComplete(studentState, currentHoldIndex, solvedCornerIds)) {
     if (currentHoldIndex !== 0) {
-      return buildReturnToBlueStep(currentHoldIndex)
+      return buildReturnToBlueStep(currentHoldIndex);
     }
-    return whiteCornersCompleteStep()
+    return whiteCornersCompleteStep();
   }
 
-  const cornerId = activeCornerId(studentState, currentHoldIndex, solvedCornerIds)
+  const cornerId = activeCornerId(
+    studentState,
+    currentHoldIndex,
+    solvedCornerIds,
+  );
   if (!cornerId) {
     if (currentHoldIndex !== 0) {
-      return buildReturnToBlueStep(currentHoldIndex)
+      return buildReturnToBlueStep(currentHoldIndex);
     }
-    return whiteCornersCompleteStep()
+    return whiteCornersCompleteStep();
   }
 
-  const target = targetHoldIndex(cornerId)
+  const target = targetHoldIndex(cornerId);
   if (currentHoldIndex !== target) {
-    const reorientMoves = relativeY(currentHoldIndex, target)
+    const reorientMoves = relativeY(currentHoldIndex, target);
     if (reorientMoves.length) {
-      return buildReorientHoldStep(cornerId, currentHoldIndex, target)
+      return buildReorientHoldStep(cornerId, currentHoldIndex, target);
     }
   }
 
-  const direct = tryCornerSolveStepSync(
+  const direct = tryInteractiveCornerSolveStep(
     studentState,
     cornerId,
     currentHoldIndex,
     solvedCornerIds,
-    options?.cornerBfsSearch,
-  )
-  if (direct?.demoMoves?.length) return direct
+  );
+  if (direct?.demoMoves?.length) return direct;
 
-  return buildSolveCornerPlaceholderStep(studentState, cornerId, currentHoldIndex)
+  return buildSolveCornerPlaceholderStep(
+    studentState,
+    cornerId,
+    currentHoldIndex,
+  );
 }
 
 export function getWhiteCornerLessonStep(
   studentState: CubeState,
   options?: WhiteCornerLessonStepOptions,
 ): WhiteCornersLessonStep {
-  return computeWhiteCornerLessonStepSync(studentState, options)
+  return computeWhiteCornerLessonStepSync(studentState, options);
 }
 
 export async function getWhiteCornerLessonStepAsync(
   studentState: CubeState,
   options?: WhiteCornerLessonStepOptions,
 ): Promise<WhiteCornersLessonStep> {
-  const currentHoldIndex = (options?.currentHoldIndex ?? 0) as CornerHoldIndex
-  const solvedCornerIds = options?.solvedCornerIds
+  const currentHoldIndex = (options?.currentHoldIndex ?? 0) as CornerHoldIndex;
+  const solvedCornerIds = options?.solvedCornerIds;
 
   if (!isWhiteCrossComplete(studentState)) {
-    return crossPrerequisiteStep()
+    return crossPrerequisiteStep();
   }
 
   if (isWhiteCornersComplete(studentState, currentHoldIndex, solvedCornerIds)) {
     if (currentHoldIndex !== 0) {
-      return buildReturnToBlueStep(currentHoldIndex)
+      return buildReturnToBlueStep(currentHoldIndex);
     }
-    return whiteCornersCompleteStep()
+    return whiteCornersCompleteStep();
   }
 
-  const cornerId = activeCornerId(studentState, currentHoldIndex, solvedCornerIds)
+  const cornerId = activeCornerId(
+    studentState,
+    currentHoldIndex,
+    solvedCornerIds,
+  );
   if (!cornerId) {
     if (currentHoldIndex !== 0) {
-      return buildReturnToBlueStep(currentHoldIndex)
+      return buildReturnToBlueStep(currentHoldIndex);
     }
-    return whiteCornersCompleteStep()
+    return whiteCornersCompleteStep();
   }
 
-  const target = targetHoldIndex(cornerId)
+  const target = targetHoldIndex(cornerId);
   if (currentHoldIndex !== target) {
-    const reorientMoves = relativeY(currentHoldIndex, target)
+    const reorientMoves = relativeY(currentHoldIndex, target);
     if (reorientMoves.length) {
-      return buildReorientHoldStep(cornerId, currentHoldIndex, target)
+      return buildReorientHoldStep(cornerId, currentHoldIndex, target);
     }
   }
 
-  const direct = await tryCornerSolveStepAsync(
+  const direct = tryInteractiveCornerSolveStep(
     studentState,
     cornerId,
     currentHoldIndex,
     solvedCornerIds,
-    options?.cornerBfsSearch,
-  )
-  if (direct?.demoMoves?.length) return direct
+  );
+  if (direct?.demoMoves?.length) return direct;
 
-  return buildSolveCornerPlaceholderStep(studentState, cornerId, currentHoldIndex)
+  return buildSolveCornerPlaceholderStep(
+    studentState,
+    cornerId,
+    currentHoldIndex,
+  );
 }

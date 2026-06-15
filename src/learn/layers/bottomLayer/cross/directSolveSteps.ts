@@ -1,5 +1,5 @@
-import { applyMoves } from '../../../../cube/cubeState'
 import type { CubeState, Face, Move } from '../../../../cube/cubeState'
+import { demoChangesState } from '../../../lessonCore'
 import {
   CROSS_ORDER,
   formatColor,
@@ -11,14 +11,9 @@ import {
 import { findVerifiedSlotDemoForCrossId, findVerifiedSlotDemoForCrossIdAsync } from './crossSolveBfs'
 import type { CrossEdgeId, PermuteReadyCandidate, WhiteCrossLessonStep } from './types'
 
-export function permuteDemoChangesState(studentState: CubeState, demo: Move[]): boolean {
-  const after = applyMoves(studentState, demo)
-  return JSON.stringify(after) !== JSON.stringify(studentState)
-}
-
 function buildDirectSolveStep(studentState: CubeState, id: CrossEdgeId, demo: Move[]): WhiteCrossLessonStep {
   const partner = partnerColorForSlot(studentState, id)
-  const slot = SLOT_DEF[id]
+  const slot = SLOT_DEF[id] 
   const faceTurn = demo.find((m) => m === 'F2' || m === 'R2' || m === 'L2' || m === 'B2')
   const face = faceTurn ? (faceTurn[0] as Face) : slot.sideFace
   return {
@@ -36,7 +31,7 @@ export function tryDirectSolveStepForCrossId(
 ): WhiteCrossLessonStep | null {
   if (slotSolved(studentState, id)) return null
   const demo = findVerifiedSlotDemoForCrossId(studentState, id)
-  if (!demo?.length || !permuteDemoChangesState(studentState, demo)) return null
+  if (!demo?.length || !demoChangesState(studentState, demo)) return null
   return buildDirectSolveStep(studentState, id, demo)
 }
 
@@ -46,7 +41,7 @@ export async function tryDirectSolveStepForCrossIdAsync(
 ): Promise<WhiteCrossLessonStep | null> {
   if (slotSolved(studentState, id)) return null
   const demo = await findVerifiedSlotDemoForCrossIdAsync(studentState, id)
-  if (!demo?.length || !permuteDemoChangesState(studentState, demo)) return null
+  if (!demo?.length || !demoChangesState(studentState, demo)) return null
   return buildDirectSolveStep(studentState, id, demo)
 }
 

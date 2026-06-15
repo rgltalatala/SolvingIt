@@ -1,5 +1,4 @@
 import type { Move } from '../../../../cube/cubeState'
-import type { CornerBfsSearchConfig } from './cornerSolveBfs'
 
 export const CORNER_ORDER = ['FRD', 'BDR', 'BLD', 'FDL'] as const
 
@@ -48,8 +47,6 @@ export interface WhiteCornerLessonStepOptions {
   currentHoldIndex?: number
   /** Lesson-order corners already solved this session (hold is view-only; cube is not rotated on reorient). */
   solvedCornerIds?: readonly CornerSlotId[]
-  /** BFS depth/time budget when fixed corner algs do not apply. Omit for interactive UI (fixed algs only). */
-  cornerBfsSearch?: CornerBfsSearchConfig
 }
 
 export interface SimulateWhiteCornersLessonResult {
@@ -60,7 +57,3 @@ export interface SimulateWhiteCornersLessonResult {
   finalHoldIndex?: number
 }
 
-export interface SimulateWhiteCornersLessonOptions {
-  /** BFS budget for async simulation; defaults to exhaustive tiers in async simulate. */
-  cornerBfsSearch?: CornerBfsSearchConfig
-}

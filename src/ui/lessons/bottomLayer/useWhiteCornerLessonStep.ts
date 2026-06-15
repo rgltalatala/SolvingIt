@@ -3,7 +3,6 @@ import type { CubeState } from '../../../cube/cubeState'
 import { cubeStateToStudentFrame } from '../../../cube/cubeState'
 import {
   CORNER_ORDER,
-  clearVerifiedCornerDemoCache,
   countSolvedCornerSlots,
   cornerSlotSolved,
   getWhiteCornerLessonStepAsync,
@@ -123,7 +122,6 @@ export function useWhiteCornerLessonStep(
               ? targetHoldIndex(appliedStep.targetCornerId)
               : session.currentHoldIndex
         ) as CornerHoldIndex
-        clearVerifiedCornerDemoCache()
         applyCornerSession({
           currentHoldIndex: nextHold,
           solvedCornerIds: session.solvedCornerIds,
@@ -139,7 +137,6 @@ export function useWhiteCornerLessonStep(
         const nextIds = session.solvedCornerIds.includes(appliedStep.cornerId)
           ? session.solvedCornerIds
           : [...session.solvedCornerIds, appliedStep.cornerId]
-        clearVerifiedCornerDemoCache()
         applyCornerSession({
           currentHoldIndex: session.currentHoldIndex,
           solvedCornerIds: nextIds,

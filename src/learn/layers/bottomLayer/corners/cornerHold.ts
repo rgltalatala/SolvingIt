@@ -1,5 +1,6 @@
 import { applyMoves } from '../../../../cube/cubeState'
 import type { Color, CubeState, Move } from '../../../../cube/cubeState'
+import type { StudentHold, YHold } from '../../../studentHold'
 import type { CornerSlotId } from './types'
 
 export type CornerHoldIndex = 0 | 1 | 2 | 3
@@ -48,38 +49,14 @@ export function normalizeHoldToBlue(state: CubeState, holdIndex: number): CubeSt
   return applyMoves(state, relativeY(holdIndex, 0))
 }
 
-/** Cube state as viewed after rotating to the given hold from blue front. */
-export function stateAtHold(state: CubeState, holdIndex: CornerHoldIndex): CubeState {
-  if (holdIndex === 0) return state
-  return applyMoves(state, holdIndexToY(holdIndex))
-}
-
 export function formatHoldFaceLabel(index: CornerHoldIndex): string {
   const color = faceColorAtHold(index)
   return color.charAt(0).toUpperCase() + color.slice(1)
 }
 
-/**
- * FRD-view corner demos are authored at blue-front hold (0). Wrap so the same
- * algorithm applies when the student has already reoriented to another hold.
- */
-export function frdViewDemoAtHold(baseDemo: Move[], holdIndex: number): Move[] {
-  if (holdIndex === 0) return baseDemo
-  const h = holdIndex as CornerHoldIndex
-  return [...relativeY(h, 0), ...baseDemo, ...holdIndexToY(h)]
-}
+const HOLD_INDEX_TO_Y_HOLD: YHold[] = ['none', 'y', 'y2', "y'"]
 
-/** Net quarter-turn hold change from whole-cube y moves in a demo (mod 4). */
-export function netYDeltaFromDemo(moves: readonly Move[]): number {
-  let delta = 0
-  for (const m of moves) {
-    if (m === 'y') delta = (delta + 1) % 4
-    else if (m === "y'") delta = (delta + 3) % 4
-    else if (m === 'y2') delta = (delta + 2) % 4
-  }
-  return delta
-}
-
-export function applyHoldDelta(holdIndex: number, delta: number): CornerHoldIndex {
-  return (((holdIndex + delta) % 4) + 4) % 4 as CornerHoldIndex
+/** Map lesson corner hold index to cumulative student y-hold. */
+export function cornerHoldToStudentHold(index: CornerHoldIndex): StudentHold {
+  return { y: HOLD_INDEX_TO_Y_HOLD[index]! }
 }

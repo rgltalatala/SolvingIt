@@ -18,3 +18,11 @@ export {
   type SimulateLessonOnStorageCubeResult,
   type SimulateLessonStep,
 } from './simulateLesson'
+export { demoChangesState } from './demoChangesState'
+export {
+  findVerifiedDemoWithTiers,
+  findVerifiedDemoWithTiersAsync,
+  type FindVerifiedDemoAsyncOptions,
+  type FindVerifiedDemoOptions,
+  type VerifiedDemoSearchTier,
+} from './verifiedDemoFinder'

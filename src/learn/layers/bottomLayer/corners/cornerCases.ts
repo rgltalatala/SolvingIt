@@ -89,15 +89,6 @@ export function isCornerPieceInSlot(
   return positionsEqual(position, CORNER_SLOT_DEF[id].pos);
 }
 
-/** Target corner correctly placed in the FRD slot for the current cube orientation. */
-export function cornerSolvedAtLessonHold(
-  studentState: CubeState,
-  id: CornerSlotId,
-  holdIndex: CornerHoldIndex | number = 0,
-): boolean {
-  return cornerSolvedInFrdView(studentState, id, holdIndex);
-}
-
 /** Active corner correctly placed in the front-right (FRD) slot for the current hold. */
 export function cornerSolvedInFrdView(
   studentState: CubeState,

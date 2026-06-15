@@ -3,11 +3,10 @@ import type { CubeState, Face, Move } from "../../../../cube/cubeState";
 import { parseFaceTurnAlgToMoves } from "../../../../cube/parseFaceTurnAlg";
 import { faceForWhiteOnCorner } from "../shared/pieceQueries";
 import type { WrongDLayerSlotId } from "./cornerCases";
-import { recognizeCornerCaseInFrdView } from "./cornerCases";
-import { studentHoldView, verifiedFrdDemoAtHold } from "./frdViewDemoBuild";
+import { buildShortestVerifiedFrdDemo } from "./frdDemoBuilder";
 import type { CornerSlotId } from "./types";
 import { CORNER_ORDER } from "./types";
-import { FRD_URF_POS, insertMovesFromUrf, U_LAYER_U_PREFIXES } from "./uLayerSteps";
+import { FRD_URF_POS, insertMovesFromUrf } from "./uLayerSteps";
 
 export const FRD_EXTRACT: Move[] = parseFaceTurnAlgToMoves("R U R' U'");
 
@@ -33,11 +32,6 @@ export function setupMovesForWrongDSlotStorage(dSlot: WrongDLayerSlotId): Move[]
   return [...yIn, ...FRD_EXTRACT, ...yOut, ...uAlign]
 }
 
-/** @deprecated Use {@link setupMovesForWrongDSlotInHoldView} or {@link setupMovesForWrongDSlotStorage}. */
-export function setupMovesForWrongDSlot(dSlot: WrongDLayerSlotId): Move[] {
-  return setupMovesForWrongDSlotStorage(dSlot)
-}
-
 export function buildFrdWrongDLayerDemo(
   studentState: CubeState,
   _dSlot: WrongDLayerSlotId,
@@ -45,49 +39,40 @@ export function buildFrdWrongDLayerDemo(
   holdIndex = 0,
   solvedCornerIds?: readonly CornerSlotId[],
 ): Move[] | null {
-  let shortest: Move[] | null = null
-  for (const uPrefix of U_LAYER_U_PREFIXES) {
-    const viewState = studentHoldView(studentState, holdIndex, uPrefix);
-    const cornerCase = recognizeCornerCaseInFrdView(viewState, targetId, holdIndex);
-    if (cornerCase.kind !== "in-wrong-d-slot") continue;
+  return buildShortestVerifiedFrdDemo(
+    studentState,
+    targetId,
+    holdIndex,
+    solvedCornerIds,
+    (viewState, cornerCase, uPrefix) => {
+      if (cornerCase.kind !== "in-wrong-d-slot") return []
 
-    const dSlotsToTry: WrongDLayerSlotId[] = [
-      cornerCase.dSlot,
-      ...CORNER_ORDER.filter((id) => id !== cornerCase.dSlot),
-    ];
+      const dSlotsToTry: WrongDLayerSlotId[] = [
+        cornerCase.dSlot,
+        ...CORNER_ORDER.filter((id) => id !== cornerCase.dSlot),
+      ]
 
-    for (const dSlot of dSlotsToTry) {
-      const setupInView = setupMovesForWrongDSlotInHoldView(dSlot)
-      const afterSetup = applyMoves(viewState, setupInView)
-      const preferredWhite = faceForWhiteOnCorner(FRD_URF_POS, afterSetup)
-      const whiteFacesToTry: Face[] = preferredWhite
-        ? [preferredWhite]
-        : ["U", "R", "F"]
+      return dSlotsToTry.flatMap((dSlot) => {
+        const setupInView = setupMovesForWrongDSlotInHoldView(dSlot)
+        const afterSetup = applyMoves(viewState, setupInView)
+        const preferredWhite = faceForWhiteOnCorner(FRD_URF_POS, afterSetup)
+        const whiteFacesToTry: Face[] = preferredWhite
+          ? [preferredWhite]
+          : ["U", "R", "F"]
 
-      for (const whiteFace of whiteFacesToTry) {
-        const insert = insertMovesFromUrf(whiteFace)
-        if (!insert?.length) continue
+        return whiteFacesToTry.flatMap((whiteFace) => {
+          const insert = insertMovesFromUrf(whiteFace)
+          if (!insert?.length) return []
 
-        const studentDemo = [...uPrefix, ...setupInView, ...insert]
-        const extraStorage: Move[][] =
-          holdIndex === 0 && dSlot !== "FRD"
-            ? [[...uPrefix, ...setupMovesForWrongDSlotStorage(dSlot), ...insert]]
-            : []
+          const studentDemo = [...uPrefix, ...setupInView, ...insert]
+          const extraStorage: Move[][] =
+            holdIndex === 0 && dSlot !== "FRD"
+              ? [[...uPrefix, ...setupMovesForWrongDSlotStorage(dSlot), ...insert]]
+              : []
 
-        const verified = verifiedFrdDemoAtHold(
-          studentState,
-          targetId,
-          holdIndex,
-          studentDemo,
-          solvedCornerIds,
-          extraStorage,
-        )
-        if (verified) {
-          if (!shortest || verified.length < shortest.length) shortest = verified
-        }
-      }
-    }
-  }
-
-  return shortest
+          return [{ studentDemo, storageCandidates: extraStorage }]
+        })
+      })
+    },
+  )
 }

@@ -1,11 +1,10 @@
 import type { CubeState } from '../../../../cube/cubeState'
-import { pickBestPermuteInTier, slotsGainedAfterDemo } from '../../../lessonCore'
+import { demoChangesState, pickBestPermuteInTier, slotsGainedAfterDemo } from '../../../lessonCore'
 import { countSolvedCrossSlots, CROSS_ORDER } from './crossSlotModel'
 import {
   collectDLayerInsertPermuteCandidates,
   collectRotateBottomPermuteCandidates,
 } from './dLayerSteps'
-import { permuteDemoChangesState } from './directSolveSteps'
 import { collectMiddleLayerPermuteCandidates } from './middleLayerSteps'
 import type { PermuteReadyCandidate, WhiteCrossLessonStep } from './types'
 import { PERMUTE_STEP_KIND_TIEBREAK } from './types'
@@ -28,7 +27,7 @@ function pickBestInTier(
     countSolved: countSolvedCrossSlots,
     orderIndex: (id) => CROSS_ORDER.indexOf(id),
     kindTiebreak,
-    demoChangesState: permuteDemoChangesState,
+    demoChangesState,
   })
 }
 
@@ -44,7 +43,7 @@ function slotsGainedForCandidate(
  * Pedagogy-first permute pass: rotate-bottom → D-layer insert → middle layer.
  * Direct solve and solve-edge stay in computeLessonStep phase 4.
  */
-export function tryPhasedPermuteReadyPass(studentState: CubeState): WhiteCrossLessonStep | null {
+export function tryPermuteReadyPass(studentState: CubeState): WhiteCrossLessonStep | null {
   const tiers: PermuteReadyCandidate[][] = [
     collectRotateBottomPermuteCandidates(studentState),
     collectDLayerInsertPermuteCandidates(studentState),
@@ -60,9 +59,4 @@ export function tryPhasedPermuteReadyPass(studentState: CubeState): WhiteCrossLe
     return best.step
   }
   return null
-}
-
-/** @deprecated Name kept for callers; uses phased tier order. */
-export function tryPermuteReadyPass(studentState: CubeState): WhiteCrossLessonStep | null {
-  return tryPhasedPermuteReadyPass(studentState)
 }

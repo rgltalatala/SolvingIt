@@ -6,13 +6,11 @@ import {
 } from '../../../../cube/cubeState'
 import { getLessonExecutionMoves, noneHold } from '../../../studentHold'
 import { normalizeHoldToBlue, targetHoldIndex, type CornerHoldIndex } from './cornerHold'
-import { EXHAUSTIVE_CORNER_BFS_CONFIG } from './cornerSolveBfs'
 import { getWhiteCornerLessonStep, getWhiteCornerLessonStepAsync } from './computeLessonStep'
 import { resolveLessonStorageDemo } from './frdViewDemoBuild'
 import { CORNER_ORDER, cornerSlotSolved, isWhiteCornersComplete } from './cornerSlotModel'
 import type {
   CornerSlotId,
-  SimulateWhiteCornersLessonOptions,
   SimulateWhiteCornersLessonResult,
   WhiteCornerLessonStepOptions,
   WhiteCornersLessonStep,
@@ -30,7 +28,6 @@ async function runWhiteCornersLessonSimulation(
     student: CubeState,
     options: WhiteCornerLessonStepOptions,
   ) => WhiteCornersLessonStep | Promise<WhiteCornersLessonStep>,
-  simulateOptions?: SimulateWhiteCornersLessonOptions,
 ): Promise<SimulateWhiteCornersLessonResult> {
   let currentHoldIndex: CornerHoldIndex = 0
   let storage = cloneCubeState(storageCube)
@@ -44,7 +41,6 @@ async function runWhiteCornersLessonSimulation(
   const lessonOptions = (): WhiteCornerLessonStepOptions => ({
     currentHoldIndex,
     solvedCornerIds,
-    cornerBfsSearch: simulateOptions?.cornerBfsSearch,
   })
 
   for (let i = 0; i < maxLessonSteps; i += 1) {
@@ -261,14 +257,10 @@ function runWhiteCornersLessonSimulationSync(
 export async function simulateWhiteCornersLessonOnStorageCubeAsync(
   storageCube: CubeState,
   maxLessonSteps = 120,
-  simulateOptions: SimulateWhiteCornersLessonOptions = {
-    cornerBfsSearch: EXHAUSTIVE_CORNER_BFS_CONFIG,
-  },
 ): Promise<SimulateWhiteCornersLessonResult> {
   return runWhiteCornersLessonSimulation(
     storageCube,
     maxLessonSteps,
     (student, options) => getWhiteCornerLessonStepAsync(student, options),
-    simulateOptions,
   )
 }

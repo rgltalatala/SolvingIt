@@ -1,4 +1,5 @@
 import type { Color, CubeState, Face } from '../../../../cube/cubeState'
+export { formatColor } from '../shared'
 import type { CubiePosition } from '../../../../cube3d/cubeGeometry'
 import { normalizeHoldToBlue, type CornerHoldIndex } from './cornerHold'
 import { CORNER_ORDER, type CornerSlotId } from './types'
@@ -29,10 +30,6 @@ const CORNER_LABELS: Record<CornerSlotId, string> = {
 
 export function formatCornerLabel(id: CornerSlotId): string {
   return CORNER_LABELS[id]
-}
-
-export function formatColor(color: Color): string {
-  return color.charAt(0).toUpperCase() + color.slice(1)
 }
 
 /** Side colors for a lesson corner slot (hold-invariant; uses blue-front reference). */
@@ -120,17 +117,6 @@ export function activeCornerId(
     if (!cornerSlotSolved(normalized, id)) return id
   }
   return null
-}
-
-export function cornersSolvedInState(studentState: CubeState): CornerSlotId[] {
-  return CORNER_ORDER.filter((id) => cornerSlotSolved(studentState, id))
-}
-
-export function cornersToPreserve(
-  studentState: CubeState,
-  exceptId?: CornerSlotId,
-): CornerSlotId[] {
-  return cornersSolvedInState(studentState).filter((id) => id !== exceptId)
 }
 
 /** Solved slots on the cube at the current lesson hold, excluding the active target. */

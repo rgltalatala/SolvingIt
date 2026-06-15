@@ -4,8 +4,7 @@ import type { CubiePosition } from '../../../../cube3d/cubeGeometry'
 import { parseFaceTurnAlgToMoves } from '../../../../cube/parseFaceTurnAlg'
 import { faceForWhiteOnCorner } from '../shared/pieceQueries'
 import type { ULayerCornerId } from './cornerCases'
-import { recognizeCornerCaseInFrdView } from './cornerCases'
-import { studentHoldView, verifiedFrdDemoAtHold } from './frdViewDemoBuild'
+import { buildShortestVerifiedFrdDemo } from './frdDemoBuilder'
 import type { CornerSlotId } from './types'
 
 export const FRD_URF_POS: CubiePosition = [1, 1, 1]
@@ -53,32 +52,23 @@ export function buildFrdULayerDemo(
   holdIndex = 0,
   solvedCornerIds?: readonly CornerSlotId[],
 ): Move[] | null {
-  let shortest: Move[] | null = null
-  for (const uPrefix of U_LAYER_U_PREFIXES) {
-    const viewState = studentHoldView(studentState, holdIndex, uPrefix)
-    const cornerCase = recognizeCornerCaseInFrdView(viewState, targetId, holdIndex)
-    if (cornerCase.kind !== 'in-u-layer') continue
+  return buildShortestVerifiedFrdDemo(
+    studentState,
+    targetId,
+    holdIndex,
+    solvedCornerIds,
+    (viewState, cornerCase, uPrefix) => {
+      if (cornerCase.kind !== 'in-u-layer') return []
 
-    const align = alignMovesToUrf(cornerCase.uPosition)
-    const afterAlign = applyMoves(viewState, align)
-    const preferredWhite = faceForWhiteOnCorner(FRD_URF_POS, afterAlign)
+      const align = alignMovesToUrf(cornerCase.uPosition)
+      const afterAlign = applyMoves(viewState, align)
+      const preferredWhite = faceForWhiteOnCorner(FRD_URF_POS, afterAlign)
 
-    for (const whiteFace of insertFacesToTry(preferredWhite)) {
-      const insert = insertMovesFromUrf(whiteFace)
-      if (!insert?.length) continue
-
-      const baseDemo = [...uPrefix, ...align, ...insert]
-      const verified = verifiedFrdDemoAtHold(
-        studentState,
-        targetId,
-        holdIndex,
-        baseDemo,
-        solvedCornerIds,
-      )
-      if (!verified) continue
-      if (!shortest || verified.length < shortest.length) shortest = verified
-    }
-  }
-
-  return shortest
+      return insertFacesToTry(preferredWhite).flatMap((whiteFace) => {
+        const insert = insertMovesFromUrf(whiteFace)
+        if (!insert?.length) return []
+        return [{ studentDemo: [...uPrefix, ...align, ...insert] }]
+      })
+    },
+  )
 }

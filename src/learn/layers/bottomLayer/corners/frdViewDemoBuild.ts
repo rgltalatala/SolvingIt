@@ -1,7 +1,6 @@
 import { applyMoves } from '../../../../cube/cubeState'
 import type { CubeState, Move } from '../../../../cube/cubeState'
 import { isWholeCubeRotation } from '../../../../cube/cubeState'
-import { normalizeHoldToBlue } from './cornerHold'
 import { isVerifiedCornerSlotDemo } from './preserveLessonState'
 import type { CornerSlotId } from './types'
 import {
@@ -10,11 +9,6 @@ import {
 } from './wrongDLayerSteps'
 import { U_LAYER_U_PREFIXES } from './uLayerSteps'
 import { CORNER_ORDER } from './types'
-
-/** Cube state normalized to blue-front for FRD-view case recognition and demo authoring. */
-export function studentBlueView(studentState: CubeState, holdIndex: number): CubeState {
-  return normalizeHoldToBlue(studentState, holdIndex)
-}
 
 /**
  * Cube state for FRD-view case recognition. Reorient steps bake y into the cube;
@@ -31,15 +25,6 @@ export function studentHoldView(
 /** True when every move is a face turn (no whole-cube y rotations). */
 export function isStudentFacingDemo(demo: readonly Move[]): boolean {
   return demo.length > 0 && !demo.some(isWholeCubeRotation)
-}
-
-/** Demo moves to apply on the storage cube (same as student demo when y is baked on reorient). */
-export function storageDemoForStudentDemo(
-  studentDemo: Move[],
-  holdIndex: number,
-): Move[] {
-  if (holdIndex === 0) return studentDemo
-  return studentDemo
 }
 
 function inferWrongDStorageCandidates(
@@ -78,7 +63,6 @@ export function resolveLessonStorageDemo(
   const candidates: Move[][] = [
     ...storageCandidates,
     ...inferWrongDStorageCandidates(studentDemo, holdIndex),
-    storageDemoForStudentDemo(studentDemo, holdIndex),
     studentDemo,
   ]
 

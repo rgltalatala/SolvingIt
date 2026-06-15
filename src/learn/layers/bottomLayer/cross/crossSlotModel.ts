@@ -1,5 +1,7 @@
 import type { Color, CubeState, Face, Move } from '../../../../cube/cubeState'
 import type { CubiePosition } from '../../../../cube3d/cubeGeometry'
+export { formatColor } from '../shared'
+import { formatColor } from '../shared'
 import { findEdgeWithColors, whiteStickerOnD } from '../shared/pieceQueries'
 import type { CrossEdgeId } from './types'
 
@@ -33,10 +35,6 @@ export const CROSS_SOLVE_BFS_MOVES: Move[] = [
 
 export function partnerColorForSlot(studentState: CubeState, id: CrossEdgeId): Color {
   return studentState[SLOT_DEF[id].sideFace][4]
-}
-
-export function formatColor(color: Color): string {
-  return color.charAt(0).toUpperCase() + color.slice(1)
 }
 
 export function whitePartnerEdgeHeading(partner: Color): string {

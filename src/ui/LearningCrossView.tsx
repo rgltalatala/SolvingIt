@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useTransition } from "react";
 import type { Move } from "../cube/cubeState";
 import {
   cubeStateToStudentFrame,
@@ -6,27 +6,15 @@ import {
   formatColorLabel,
   studentLessonHoldFaceCenters,
 } from "../cube/cubeState";
-import {
-  getAvoidBackDefaultPreference,
-  setAvoidBackDefaultPreference,
-} from "../learn/lessonPreferences";
-import {
-  demoStepsToMoves,
-  expandDemoToInstructions,
-  getLessonDemoExpansion,
-  isBackFaceMove,
-  noneHold,
-  type DemoStep,
-  type Instruction,
-} from "../learn/studentHold";
 import { useCubeStore } from "../store/cubeStore";
-import { CubeView } from "../cube3d/CubeView";
-import { MoveSequenceDemo } from "./MoveSequenceDemo";
 import { useWhiteCrossLessonStep } from "./lessons/bottomLayer/useWhiteCrossLessonStep";
-import { resolveVisibleDemo, type DemoSnapshot } from "./lessons/lessonDemo";
-
-const PHYSICAL_CUBE_MATCH_NOTE =
-  "Confirm your physical cube matches the virtual cube below (same scramble and hold: white on bottom, yellow on top) before you apply an example.";
+import { LessonApplyPanel } from "./lessons/LessonApplyPanel";
+import { LessonAvoidBackPanel } from "./lessons/LessonAvoidBackPanel";
+import { LessonCubeStage } from "./lessons/LessonCubeStage";
+import { LessonHeaderActions } from "./lessons/LessonHeaderActions";
+import { PHYSICAL_CUBE_MATCH_NOTE } from "./lessons/lessonCopy";
+import { LessonUnavailable } from "./lessons/LessonUnavailable";
+import { useLessonDemoPipeline } from "./lessons/useLessonDemoPipeline";
 
 export function LearningCrossView() {
   const cubeState = useCubeStore((state) => state.cubeState);
@@ -61,7 +49,6 @@ export function LearningCrossView() {
     solvedSlots,
     recomputeStep,
   } = useWhiteCrossLessonStep(studentFrame);
-  const isCrossComplete = isLessonComplete;
 
   const demoMoves = useMemo((): Move[] => {
     if (
@@ -75,101 +62,26 @@ export function LearningCrossView() {
     return [];
   }, [step]);
 
-  const showAvoidBackToggle = useMemo(
-    () => demoMoves.some(isBackFaceMove),
-    [demoMoves],
-  );
   const stepKey = useMemo(
     () => (step ? `${step.kind}:${demoMoves.join(" ")}` : "none"),
     [step, demoMoves],
   );
-  const [avoidBackMoves, setAvoidBackMoves] = useState(false);
-  const [rememberAvoidBackDefault, setRememberAvoidBackDefault] = useState(() =>
-    getAvoidBackDefaultPreference(),
-  );
 
-  useEffect(() => {
-    if (showAvoidBackToggle) {
-      setAvoidBackMoves(getAvoidBackDefaultPreference());
-    } else {
-      setAvoidBackMoves(false);
-    }
-  }, [stepKey, showAvoidBackToggle]);
-
-  const demoExpansion = useMemo(() => {
-    const avoidOn = avoidBackMoves && showAvoidBackToggle;
-    return getLessonDemoExpansion(demoMoves, avoidOn, noneHold());
-  }, [demoMoves, avoidBackMoves, showAvoidBackToggle]);
-
-  const previewMoves = useMemo(
-    () => demoStepsToMoves(demoExpansion.steps),
-    [demoExpansion],
-  );
-
-  const avoidOn = avoidBackMoves && showAvoidBackToggle;
-
-  const demoInstructions = useMemo(() => {
-    if (!demoMoves.length) return [];
-    return expandDemoToInstructions(demoMoves, noneHold(), {
-      avoidBackMoves: avoidOn,
-    }).instructions;
-  }, [demoMoves, avoidOn]);
-
-  const [demoSnapshot, setDemoSnapshot] = useState<DemoSnapshot | null>(null);
-
-  useEffect(() => {
-    if (step?.kind === "complete") {
-      setDemoSnapshot(null);
-      return;
-    }
-    if (isStepPending) return;
-    if (demoMoves.length === 0) {
-      setDemoSnapshot(null);
-      return;
-    }
-    setDemoSnapshot({
-      moves: previewMoves,
-      demoSteps: demoExpansion.steps,
-      instructions: demoInstructions,
-      demoKey: `${stepKey}-${avoidBackMoves}`,
-    });
-  }, [
-    step?.kind,
-    isStepPending,
-    demoMoves.length,
-    previewMoves,
-    demoExpansion.steps,
-    demoInstructions,
-    stepKey,
+  const {
+    visibleDemo,
+    showAvoidBackToggle,
     avoidBackMoves,
-  ]);
-
-  const currentDemo: DemoSnapshot | null = useMemo(
-    () =>
-      demoMoves.length > 0
-        ? {
-            moves: previewMoves,
-            demoSteps: demoExpansion.steps,
-            instructions: demoInstructions,
-            demoKey: `${stepKey}-${avoidBackMoves}`,
-          }
-        : null,
-    [
-      demoMoves.length,
-      previewMoves,
-      demoExpansion.steps,
-      demoInstructions,
-      stepKey,
-      avoidBackMoves,
-    ],
-  );
-
-  const visibleDemo = resolveVisibleDemo({
-    isLessonComplete: isCrossComplete,
+    setAvoidBackMoves,
+    rememberAvoidBackDefault,
+    setRememberAvoidBackDefault,
+    avoidOn,
+    previewMoves,
+  } = useLessonDemoPipeline({
+    demoMoves,
+    stepKey,
+    isLessonComplete,
     isStepPending,
-    demoMovesLength: demoMoves.length,
-    currentDemo,
-    cachedDemo: demoSnapshot,
+    stepKind: step?.kind,
   });
 
   const lessonHold = useMemo(
@@ -181,19 +93,7 @@ export function LearningCrossView() {
   );
 
   if (!cubeState || !studentFrame) {
-    return (
-      <section className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-6">
-        <h1 className="text-3xl font-bold">Lesson unavailable</h1>
-        <p className="text-slate-300">Scan and validate a cube first.</p>
-        <button
-          type="button"
-          className="inline-flex w-fit rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700"
-          onClick={() => setAppPhase("ready")}
-        >
-          Back
-        </button>
-      </section>
-    );
+    return <LessonUnavailable onBack={() => setAppPhase("ready")} />;
   }
 
   const displayStep =
@@ -258,7 +158,7 @@ export function LearningCrossView() {
             {formatColorLabel(lessonHold.D)}, F ={" "}
             {formatColorLabel(lessonHold.F)}.
           </p>
-          {!isCrossComplete ? (
+          {!isLessonComplete ? (
             <p className="mt-2 text-sm text-slate-400">
               {PHYSICAL_CUBE_MATCH_NOTE}
             </p>
@@ -305,61 +205,22 @@ export function LearningCrossView() {
             </ul>
           </details>
         </div>
-        <div className="flex shrink-0 flex-col gap-2">
-          <button
-            type="button"
-            className="inline-flex w-fit rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
-            onClick={handleUndoLessonStep}
-            disabled={!canUndoLesson || isStepPending}
-          >
-            Undo last example
-          </button>
-          <button
-            type="button"
-            className="inline-flex w-fit rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700"
-            onClick={() => setAppPhase("ready")}
-          >
-            Back to cube overview
-          </button>
-          <button
-            type="button"
-            className="inline-flex w-fit rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:text-slate-100"
-            onClick={handleRestartLessonTips}
-          >
-            Reset lesson tips
-          </button>
-        </div>
+        <LessonHeaderActions
+          canUndo={canUndoLesson}
+          isStepPending={isStepPending}
+          onUndo={handleUndoLessonStep}
+          onBack={() => setAppPhase("ready")}
+          onResetTips={handleRestartLessonTips}
+        />
       </header>
 
-      {isCrossComplete ? (
-        <CubeView
-          cubeState={studentFrame}
-          meshRotation={[0, 0, 0]}
-          frameClassName="h-[420px] w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-950"
-          canvasKey="lesson-complete-cube"
-        />
-      ) : (
-        <div className="relative">
-          <MoveSequenceDemo
-            baseCubeState={studentFrame}
-            moves={visibleDemo?.moves ?? []}
-            demoSteps={visibleDemo?.demoSteps}
-            instructions={visibleDemo?.instructions}
-            meshRotation={[0, 0, 0]}
-            frameClassName="h-[420px] w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-950"
-          />
-          {showPreparingOverlay ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-xl bg-slate-950/75 px-4 text-center">
-              <p className="text-sm font-semibold text-slate-100">
-                Preparing next example…
-              </p>
-              <p className="text-xs text-slate-400">
-                Finding a short demo sequence for this cube.
-              </p>
-            </div>
-          ) : null}
-        </div>
-      )}
+      <LessonCubeStage
+        isComplete={isLessonComplete}
+        cubeState={studentFrame}
+        completeCanvasKey="lesson-complete-cube"
+        visibleDemo={visibleDemo}
+        showPreparingOverlay={showPreparingOverlay}
+      />
 
       <article
         className={`rounded-xl border border-slate-700 bg-slate-900/80 p-4 ${showPreparingOverlay ? "opacity-60" : ""}`}
@@ -373,71 +234,16 @@ export function LearningCrossView() {
           </p>
         ) : null}
         {step && step.kind !== "complete" && showAvoidBackToggle ? (
-          <div className="mt-4 flex flex-col gap-3 rounded-lg border border-slate-700 bg-slate-950/40 p-3">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold text-slate-100">
-                  Avoid back face for this example
-                </p>
-                <p className="text-xs text-slate-400">
-                  This step’s example uses a{" "}
-                  <span className="font-mono">B</span> move. Toggle on to{" "}
-                  <span className="text-slate-300">y2</span> at the start, do
-                  the example without turning B, then{" "}
-                  <span className="text-slate-300">y2</span> again so{" "}
-                  {formatColorLabel(lessonHold.F)} is on front (usual lesson
-                  hold).
-                </p>
-              </div>
-              <button
-                type="button"
-                className={`inline-flex w-fit shrink-0 rounded-lg px-3 py-2 text-sm font-semibold ${
-                  avoidBackMoves
-                    ? "bg-violet-700 text-white hover:bg-violet-600"
-                    : "border border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700"
-                }`}
-                onClick={() => setAvoidBackMoves((v) => !v)}
-              >
-                {avoidBackMoves
-                  ? "Avoid back moves: On"
-                  : "Avoid back moves: Off"}
-              </button>
-            </div>
-            <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-400">
-              <input
-                type="checkbox"
-                className="rounded border-slate-600"
-                checked={rememberAvoidBackDefault}
-                onChange={(e) => {
-                  const on = e.target.checked;
-                  setRememberAvoidBackDefault(on);
-                  setAvoidBackDefaultPreference(on);
-                  if (on) setAvoidBackMoves(true);
-                }}
-              />
-              Default avoid-back on when an example uses B (saved in this
-              browser)
-            </label>
-            {showRotationCallout ? (
-              <div className="flex flex-col gap-2 rounded-md border border-amber-700/40 bg-amber-950/30 p-2 text-amber-100">
-                <p className="text-xs">
-                  Tip: the preview starts and ends with{" "}
-                  <span className="font-mono">y2</span> so you return to the
-                  same hold ({formatColorLabel(lessonHold.F)} on front). Step
-                  through the full sequence on your cube.
-                </p>
-                <div>
-                  <button
-                    type="button"
-                    className="text-xs font-semibold text-amber-100 underline hover:text-amber-50"
-                    onClick={() => markAvoidBackCalloutSeen()}
-                  >
-                    Got it
-                  </button>
-                </div>
-              </div>
-            ) : null}
-          </div>
+          <LessonAvoidBackPanel
+            frontColor={lessonHold.F}
+            avoidBackMoves={avoidBackMoves}
+            onToggleAvoidBack={() => setAvoidBackMoves((v) => !v)}
+            rememberAvoidBackDefault={rememberAvoidBackDefault}
+            onRememberDefaultChange={setRememberAvoidBackDefault}
+            showRotationCallout={showRotationCallout}
+            onMarkCalloutSeen={markAvoidBackCalloutSeen}
+            holdNote=" (usual lesson hold)"
+          />
         ) : null}
         {step && step.kind !== "complete" && (
           <p className="mt-3 text-xs text-slate-500">
@@ -446,53 +252,44 @@ export function LearningCrossView() {
             {formatColorLabel(lessonHold.D)} on D (bottom).
           </p>
         )}
-        {isCrossComplete ? (
-          <p className="mt-4 text-sm text-slate-400">
-            All four cross edges are in place. Continue to white corners when
-            you are ready, or use Back to cube overview.
-          </p>
-        ) : null}
-        {isCrossComplete ? (
-          <div className="mt-4">
-            <button
-              type="button"
-              className="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-600"
-              onClick={() => {
-                resetLessonSession();
-                setActiveLesson("white-corners");
-              }}
-            >
-              Continue: White corners
-            </button>
-          </div>
-        ) : null}
-        {canApplyDemo && (
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-400">
-              When your physical cube matches the diagram and you have stepped
-              through the example (or reproduced it on your cube), apply here to
-              update the virtual cube and continue the lesson.
+        {isLessonComplete ? (
+          <>
+            <p className="mt-4 text-sm text-slate-400">
+              All four cross edges are in place. Continue to white corners when
+              you are ready, or use Back to cube overview.
             </p>
-            <button
-              type="button"
-              disabled={isStepPending}
-              className="inline-flex shrink-0 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
-              onClick={() => {
-                startLessonTransition(() => {
-                  if (avoidOn) {
-                    applyLessonStep(demoMoves, { avoidBackMoves: true });
-                    if (previewMoves.includes("y2") && !hasSeenAvoidBackCallout)
-                      markAvoidBackCalloutSeen();
-                  } else {
-                    applyLessonDemoMoves(demoMoves);
-                  }
-                });
-              }}
-            >
-              Apply example & continue
-            </button>
-          </div>
-        )}
+            <div className="mt-4">
+              <button
+                type="button"
+                className="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-600"
+                onClick={() => {
+                  resetLessonSession();
+                  setActiveLesson("white-corners");
+                }}
+              >
+                Continue: White corners
+              </button>
+            </div>
+          </>
+        ) : null}
+        {canApplyDemo ? (
+          <LessonApplyPanel
+            hint="When your physical cube matches the diagram and you have stepped through the example (or reproduced it on your cube), apply here to update the virtual cube and continue the lesson."
+            buttonLabel="Apply example & continue"
+            disabled={isStepPending}
+            onApply={() => {
+              startLessonTransition(() => {
+                if (avoidOn) {
+                  applyLessonStep(demoMoves, { avoidBackMoves: true });
+                  if (previewMoves.includes("y2") && !hasSeenAvoidBackCallout)
+                    markAvoidBackCalloutSeen();
+                } else {
+                  applyLessonDemoMoves(demoMoves);
+                }
+              });
+            }}
+          />
+        ) : null}
       </article>
     </section>
   );
