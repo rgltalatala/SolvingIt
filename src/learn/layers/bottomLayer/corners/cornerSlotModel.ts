@@ -1,10 +1,9 @@
 import type { Color, CubeState, Face } from '../../../../cube/cubeState';
-export { formatColor } from '../shared';
 import type { CubiePosition } from '../../../../cube3d/cubeGeometry';
 import { normalizeHoldToBlue, type CornerHoldIndex } from './cornerHold';
 import { CORNER_ORDER, type CornerSlotId } from './types';
 
-export { CORNER_ORDER };
+export { formatColor } from '../shared';
 
 export const CORNER_SLOT_DEF: Record<
   CornerSlotId,

@@ -3,11 +3,8 @@ import type { CubeState, Move } from '../../../../cube/cubeState';
 import { isWhiteCrossComplete } from '../cross/crossSlotModel';
 import { cornerSolvedInFrdView } from './cornerCases';
 import { normalizeHoldToBlue } from './cornerHold';
-import {
-  cornerSlotSolved,
-  mustPreserveCornerIds,
-  type CornerSlotId,
-} from './cornerSlotModel';
+import { cornerSlotSolved, mustPreserveCornerIds } from './cornerSlotModel';
+import type { CornerSlotId } from './types';
 
 /** Whether a previously solved corner is still intact (blue-normalized from current hold). */
 export function cornerPreservedAtLessonHold(

@@ -16,7 +16,6 @@ import {
 } from './computeLessonStep';
 import { resolveLessonStorageDemo } from './frdViewDemoBuild';
 import {
-  CORNER_ORDER,
   cornerSlotSolved,
   isWhiteCornersComplete,
 } from './cornerSlotModel';
@@ -26,6 +25,7 @@ import type {
   WhiteCornerLessonStepOptions,
   WhiteCornersLessonStep,
 } from './types';
+import { CORNER_ORDER } from './types';
 
 function applyStepDemo(
   storage: CubeState,
