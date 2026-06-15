@@ -1,27 +1,36 @@
-import type { Instruction } from '../learn/studentHold'
+import type { Instruction } from '../learn/studentHold';
 
 export interface LessonInstructionDemoProps {
-  instructions: Instruction[]
+  instructions: Instruction[];
   /** Index of the move currently being shown (0 = first instruction). */
-  activeIndex: number
+  activeIndex: number;
 }
 
-export function LessonInstructionDemo({ instructions, activeIndex }: LessonInstructionDemoProps) {
-  if (instructions.length === 0) return null
+export function LessonInstructionDemo({
+  instructions,
+  activeIndex,
+}: LessonInstructionDemoProps) {
+  if (instructions.length === 0) return null;
 
-  const clampedIndex = Math.min(Math.max(0, activeIndex), instructions.length - 1)
-  const current = instructions[clampedIndex]
+  const clampedIndex = Math.min(
+    Math.max(0, activeIndex),
+    instructions.length - 1,
+  );
+  const current = instructions[clampedIndex];
 
   return (
     <div className="rounded-lg border border-slate-700 bg-slate-950/50 p-3">
-      <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Step-by-step instructions</h4>
-      <p className="mt-2 text-sm leading-relaxed text-slate-100">{current.text}</p>
+      <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+        Step-by-step instructions
+      </h4>
+      <p className="mt-2 text-sm leading-relaxed text-slate-100">
+        {current.text}
+      </p>
       <ol className="mt-3 max-h-40 space-y-1.5 overflow-y-auto text-xs text-slate-400">
         {instructions.map((inst, i) => {
-          const done = i < clampedIndex
-          const active = i === clampedIndex
-          const prefix =
-            inst.type === 'rotation' ? '↻' : inst.move
+          const done = i < clampedIndex;
+          const active = i === clampedIndex;
+          const prefix = inst.type === 'rotation' ? '↻' : inst.move;
           return (
             <li
               key={`${prefix}-${i}`}
@@ -33,11 +42,12 @@ export function LessonInstructionDemo({ instructions, activeIndex }: LessonInstr
                     : ''
               }
             >
-              <span className="font-mono text-slate-500">{i + 1}.</span> {inst.text}
+              <span className="font-mono text-slate-500">{i + 1}.</span>{' '}
+              {inst.text}
             </li>
-          )
+          );
         })}
       </ol>
     </div>
-  )
+  );
 }

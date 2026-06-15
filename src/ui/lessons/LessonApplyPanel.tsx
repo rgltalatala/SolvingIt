@@ -1,9 +1,9 @@
 type LessonApplyPanelProps = {
-  hint: string
-  buttonLabel: string
-  disabled: boolean
-  onApply: () => void
-}
+  hint: string;
+  buttonLabel: string;
+  disabled: boolean;
+  onApply: () => void;
+};
 
 export function LessonApplyPanel({
   hint,
@@ -23,5 +23,5 @@ export function LessonApplyPanel({
         {buttonLabel}
       </button>
     </div>
-  )
+  );
 }

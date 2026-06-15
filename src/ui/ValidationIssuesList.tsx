@@ -1,12 +1,12 @@
-import type { Face } from '../cube/cubeState'
-import type { CubeValidationIssue } from '../cube/cubeValidator'
+import type { Face } from '../cube/cubeState';
+import type { CubeValidationIssue } from '../cube/cubeValidator';
 
 interface ValidationIssuesListProps {
-  issues: CubeValidationIssue[]
-  listClassName?: string
-  suggestedFace?: Face | null
-  onRescanSuggested?: (face: Face) => void
-  rescanButtonClassName?: string
+  issues: CubeValidationIssue[];
+  listClassName?: string;
+  suggestedFace?: Face | null;
+  onRescanSuggested?: (face: Face) => void;
+  rescanButtonClassName?: string;
 }
 
 export function ValidationIssuesList({
@@ -24,10 +24,14 @@ export function ValidationIssuesList({
         ))}
       </ul>
       {suggestedFace && onRescanSuggested ? (
-        <button type="button" className={rescanButtonClassName} onClick={() => onRescanSuggested(suggestedFace)}>
+        <button
+          type="button"
+          className={rescanButtonClassName}
+          onClick={() => onRescanSuggested(suggestedFace)}
+        >
           Re-scan {suggestedFace} face
         </button>
       ) : null}
     </>
-  )
+  );
 }

@@ -1,30 +1,34 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { CubeState, Move } from '../cube/cubeState'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { CubeState, Move } from '../cube/cubeState';
 import {
   faceCentersFromCubeState,
   formatColorLabel,
   isWholeCubeRotation,
   studentLessonHoldFaceCenters,
-} from '../cube/cubeState'
-import { applyMoves } from '../cube/cubeState'
-import { cubeStateToCubeJsString } from '../cube/cubeStateToFacelets'
-import { getDemoStepChipLabel, type DemoStep, type Instruction } from '../learn/studentHold'
-import { MOVE_ANIMATION_PAUSE_MS } from '../cube3d/moveAnimation'
-import type { CubeMoveAnimation } from '../cube3d/CubeView'
-import { CubeView } from '../cube3d/CubeView'
-import { LessonInstructionDemo } from './LessonInstructionDemo'
+} from '../cube/cubeState';
+import { applyMoves } from '../cube/cubeState';
+import { cubeStateToCubeJsString } from '../cube/cubeStateToFacelets';
+import {
+  getDemoStepChipLabel,
+  type DemoStep,
+  type Instruction,
+} from '../learn/studentHold';
+import { MOVE_ANIMATION_PAUSE_MS } from '../cube3d/moveAnimation';
+import type { CubeMoveAnimation } from '../cube3d/CubeView';
+import { CubeView } from '../cube3d/CubeView';
+import { LessonInstructionDemo } from './LessonInstructionDemo';
 
-export type MoveAnimDirection = 'forward' | 'reverse'
+export type MoveAnimDirection = 'forward' | 'reverse';
 
 export interface MoveSequenceDemoProps {
-  baseCubeState: CubeState
-  moves: Move[]
+  baseCubeState: CubeState;
+  moves: Move[];
   /** When set, chip labels reflect rotation purpose (y2 start / return). Length must match `moves`. */
-  demoSteps?: DemoStep[]
+  demoSteps?: DemoStep[];
   /** Full prose instructions (from {@link expandDemoToInstructions}). */
-  instructions?: Instruction[]
-  meshRotation?: [number, number, number]
-  frameClassName?: string
+  instructions?: Instruction[];
+  meshRotation?: [number, number, number];
+  frameClassName?: string;
 }
 
 /**
@@ -39,102 +43,117 @@ export function MoveSequenceDemo({
   meshRotation = [0, 0, 0],
   frameClassName = 'h-[280px] w-full min-h-[240px] overflow-hidden rounded-lg border border-slate-600 bg-slate-950',
 }: MoveSequenceDemoProps) {
-  const [applied, setApplied] = useState(0)
-  const [animating, setAnimating] = useState(false)
-  const [animDirection, setAnimDirection] = useState<MoveAnimDirection>('forward')
-  const [playing, setPlaying] = useState(false)
-  const animDirectionRef = useRef<MoveAnimDirection>('forward')
+  const [applied, setApplied] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const [animDirection, setAnimDirection] =
+    useState<MoveAnimDirection>('forward');
+  const [playing, setPlaying] = useState(false);
+  const animDirectionRef = useRef<MoveAnimDirection>('forward');
 
   useEffect(() => {
-    animDirectionRef.current = animDirection
-  }, [animDirection])
+    animDirectionRef.current = animDirection;
+  }, [animDirection]);
 
-  const hasMoves = moves.length > 0
+  const hasMoves = moves.length > 0;
 
   /** Stable for the lesson session — do not tie to `applied` or animations (avoids WebGL remount flash). */
-  const canvasKey = 'lesson-move-demo'
+  const canvasKey = 'lesson-move-demo';
 
-  const movesSignature = moves.join(' ')
-  const baseStateKey = useMemo(() => cubeStateToCubeJsString(baseCubeState), [baseCubeState])
+  const movesSignature = moves.join(' ');
+  const baseStateKey = useMemo(
+    () => cubeStateToCubeJsString(baseCubeState),
+    [baseCubeState],
+  );
 
   useEffect(() => {
-    setApplied(0)
-    setAnimating(false)
-    setAnimDirection('forward')
-    setPlaying(false)
-  }, [movesSignature, baseStateKey])
+    setApplied(0);
+    setAnimating(false);
+    setAnimDirection('forward');
+    setPlaying(false);
+  }, [movesSignature, baseStateKey]);
 
   const displayState = useMemo(() => {
     const stickerAppliedCount =
-      animating && animDirection === 'reverse' ? Math.max(0, applied - 1) : applied
-    return applyMoves(baseCubeState, moves.slice(0, stickerAppliedCount))
-  }, [baseCubeState, moves, applied, animating, animDirection])
+      animating && animDirection === 'reverse'
+        ? Math.max(0, applied - 1)
+        : applied;
+    return applyMoves(baseCubeState, moves.slice(0, stickerAppliedCount));
+  }, [baseCubeState, moves, applied, animating, animDirection]);
 
-  const displayHold = useMemo(() => faceCentersFromCubeState(displayState), [displayState])
+  const displayHold = useMemo(
+    () => faceCentersFromCubeState(displayState),
+    [displayState],
+  );
 
-  const reverseAnimating = animating && animDirection === 'reverse'
+  const reverseAnimating = animating && animDirection === 'reverse';
   const activeMoveIndex = animating
     ? reverseAnimating
       ? applied - 1
       : applied
-    : -1
+    : -1;
   const pendingMove =
-    animating && activeMoveIndex >= 0 && activeMoveIndex < moves.length ? moves[activeMoveIndex] : null
+    animating && activeMoveIndex >= 0 && activeMoveIndex < moves.length
+      ? moves[activeMoveIndex]
+      : null;
 
   const handleAnimationComplete = useCallback(() => {
-    setAnimating(false)
+    setAnimating(false);
     if (animDirectionRef.current === 'reverse') {
-      setApplied((a) => Math.max(0, a - 1))
+      setApplied((a) => Math.max(0, a - 1));
     } else {
-      setApplied((a) => Math.min(a + 1, moves.length))
+      setApplied((a) => Math.min(a + 1, moves.length));
     }
-  }, [moves.length])
+  }, [moves.length]);
 
   useEffect(() => {
-    if (!playing || animating) return
+    if (!playing || animating) return;
     if (applied >= moves.length) {
-      setPlaying(false)
-      return
+      setPlaying(false);
+      return;
     }
     const t = window.setTimeout(() => {
-      setAnimDirection('forward')
-      setAnimating(true)
-    }, MOVE_ANIMATION_PAUSE_MS)
-    return () => window.clearTimeout(t)
-  }, [playing, animating, applied, moves.length])
+      setAnimDirection('forward');
+      setAnimating(true);
+    }, MOVE_ANIMATION_PAUSE_MS);
+    return () => window.clearTimeout(t);
+  }, [playing, animating, applied, moves.length]);
 
   const handlePlayAll = () => {
-    if (!hasMoves) return
-    setApplied(0)
-    setAnimating(false)
-    setAnimDirection('forward')
-    setPlaying(true)
-  }
+    if (!hasMoves) return;
+    setApplied(0);
+    setAnimating(false);
+    setAnimDirection('forward');
+    setPlaying(true);
+  };
 
   const handleReset = () => {
-    setPlaying(false)
-    setAnimating(false)
-    setAnimDirection('forward')
-    setApplied(0)
-  }
+    setPlaying(false);
+    setAnimating(false);
+    setAnimDirection('forward');
+    setApplied(0);
+  };
 
   const handleNext = () => {
-    if (!hasMoves || animating || applied >= moves.length) return
-    setPlaying(false)
-    setAnimDirection('forward')
-    setAnimating(true)
-  }
+    if (!hasMoves || animating || applied >= moves.length) return;
+    setPlaying(false);
+    setAnimDirection('forward');
+    setAnimating(true);
+  };
 
   const handlePrev = () => {
-    if (!hasMoves || animating || applied <= 0) return
-    setPlaying(false)
-    setAnimDirection('reverse')
-    setAnimating(true)
-  }
+    if (!hasMoves || animating || applied <= 0) return;
+    setPlaying(false);
+    setAnimDirection('reverse');
+    setAnimating(true);
+  };
 
   const moveAnimation: CubeMoveAnimation | null = pendingMove
-    ? { move: pendingMove, direction: animDirection, onComplete: handleAnimationComplete }
-    : null
+    ? {
+        move: pendingMove,
+        direction: animDirection,
+        onComplete: handleAnimationComplete,
+      }
+    : null;
 
   const summary = !hasMoves
     ? 'Step through moves when this lesson step includes an example algorithm.'
@@ -146,14 +165,14 @@ export function MoveSequenceDemo({
         ? 'Start position'
         : applied >= moves.length
           ? `Complete: ${moves.join(' ')}`
-          : `Applied: ${moves.slice(0, applied).join(' ')}`
+          : `Applied: ${moves.slice(0, applied).join(' ')}`;
 
-  const defaultHold = studentLessonHoldFaceCenters()
-  const holdForCopy = hasMoves ? displayHold : defaultHold
+  const defaultHold = studentLessonHoldFaceCenters();
+  const holdForCopy = hasMoves ? displayHold : defaultHold;
   const instructionIndex =
     animating && reverseAnimating
       ? Math.max(0, applied - 1)
-      : Math.min(applied, Math.max(0, (instructions?.length ?? 1) - 1))
+      : Math.min(applied, Math.max(0, (instructions?.length ?? 1) - 1));
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
@@ -161,7 +180,9 @@ export function MoveSequenceDemo({
         <h3 className="text-sm font-semibold text-slate-200">
           {hasMoves ? 'Example move sequence' : 'Interactive preview'}
         </h3>
-        <p className="max-w-[min(100%,28rem)] font-mono text-xs leading-snug text-slate-400">{summary}</p>
+        <p className="max-w-[min(100%,28rem)] font-mono text-xs leading-snug text-slate-400">
+          {summary}
+        </p>
       </div>
 
       <CubeView
@@ -174,7 +195,10 @@ export function MoveSequenceDemo({
       />
 
       {instructions && instructions.length > 0 ? (
-        <LessonInstructionDemo instructions={instructions} activeIndex={instructionIndex} />
+        <LessonInstructionDemo
+          instructions={instructions}
+          activeIndex={instructionIndex}
+        />
       ) : null}
 
       <div className="flex flex-wrap gap-2">
@@ -214,11 +238,11 @@ export function MoveSequenceDemo({
       {hasMoves ? (
         <div className="flex flex-wrap gap-1.5">
           {moves.map((m, i) => {
-            const done = reverseAnimating ? i < applied - 1 : i < applied
-            const nextUp = i === activeMoveIndex && animating
-            const isRotation = isWholeCubeRotation(m)
-            const step = demoSteps?.[i]
-            const label = step ? getDemoStepChipLabel(step) : m
+            const done = reverseAnimating ? i < applied - 1 : i < applied;
+            const nextUp = i === activeMoveIndex && animating;
+            const isRotation = isWholeCubeRotation(m);
+            const step = demoSteps?.[i];
+            const label = step ? getDemoStepChipLabel(step) : m;
             return (
               <span
                 key={`${m}-${i}`}
@@ -239,7 +263,7 @@ export function MoveSequenceDemo({
               >
                 {label}
               </span>
-            )
+            );
           })}
         </div>
       ) : null}
@@ -248,28 +272,33 @@ export function MoveSequenceDemo({
         {hasMoves ? (
           applied === 0 && !animating ? (
             <>
-              The diagram matches your cube before this example. Face letters follow this hold: F ={' '}
-              {formatColorLabel(holdForCopy.F)} (front), U = {formatColorLabel(holdForCopy.U)}, D ={' '}
-              {formatColorLabel(holdForCopy.D)}. Layer turns animate on Next / Play all; Previous animates the
-              undo.
+              The diagram matches your cube before this example. Face letters
+              follow this hold: F = {formatColorLabel(holdForCopy.F)} (front), U
+              = {formatColorLabel(holdForCopy.U)}, D ={' '}
+              {formatColorLabel(holdForCopy.D)}. Layer turns animate on Next /
+              Play all; Previous animates the undo.
             </>
           ) : (
             <>
               Hold labels match the diagram{' '}
               <span className="text-slate-400">
-                {animating ? 'during the current turn' : 'after the moves applied so far'}
+                {animating
+                  ? 'during the current turn'
+                  : 'after the moves applied so far'}
               </span>
-              : F = {formatColorLabel(holdForCopy.F)} (front), U = {formatColorLabel(holdForCopy.U)}, D ={' '}
+              : F = {formatColorLabel(holdForCopy.F)} (front), U ={' '}
+              {formatColorLabel(holdForCopy.U)}, D ={' '}
               {formatColorLabel(holdForCopy.D)}.
             </>
           )
         ) : (
           <>
-            This lesson step has no example algorithm yet. The preview matches your current cube; Reset / Next /
-            Play all appear on steps that include an example.
+            This lesson step has no example algorithm yet. The preview matches
+            your current cube; Reset / Next / Play all appear on steps that
+            include an example.
           </>
         )}
       </p>
     </div>
-  )
+  );
 }

@@ -1,20 +1,20 @@
-import { useMemo, useTransition } from "react";
-import type { Move } from "../cube/cubeState";
+import { useMemo, useTransition } from 'react';
+import type { Move } from '../cube/cubeState';
 import {
   cubeStateToStudentFrame,
   faceCentersFromCubeState,
   formatColorLabel,
   studentLessonHoldFaceCenters,
-} from "../cube/cubeState";
-import { useCubeStore } from "../store/cubeStore";
-import { useWhiteCrossLessonStep } from "./lessons/bottomLayer/useWhiteCrossLessonStep";
-import { LessonApplyPanel } from "./lessons/LessonApplyPanel";
-import { LessonAvoidBackPanel } from "./lessons/LessonAvoidBackPanel";
-import { LessonCubeStage } from "./lessons/LessonCubeStage";
-import { LessonHeaderActions } from "./lessons/LessonHeaderActions";
-import { PHYSICAL_CUBE_MATCH_NOTE } from "./lessons/lessonCopy";
-import { LessonUnavailable } from "./lessons/LessonUnavailable";
-import { useLessonDemoPipeline } from "./lessons/useLessonDemoPipeline";
+} from '../cube/cubeState';
+import { useCubeStore } from '../store/cubeStore';
+import { useWhiteCrossLessonStep } from './lessons/bottomLayer/useWhiteCrossLessonStep';
+import { LessonApplyPanel } from './lessons/LessonApplyPanel';
+import { LessonAvoidBackPanel } from './lessons/LessonAvoidBackPanel';
+import { LessonCubeStage } from './lessons/LessonCubeStage';
+import { LessonHeaderActions } from './lessons/LessonHeaderActions';
+import { PHYSICAL_CUBE_MATCH_NOTE } from './lessons/lessonCopy';
+import { LessonUnavailable } from './lessons/LessonUnavailable';
+import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
 
 export function LearningCrossView() {
   const cubeState = useCubeStore((state) => state.cubeState);
@@ -53,7 +53,7 @@ export function LearningCrossView() {
   const demoMoves = useMemo((): Move[] => {
     if (
       step &&
-      "demoMoves" in step &&
+      'demoMoves' in step &&
       step.demoMoves &&
       step.demoMoves.length > 0
     ) {
@@ -63,7 +63,7 @@ export function LearningCrossView() {
   }, [step]);
 
   const stepKey = useMemo(
-    () => (step ? `${step.kind}:${demoMoves.join(" ")}` : "none"),
+    () => (step ? `${step.kind}:${demoMoves.join(' ')}` : 'none'),
     [step, demoMoves],
   );
 
@@ -93,37 +93,37 @@ export function LearningCrossView() {
   );
 
   if (!cubeState || !studentFrame) {
-    return <LessonUnavailable onBack={() => setAppPhase("ready")} />;
+    return <LessonUnavailable onBack={() => setAppPhase('ready')} />;
   }
 
   const displayStep =
     step ??
     (showPreparingOverlay
       ? {
-          kind: "solve-edge" as const,
-          title: "Preparing lesson…",
-          body: "",
-          edgeLabel: "",
-          partnerColor: "white" as const,
+          kind: 'solve-edge' as const,
+          title: 'Preparing lesson…',
+          body: '',
+          edgeLabel: '',
+          partnerColor: 'white' as const,
         }
       : {
-          kind: "solve-edge" as const,
-          title: "White cross",
-          body: "",
-          edgeLabel: "",
-          partnerColor: "white" as const,
+          kind: 'solve-edge' as const,
+          title: 'White cross',
+          body: '',
+          edgeLabel: '',
+          partnerColor: 'white' as const,
         });
   const canApplyDemo =
     step !== null &&
     !isStepPending &&
     demoMoves.length > 0 &&
-    step.kind !== "complete";
+    step.kind !== 'complete';
   const showRotationCallout =
     canApplyDemo &&
     avoidBackMoves &&
     showAvoidBackToggle &&
     !hasSeenAvoidBackCallout &&
-    previewMoves.includes("y2");
+    previewMoves.includes('y2');
 
   const handleRestartLessonTips = () => {
     resetLessonSession();
@@ -145,17 +145,17 @@ export function LearningCrossView() {
         <div>
           <h1 className="text-3xl font-bold">Lesson: White cross</h1>
           <p className="mt-1 text-slate-300">
-            Hold your cube with{" "}
-            <span className="text-slate-100">white on the bottom</span> and{" "}
-            <span className="text-slate-100">yellow on top</span>. Face{" "}
+            Hold your cube with{' '}
+            <span className="text-slate-100">white on the bottom</span> and{' '}
+            <span className="text-slate-100">yellow on top</span>. Face{' '}
             <span className="text-slate-100">
               {formatColorLabel(lessonHold.F)} toward you
-            </span>{" "}
+            </span>{' '}
             — that is the <span className="text-slate-100">front (F)</span> face
-            in the diagram below (the virtual cube shows{" "}
-            {formatColorLabel(lessonHold.F)} on F). Notation: U ={" "}
-            {formatColorLabel(lessonHold.U)}, D ={" "}
-            {formatColorLabel(lessonHold.D)}, F ={" "}
+            in the diagram below (the virtual cube shows{' '}
+            {formatColorLabel(lessonHold.F)} on F). Notation: U ={' '}
+            {formatColorLabel(lessonHold.U)}, D ={' '}
+            {formatColorLabel(lessonHold.D)}, F ={' '}
             {formatColorLabel(lessonHold.F)}.
           </p>
           {!isLessonComplete ? (
@@ -163,9 +163,9 @@ export function LearningCrossView() {
               {PHYSICAL_CUBE_MATCH_NOTE}
             </p>
           ) : null}
-          {step && step.kind !== "complete" && (
+          {step && step.kind !== 'complete' && (
             <p className="mt-2 text-sm text-slate-400">
-              Progress: <span className="text-slate-200">{solvedSlots}/4</span>{" "}
+              Progress: <span className="text-slate-200">{solvedSlots}/4</span>{' '}
               cross edges solved (white on the bottom, side sticker matches its
               center).
             </p>
@@ -176,7 +176,7 @@ export function LearningCrossView() {
             </summary>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-relaxed">
               <li>
-                <span className="text-slate-300">Undo last example</span>{" "}
+                <span className="text-slate-300">Undo last example</span>{' '}
                 restores the virtual cube to before your most recent Apply. The
                 next step title may differ (for example a permute vs a slotting
                 step) even though the cube matches an earlier point in the
@@ -209,7 +209,7 @@ export function LearningCrossView() {
           canUndo={canUndoLesson}
           isStepPending={isStepPending}
           onUndo={handleUndoLessonStep}
-          onBack={() => setAppPhase("ready")}
+          onBack={() => setAppPhase('ready')}
           onResetTips={handleRestartLessonTips}
         />
       </header>
@@ -223,7 +223,7 @@ export function LearningCrossView() {
       />
 
       <article
-        className={`rounded-xl border border-slate-700 bg-slate-900/80 p-4 ${showPreparingOverlay ? "opacity-60" : ""}`}
+        className={`rounded-xl border border-slate-700 bg-slate-900/80 p-4 ${showPreparingOverlay ? 'opacity-60' : ''}`}
       >
         <h2 className="text-lg font-semibold text-slate-100">
           {displayStep.title}
@@ -233,7 +233,7 @@ export function LearningCrossView() {
             {displayStep.body}
           </p>
         ) : null}
-        {step && step.kind !== "complete" && showAvoidBackToggle ? (
+        {step && step.kind !== 'complete' && showAvoidBackToggle ? (
           <LessonAvoidBackPanel
             frontColor={lessonHold.F}
             avoidBackMoves={avoidBackMoves}
@@ -245,10 +245,10 @@ export function LearningCrossView() {
             holdNote=" (usual lesson hold)"
           />
         ) : null}
-        {step && step.kind !== "complete" && (
+        {step && step.kind !== 'complete' && (
           <p className="mt-3 text-xs text-slate-500">
             Same hold as the diagram: {formatColorLabel(lessonHold.F)} on F
-            (front), {formatColorLabel(lessonHold.U)} on U (top),{" "}
+            (front), {formatColorLabel(lessonHold.U)} on U (top),{' '}
             {formatColorLabel(lessonHold.D)} on D (bottom).
           </p>
         )}
@@ -264,7 +264,7 @@ export function LearningCrossView() {
                 className="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-600"
                 onClick={() => {
                   resetLessonSession();
-                  setActiveLesson("white-corners");
+                  setActiveLesson('white-corners');
                 }}
               >
                 Continue: White corners
@@ -281,7 +281,7 @@ export function LearningCrossView() {
               startLessonTransition(() => {
                 if (avoidOn) {
                   applyLessonStep(demoMoves, { avoidBackMoves: true });
-                  if (previewMoves.includes("y2") && !hasSeenAvoidBackCallout)
+                  if (previewMoves.includes('y2') && !hasSeenAvoidBackCallout)
                     markAvoidBackCalloutSeen();
                 } else {
                   applyLessonDemoMoves(demoMoves);

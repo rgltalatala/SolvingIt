@@ -1,32 +1,34 @@
-import { useState } from 'react'
-import { randomScrambleForEvent } from 'cubing/scramble'
-import { parseFaceTurnAlgToMoves } from '../cube/parseFaceTurnAlg'
-import { useCubeStore } from '../store/cubeStore'
+import { useState } from 'react';
+import { randomScrambleForEvent } from 'cubing/scramble';
+import { parseFaceTurnAlgToMoves } from '../cube/parseFaceTurnAlg';
+import { useCubeStore } from '../store/cubeStore';
 
 /**
  * Skip scanning: fetch a WCA random 3×3 scramble and jump straight into the white-cross lesson (practice).
  */
 export function RandomScrambleLessonBar() {
-  const loadScrambledCubeIntoLesson = useCubeStore((s) => s.loadScrambledCubeIntoLesson)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [lastAlg, setLastAlg] = useState<string | null>(null)
+  const loadScrambledCubeIntoLesson = useCubeStore(
+    (s) => s.loadScrambledCubeIntoLesson,
+  );
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lastAlg, setLastAlg] = useState<string | null>(null);
 
   const run = async () => {
-    setError(null)
-    setBusy(true)
+    setError(null);
+    setBusy(true);
     try {
-      const alg = await randomScrambleForEvent('333')
-      const algStr = alg.toString().replace(/\u2032/g, "'")
-      const moves = parseFaceTurnAlgToMoves(algStr)
-      loadScrambledCubeIntoLesson(moves)
-      setLastAlg(algStr)
+      const alg = await randomScrambleForEvent('333');
+      const algStr = alg.toString().replace(/\u2032/g, "'");
+      const moves = parseFaceTurnAlgToMoves(algStr);
+      loadScrambledCubeIntoLesson(moves);
+      setLastAlg(algStr);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col gap-2 border-b border-slate-700 bg-slate-900/95 px-4 py-3">
@@ -48,7 +50,9 @@ export function RandomScrambleLessonBar() {
           Last scramble: {lastAlg}
         </p>
       ) : null}
-      {error ? <p className="text-center text-sm text-rose-400">{error}</p> : null}
+      {error ? (
+        <p className="text-center text-sm text-rose-400">{error}</p>
+      ) : null}
     </div>
-  )
+  );
 }

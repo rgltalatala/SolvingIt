@@ -1,6 +1,6 @@
 type LessonUnavailableProps = {
-  onBack: () => void
-}
+  onBack: () => void;
+};
 
 export function LessonUnavailable({ onBack }: LessonUnavailableProps) {
   return (
@@ -15,5 +15,5 @@ export function LessonUnavailable({ onBack }: LessonUnavailableProps) {
         Back
       </button>
     </section>
-  )
+  );
 }

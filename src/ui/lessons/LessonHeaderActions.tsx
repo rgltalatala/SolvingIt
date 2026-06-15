@@ -1,13 +1,13 @@
-import type { ReactNode } from 'react'
+import type { ReactNode } from 'react';
 
 type LessonHeaderActionsProps = {
-  canUndo: boolean
-  isStepPending: boolean
-  onUndo: () => void
-  onBack: () => void
-  onResetTips: () => void
-  extraActions?: ReactNode
-}
+  canUndo: boolean;
+  isStepPending: boolean;
+  onUndo: () => void;
+  onBack: () => void;
+  onResetTips: () => void;
+  extraActions?: ReactNode;
+};
 
 export function LessonHeaderActions({
   canUndo,
@@ -43,5 +43,5 @@ export function LessonHeaderActions({
       </button>
       {extraActions}
     </div>
-  )
+  );
 }

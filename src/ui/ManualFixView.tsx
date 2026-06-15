@@ -1,17 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
-import type { Color, CubeState, Face } from "../cube/cubeState";
+import { useEffect, useMemo, useState } from 'react';
+import type { Color, CubeState, Face } from '../cube/cubeState';
 import {
   FACE_COLOR_CONVENTION,
   FACE_ORDER,
   lockFaceCenter,
-} from "../cube/cubeState";
-import { validateCubeState } from "../cube/cubeValidator";
-import { cubeStateToCubeJsString } from "../cube/cubeStateToFacelets";
-import { ColorPicker } from "../correction/ColorPicker";
-import { FaceGrid } from "../correction/FaceGrid";
-import { useCubeStore } from "../store/cubeStore";
-import { CubeView } from "../cube3d/CubeView";
-import { ValidationIssuesList } from "./ValidationIssuesList";
+} from '../cube/cubeState';
+import { validateCubeState } from '../cube/cubeValidator';
+import { cubeStateToCubeJsString } from '../cube/cubeStateToFacelets';
+import { ColorPicker } from '../correction/ColorPicker';
+import { FaceGrid } from '../correction/FaceGrid';
+import { useCubeStore } from '../store/cubeStore';
+import { CubeView } from '../cube3d/CubeView';
+import { ValidationIssuesList } from './ValidationIssuesList';
 
 interface ManualFixViewProps {
   assembledFromScanned: CubeState;
@@ -35,7 +35,7 @@ export function ManualFixView({ assembledFromScanned }: ManualFixViewProps) {
     (state) => state.setValidationResult,
   );
 
-  const [manualFace, setManualFace] = useState<Face>("U");
+  const [manualFace, setManualFace] = useState<Face>('U');
   const [manualDraft, setManualDraft] = useState<CubeState | null>(null);
   const [manualColor, setManualColor] = useState<Color | null>(null);
   const [manualSelectedIndex, setManualSelectedIndex] = useState<number | null>(
@@ -47,7 +47,7 @@ export function ManualFixView({ assembledFromScanned }: ManualFixViewProps) {
   const expectedCenter = FACE_COLOR_CONVENTION[manualFace];
 
   const validationIssuesKey = useMemo(
-    () => validationIssues.map((issue) => issue.message).join("\n"),
+    () => validationIssues.map((issue) => issue.message).join('\n'),
     [validationIssues],
   );
 
@@ -68,7 +68,7 @@ export function ManualFixView({ assembledFromScanned }: ManualFixViewProps) {
         <div className="rounded-lg border border-amber-400/60 bg-amber-950/40 p-3 text-sm text-amber-100">
           <ValidationIssuesList issues={validationIssues} />
           <p className="pt-2 text-xs text-slate-400">
-            Current URFDLB facelet string (what the validator uses):{" "}
+            Current URFDLB facelet string (what the validator uses):{' '}
             <span className="break-all font-mono text-slate-300">
               {cubeStateToCubeJsString(workingDraft)}
             </span>
@@ -83,7 +83,7 @@ export function ManualFixView({ assembledFromScanned }: ManualFixViewProps) {
               <button
                 key={face}
                 type="button"
-                className={`rounded-md border px-3 py-1.5 text-sm ${manualFace === face ? "border-cyan-300 text-cyan-100" : "border-slate-500 text-slate-200"}`}
+                className={`rounded-md border px-3 py-1.5 text-sm ${manualFace === face ? 'border-cyan-300 text-cyan-100' : 'border-slate-500 text-slate-200'}`}
                 onClick={() => {
                   setManualFace(face);
                   setManualSelectedIndex(null);
@@ -122,7 +122,7 @@ export function ManualFixView({ assembledFromScanned }: ManualFixViewProps) {
                 setManualDraft(null);
                 setManualSelectedIndex(null);
                 setManualColor(null);
-                setAppPhase("scanning");
+                setAppPhase('scanning');
               }}
             >
               Re-scan {manualFace} face
@@ -146,7 +146,7 @@ export function ManualFixView({ assembledFromScanned }: ManualFixViewProps) {
                 setCubeState(workingDraft);
                 clearValidationResult();
                 setManualDraft(null);
-                setAppPhase("ready");
+                setAppPhase('ready');
               }}
             >
               Re-validate Cube

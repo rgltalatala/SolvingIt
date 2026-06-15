@@ -3,19 +3,22 @@ export type {
   SimulateWhiteCrossLessonResult,
   WhiteCrossStepKind,
   WhiteCrossLessonStep,
-} from './types'
+} from './types';
 
-export { PERMUTE_STEP_KIND_TIEBREAK, WHITE_CROSS_STEP_KINDS } from './types'
+export { PERMUTE_STEP_KIND_TIEBREAK, WHITE_CROSS_STEP_KINDS } from './types';
 
-export { countSolvedCrossSlots, isWhiteCrossComplete } from './crossSlotModel'
+export { countSolvedCrossSlots, isWhiteCrossComplete } from './crossSlotModel';
 
-export { crossEdgeExampleDemoMoves } from './crossEdgeDemoMoves'
+export { crossEdgeExampleDemoMoves } from './crossEdgeDemoMoves';
 
-export { clearVerifiedDemoCache, isVerifiedSlotDemo } from './crossSolveBfs'
+export { clearVerifiedDemoCache, isVerifiedSlotDemo } from './crossSolveBfs';
 
-export { getWhiteCrossLessonStep, getWhiteCrossLessonStepAsync } from './computeLessonStep'
+export {
+  getWhiteCrossLessonStep,
+  getWhiteCrossLessonStepAsync,
+} from './computeLessonStep';
 
 export {
   simulateWhiteCrossLessonOnStorageCube,
   type SimulateWhiteCrossLessonOptions,
-} from './simulateLesson'
+} from './simulateLesson';

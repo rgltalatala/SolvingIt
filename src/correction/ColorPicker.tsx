@@ -1,18 +1,18 @@
-import type { Color } from '../cube/cubeState'
-import { colorHexMap } from '../cube/cubeColors'
+import type { Color } from '../cube/cubeState';
+import { colorHexMap } from '../cube/cubeColors';
 
 interface ColorPickerProps {
-  activeColor: Color | null
-  onSelect: (color: Color) => void
+  activeColor: Color | null;
+  onSelect: (color: Color) => void;
 }
 
-const colors: Color[] = ['white', 'yellow', 'green', 'blue', 'red', 'orange']
+const colors: Color[] = ['white', 'yellow', 'green', 'blue', 'red', 'orange'];
 
 export function ColorPicker({ activeColor, onSelect }: ColorPickerProps) {
   return (
     <div className="flex flex-wrap justify-center gap-2">
       {colors.map((color) => {
-        const isActive = activeColor === color
+        const isActive = activeColor === color;
         return (
           <button
             key={color}
@@ -22,8 +22,8 @@ export function ColorPicker({ activeColor, onSelect }: ColorPickerProps) {
             style={{ backgroundColor: colorHexMap[color] }}
             aria-label={`Select ${color}`}
           />
-        )
+        );
       })}
     </div>
-  )
+  );
 }

@@ -1,21 +1,21 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 import {
   applyMove as applyCubeMove,
   applyMoves,
   cloneCubeState,
   createSolvedCubeState,
-} from "../cube/cubeState";
-import type { CubeState, Face, FaceState, Move } from "../cube/cubeState";
-import type { CubeValidationIssue } from "../cube/cubeValidator";
+} from '../cube/cubeState';
+import type { CubeState, Face, FaceState, Move } from '../cube/cubeState';
+import type { CubeValidationIssue } from '../cube/cubeValidator';
 import {
   applyLessonToStorage,
   noneHold,
   type StudentHold,
-} from "../learn/studentHold";
-import { clearAllLessonDemoCaches } from "../learn/lessonCore";
-import { WHITE_CORNERS_LESSON_ID } from "../learn/layers/bottomLayer/corners";
+} from '../learn/studentHold';
+import { clearAllLessonDemoCaches } from '../learn/lessonCore';
+import { WHITE_CORNERS_LESSON_ID } from '../learn/layers/bottomLayer/corners';
 
-export type ActiveLessonId = "white-cross" | typeof WHITE_CORNERS_LESSON_ID;
+export type ActiveLessonId = 'white-cross' | typeof WHITE_CORNERS_LESSON_ID;
 
 export type LessonSnapshot = {
   cubeState: CubeState;
@@ -41,8 +41,8 @@ export interface CubeStore {
   ) => void;
   clearValidationResult: () => void;
 
-  appPhase: "scanning" | "correcting" | "ready" | "learning";
-  setAppPhase: (phase: CubeStore["appPhase"]) => void;
+  appPhase: 'scanning' | 'correcting' | 'ready' | 'learning';
+  setAppPhase: (phase: CubeStore['appPhase']) => void;
 
   /** Which bottom-layer lesson is active while `appPhase === 'learning'`. */
   activeLesson: ActiveLessonId;
@@ -98,7 +98,7 @@ function scannedFacesFromCube(cube: CubeState): Record<Face, FaceState> {
 }
 
 function captureLessonSnapshot(
-  state: Pick<CubeStore, "cubeState" | "scannedFaces">,
+  state: Pick<CubeStore, 'cubeState' | 'scannedFaces'>,
 ): LessonSnapshot | null {
   if (!state.cubeState) return null;
   return {
@@ -112,13 +112,13 @@ function lessonSessionReset() {
 }
 
 function clearsLessonHistoryOnPhaseChange(
-  nextPhase: CubeStore["appPhase"],
-  currentPhase: CubeStore["appPhase"],
+  nextPhase: CubeStore['appPhase'],
+  currentPhase: CubeStore['appPhase'],
 ): boolean {
-  return nextPhase === "learning" || currentPhase === "learning";
+  return nextPhase === 'learning' || currentPhase === 'learning';
 }
 
-function resetLessonSessionCaches(): Pick<CubeStore, "lessonHistory"> {
+function resetLessonSessionCaches(): Pick<CubeStore, 'lessonHistory'> {
   clearAllLessonDemoCaches();
   return { lessonHistory: [] };
 }
@@ -154,8 +154,8 @@ export const useCubeStore = create<CubeStore>((set) => ({
   clearValidationResult: () =>
     set({ validationIssues: [], validationSuggestedFace: null }),
 
-  appPhase: "scanning",
-  activeLesson: "white-cross",
+  appPhase: 'scanning',
+  activeLesson: 'white-cross',
   lessonHistory: [],
   ...lessonSessionReset(),
 
@@ -180,10 +180,10 @@ export const useCubeStore = create<CubeStore>((set) => ({
   setAppPhase: (phase) =>
     set((state) => ({
       appPhase: phase,
-      ...(phase === "learning" && state.appPhase !== "learning"
+      ...(phase === 'learning' && state.appPhase !== 'learning'
         ? resetLessonSessionCaches()
         : clearsLessonHistoryOnPhaseChange(phase, state.appPhase) &&
-            phase !== "learning"
+            phase !== 'learning'
           ? { lessonHistory: [] }
           : {}),
     })),
@@ -196,8 +196,8 @@ export const useCubeStore = create<CubeStore>((set) => ({
       scannedFaces: scannedFacesFromCube(cube),
       validationIssues: [],
       validationSuggestedFace: null,
-      appPhase: "learning",
-      activeLesson: "white-cross",
+      appPhase: 'learning',
+      activeLesson: 'white-cross',
       lessonHistory: [],
       ...lessonSessionReset(),
     });
@@ -219,14 +219,14 @@ export const useCubeStore = create<CubeStore>((set) => ({
 function applyLessonStepPatch(
   state: Pick<
     CubeStore,
-    "cubeState" | "studentHold" | "scannedFaces" | "lessonHistory"
+    'cubeState' | 'studentHold' | 'scannedFaces' | 'lessonHistory'
   >,
   rawDemoMoves: Move[],
   avoidBackMoves: boolean,
 ):
   | Pick<
       CubeStore,
-      "cubeState" | "studentHold" | "scannedFaces" | "lessonHistory"
+      'cubeState' | 'studentHold' | 'scannedFaces' | 'lessonHistory'
     >
   | CubeStore {
   if (!state.cubeState) return state;

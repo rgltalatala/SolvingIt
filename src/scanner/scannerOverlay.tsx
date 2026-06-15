@@ -1,21 +1,35 @@
-import { SCAN_GRID_FRACTION } from './scannerConstants'
+import { SCAN_GRID_FRACTION } from './scannerConstants';
 
 interface ScannerOverlayProps {
-  videoRef: (node: HTMLVideoElement | null) => void
-  isReady: boolean
-  error: string | null
-  onCapture: () => void
+  videoRef: (node: HTMLVideoElement | null) => void;
+  isReady: boolean;
+  error: string | null;
+  onCapture: () => void;
 }
 
-export function ScannerOverlay({ videoRef, isReady, error, onCapture }: ScannerOverlayProps) {
+export function ScannerOverlay({
+  videoRef,
+  isReady,
+  error,
+  onCapture,
+}: ScannerOverlayProps) {
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-4">
       <div className="relative w-full overflow-hidden rounded-xl border border-slate-600 bg-slate-950">
-        <video ref={videoRef} className="aspect-4/3 w-full object-cover" autoPlay muted playsInline />
+        <video
+          ref={videoRef}
+          className="aspect-4/3 w-full object-cover"
+          autoPlay
+          muted
+          playsInline
+        />
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div
             className="grid grid-cols-3 grid-rows-3"
-            style={{ width: `${SCAN_GRID_FRACTION * 100}%`, height: `${SCAN_GRID_FRACTION * 100}%` }}
+            style={{
+              width: `${SCAN_GRID_FRACTION * 100}%`,
+              height: `${SCAN_GRID_FRACTION * 100}%`,
+            }}
           >
             {Array.from({ length: 9 }).map((_, idx) => (
               <div key={idx} className="border border-white/90 bg-white/5" />
@@ -25,11 +39,14 @@ export function ScannerOverlay({ videoRef, isReady, error, onCapture }: ScannerO
       </div>
 
       <p className="text-center text-xs text-slate-300">
-        For best results, scan in bright, even lighting away from direct sunlight.
+        For best results, scan in bright, even lighting away from direct
+        sunlight.
       </p>
 
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}
-      {!error && !isReady ? <p className="text-sm text-slate-300">Starting camera...</p> : null}
+      {!error && !isReady ? (
+        <p className="text-sm text-slate-300">Starting camera...</p>
+      ) : null}
 
       <button
         type="button"
@@ -40,5 +57,5 @@ export function ScannerOverlay({ videoRef, isReady, error, onCapture }: ScannerO
         Capture
       </button>
     </div>
-  )
+  );
 }

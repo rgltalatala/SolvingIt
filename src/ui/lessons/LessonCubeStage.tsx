@@ -1,17 +1,17 @@
-import type { CubeState } from '../../cube/cubeState'
-import { CubeView } from '../../cube3d/CubeView'
-import { MoveSequenceDemo } from '../MoveSequenceDemo'
-import type { DemoSnapshot } from './lessonDemo'
-import { LessonPreparingOverlay } from './LessonPreparingOverlay'
+import type { CubeState } from '../../cube/cubeState';
+import { CubeView } from '../../cube3d/CubeView';
+import { MoveSequenceDemo } from '../MoveSequenceDemo';
+import type { DemoSnapshot } from './lessonDemo';
+import { LessonPreparingOverlay } from './LessonPreparingOverlay';
 
 type LessonCubeStageProps = {
-  isComplete: boolean
-  cubeState: CubeState
-  completeCanvasKey: string
-  visibleDemo: DemoSnapshot | null
-  showPreparingOverlay: boolean
-  preparingSubtitle?: string
-}
+  isComplete: boolean;
+  cubeState: CubeState;
+  completeCanvasKey: string;
+  visibleDemo: DemoSnapshot | null;
+  showPreparingOverlay: boolean;
+  preparingSubtitle?: string;
+};
 
 export function LessonCubeStage({
   isComplete,
@@ -29,7 +29,7 @@ export function LessonCubeStage({
         frameClassName="h-[420px] w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-950"
         canvasKey={completeCanvasKey}
       />
-    )
+    );
   }
 
   return (
@@ -46,5 +46,5 @@ export function LessonCubeStage({
         <LessonPreparingOverlay subtitle={preparingSubtitle} />
       ) : null}
     </div>
-  )
+  );
 }

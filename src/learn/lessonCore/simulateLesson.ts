@@ -1,44 +1,56 @@
-import { applyMovesInStudentHold, cloneCubeState, cubeStateToStudentFrame } from '../../cube/cubeState'
-import type { CubeState, Move } from '../../cube/cubeState'
-import { getLessonExecutionMoves, noneHold, type StudentHold } from '../studentHold'
-import { isBackFaceMove } from '../studentHold/backFace'
+import {
+  applyMovesInStudentHold,
+  cloneCubeState,
+  cubeStateToStudentFrame,
+} from '../../cube/cubeState';
+import type { CubeState, Move } from '../../cube/cubeState';
+import {
+  getLessonExecutionMoves,
+  noneHold,
+  type StudentHold,
+} from '../studentHold';
+import { isBackFaceMove } from '../studentHold/backFace';
 
 export type SimulateLessonStep = {
-  kind: string
-  demoMoves?: Move[]
-}
+  kind: string;
+  demoMoves?: Move[];
+};
 
-export type SimulateLessonOnStorageCubeOptions<TStep extends SimulateLessonStep> = {
-  getStep: (student: CubeState) => TStep
-  isComplete: (student: CubeState) => boolean
+export type SimulateLessonOnStorageCubeOptions<
+  TStep extends SimulateLessonStep,
+> = {
+  getStep: (student: CubeState) => TStep;
+  isComplete: (student: CubeState) => boolean;
   /** When true, expand steps that use B with y2 + translated face turns. */
-  avoidBackMoves?: boolean
+  avoidBackMoves?: boolean;
   /** When true with avoidBackMoves, only expand steps whose demoMoves include B. */
-  avoidBackOnlyOnBSteps?: boolean
-  initialHold?: StudentHold
-}
+  avoidBackOnlyOnBSteps?: boolean;
+  initialHold?: StudentHold;
+};
 
-export type SimulateLessonOnStorageCubeResult<TStep extends SimulateLessonStep> = {
-  lessonStepsSimulated: number
-  complete: boolean
-  lastStepKind?: TStep['kind']
-  stuckNoDemo: boolean
-  finalStudentHold?: StudentHold
-  finalStorageCube: CubeState
-}
+export type SimulateLessonOnStorageCubeResult<
+  TStep extends SimulateLessonStep,
+> = {
+  lessonStepsSimulated: number;
+  complete: boolean;
+  lastStepKind?: TStep['kind'];
+  stuckNoDemo: boolean;
+  finalStudentHold?: StudentHold;
+  finalStorageCube: CubeState;
+};
 
 export function simulateLessonOnStorageCube<TStep extends SimulateLessonStep>(
   storageCube: CubeState,
   maxLessonSteps: number,
   options: SimulateLessonOnStorageCubeOptions<TStep>,
 ): SimulateLessonOnStorageCubeResult<TStep> {
-  const avoidBackMoves = options.avoidBackMoves ?? false
-  const avoidBackOnlyOnBSteps = options.avoidBackOnlyOnBSteps ?? true
-  let studentHold = options.initialHold ?? noneHold()
+  const avoidBackMoves = options.avoidBackMoves ?? false;
+  const avoidBackOnlyOnBSteps = options.avoidBackOnlyOnBSteps ?? true;
+  let studentHold = options.initialHold ?? noneHold();
 
-  let storage = cloneCubeState(storageCube)
-  let student = cubeStateToStudentFrame(storage)
-  let lessonStepsSimulated = 0
+  let storage = cloneCubeState(storageCube);
+  let student = cubeStateToStudentFrame(storage);
+  let lessonStepsSimulated = 0;
 
   for (let i = 0; i < maxLessonSteps; i += 1) {
     if (options.isComplete(student)) {
@@ -48,10 +60,10 @@ export function simulateLessonOnStorageCube<TStep extends SimulateLessonStep>(
         stuckNoDemo: false,
         finalStudentHold: studentHold,
         finalStorageCube: storage,
-      }
+      };
     }
 
-    const step = options.getStep(student)
+    const step = options.getStep(student);
 
     if (step.kind === 'complete') {
       return {
@@ -60,10 +72,11 @@ export function simulateLessonOnStorageCube<TStep extends SimulateLessonStep>(
         stuckNoDemo: false,
         finalStudentHold: studentHold,
         finalStorageCube: storage,
-      }
+      };
     }
 
-    const demoMoves = 'demoMoves' in step && step.demoMoves?.length ? step.demoMoves : null
+    const demoMoves =
+      'demoMoves' in step && step.demoMoves?.length ? step.demoMoves : null;
     if (!demoMoves) {
       return {
         lessonStepsSimulated,
@@ -72,24 +85,29 @@ export function simulateLessonOnStorageCube<TStep extends SimulateLessonStep>(
         stuckNoDemo: true,
         finalStudentHold: studentHold,
         finalStorageCube: storage,
-      }
+      };
     }
 
     const useAvoidBack =
-      avoidBackMoves && (!avoidBackOnlyOnBSteps || demoMoves.some(isBackFaceMove))
-    const { moves } = getLessonExecutionMoves(demoMoves, useAvoidBack, noneHold())
-    storage = applyMovesInStudentHold(storage, moves)
-    studentHold = noneHold()
-    student = cubeStateToStudentFrame(storage)
-    lessonStepsSimulated += 1
+      avoidBackMoves &&
+      (!avoidBackOnlyOnBSteps || demoMoves.some(isBackFaceMove));
+    const { moves } = getLessonExecutionMoves(
+      demoMoves,
+      useAvoidBack,
+      noneHold(),
+    );
+    storage = applyMovesInStudentHold(storage, moves);
+    studentHold = noneHold();
+    student = cubeStateToStudentFrame(storage);
+    lessonStepsSimulated += 1;
   }
 
-  student = cubeStateToStudentFrame(storage)
+  student = cubeStateToStudentFrame(storage);
   return {
     lessonStepsSimulated,
     complete: options.isComplete(student),
     stuckNoDemo: !options.isComplete(student),
     finalStudentHold: studentHold,
     finalStorageCube: storage,
-  }
+  };
 }

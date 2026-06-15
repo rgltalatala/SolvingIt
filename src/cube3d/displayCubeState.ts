@@ -1,6 +1,6 @@
-import type { Face, FaceState } from '../cube/cubeState'
-import { FACE_ORDER } from '../cube/cubeState'
-import type { DisplayCubeState, DisplayFaceState } from './cubeGeometry'
+import type { Face, FaceState } from '../cube/cubeState';
+import { FACE_ORDER } from '../cube/cubeState';
+import type { DisplayCubeState, DisplayFaceState } from './cubeGeometry';
 
 const UNKNOWN_DISPLAY_FACE: DisplayFaceState = [
   'unknown',
@@ -12,10 +12,10 @@ const UNKNOWN_DISPLAY_FACE: DisplayFaceState = [
   'unknown',
   'unknown',
   'unknown',
-]
+];
 
 function emptyDisplayCubeState(): DisplayCubeState {
-  const u = [...UNKNOWN_DISPLAY_FACE] as DisplayFaceState
+  const u = [...UNKNOWN_DISPLAY_FACE] as DisplayFaceState;
   return {
     U: [...u],
     D: [...u],
@@ -23,7 +23,7 @@ function emptyDisplayCubeState(): DisplayCubeState {
     B: [...u],
     R: [...u],
     L: [...u],
-  }
+  };
 }
 
 /**
@@ -33,15 +33,15 @@ export function partialScansToDisplayCubeState(
   scanned: Partial<Record<Face, FaceState>>,
   override?: { face: Face; faceState: FaceState },
 ): DisplayCubeState {
-  const base = emptyDisplayCubeState()
+  const base = emptyDisplayCubeState();
   for (const face of FACE_ORDER) {
-    const faceState = scanned[face]
+    const faceState = scanned[face];
     if (faceState) {
-      base[face] = [...faceState] as DisplayFaceState
+      base[face] = [...faceState] as DisplayFaceState;
     }
   }
   if (override) {
-    base[override.face] = [...override.faceState] as DisplayFaceState
+    base[override.face] = [...override.faceState] as DisplayFaceState;
   }
-  return base
+  return base;
 }

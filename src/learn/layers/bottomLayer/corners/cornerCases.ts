@@ -1,18 +1,18 @@
-import type { CubiePosition } from "../../../../cube3d/cubeGeometry";
-import type { CubeState, Face } from "../../../../cube/cubeState";
+import type { CubiePosition } from '../../../../cube3d/cubeGeometry';
+import type { CubeState, Face } from '../../../../cube/cubeState';
 import {
   faceForWhiteOnCorner,
   findCornerWithColors,
-} from "../shared/pieceQueries";
+} from '../shared/pieceQueries';
 import {
   CORNER_SLOT_DEF,
   cornerSlotSolved,
   expectedCornerColors,
-} from "./cornerSlotModel";
-import { type CornerHoldIndex } from "./cornerHold";
-import type { CornerSlotId } from "./types";
+} from './cornerSlotModel';
+import { type CornerHoldIndex } from './cornerHold';
+import type { CornerSlotId } from './types';
 
-export type ULayerCornerId = "URF" | "UBR" | "ULB" | "UFL";
+export type ULayerCornerId = 'URF' | 'UBR' | 'ULB' | 'UFL';
 
 export type WrongDLayerSlotId = CornerSlotId;
 
@@ -24,12 +24,12 @@ export const U_LAYER_CORNER_POS: Record<ULayerCornerId, CubiePosition> = {
 };
 
 export type CornerCase =
-  | { kind: "solved" }
-  | { kind: "in-slot-twisted"; whiteOnFace: Face }
-  | { kind: "in-slot-other" }
-  | { kind: "in-u-layer"; uPosition: ULayerCornerId }
-  | { kind: "in-wrong-d-slot"; dSlot: WrongDLayerSlotId }
-  | { kind: "not-in-slot" };
+  | { kind: 'solved' }
+  | { kind: 'in-slot-twisted'; whiteOnFace: Face }
+  | { kind: 'in-slot-other' }
+  | { kind: 'in-u-layer'; uPosition: ULayerCornerId }
+  | { kind: 'in-wrong-d-slot'; dSlot: WrongDLayerSlotId }
+  | { kind: 'not-in-slot' };
 
 function positionsEqual(
   a: readonly [number, number, number],
@@ -107,7 +107,7 @@ export function cornerSolvedInFrdView(
   const [faceA, faceB] = slot.sideFaces;
   const [indexA, indexB] = slot.sideIndices;
   return (
-    studentState.D[slot.dIndex] === "white" &&
+    studentState.D[slot.dIndex] === 'white' &&
     studentState[faceA][indexA] === studentState[faceA][4] &&
     studentState[faceB][indexB] === studentState[faceB][4]
   );
@@ -119,7 +119,7 @@ export function recognizeCornerCaseInFrdView(
   holdIndex: CornerHoldIndex | number = 0,
 ): CornerCase {
   if (cornerSolvedInFrdView(studentState, activeId, holdIndex)) {
-    return { kind: "solved" };
+    return { kind: 'solved' };
   }
 
   const piecePosition = findTargetCornerPiecePosition(
@@ -128,25 +128,25 @@ export function recognizeCornerCaseInFrdView(
     holdIndex,
   );
   if (!piecePosition) {
-    return { kind: "not-in-slot" };
+    return { kind: 'not-in-slot' };
   }
 
   if (isCornerOnULayer(piecePosition)) {
     const uPosition = uLayerCornerIdAtPosition(piecePosition);
     if (uPosition) {
-      return { kind: "in-u-layer", uPosition };
+      return { kind: 'in-u-layer', uPosition };
     }
-    return { kind: "not-in-slot" };
+    return { kind: 'not-in-slot' };
   }
 
   if (isCornerOnDLayer(piecePosition)) {
     const dSlot = dLayerCornerIdAtPosition(piecePosition);
-    if (dSlot && dSlot !== "FRD") {
-      return { kind: "in-wrong-d-slot", dSlot };
+    if (dSlot && dSlot !== 'FRD') {
+      return { kind: 'in-wrong-d-slot', dSlot };
     }
 
     if (!positionsEqual(piecePosition, CORNER_SLOT_DEF.FRD.pos)) {
-      return { kind: "not-in-slot" };
+      return { kind: 'not-in-slot' };
     }
 
     const whiteFace = faceForWhiteOnCorner(
@@ -154,17 +154,17 @@ export function recognizeCornerCaseInFrdView(
       studentState,
     );
     if (!whiteFace) {
-      return { kind: "in-slot-other" };
+      return { kind: 'in-slot-other' };
     }
 
-    if (whiteFace === "F" || whiteFace === "R") {
-      return { kind: "in-slot-twisted", whiteOnFace: whiteFace };
+    if (whiteFace === 'F' || whiteFace === 'R') {
+      return { kind: 'in-slot-twisted', whiteOnFace: whiteFace };
     }
 
-    return { kind: "in-wrong-d-slot", dSlot: "FRD" };
+    return { kind: 'in-wrong-d-slot', dSlot: 'FRD' };
   }
 
-  return { kind: "not-in-slot" };
+  return { kind: 'not-in-slot' };
 }
 
 export function recognizeCornerCase(
@@ -172,12 +172,12 @@ export function recognizeCornerCase(
   id: CornerSlotId,
   holdIndex: CornerHoldIndex | number = 0,
 ): CornerCase {
-  if (id === "FRD") {
+  if (id === 'FRD') {
     return recognizeCornerCaseInFrdView(studentState, id, holdIndex);
   }
 
   if (cornerSlotSolved(studentState, id)) {
-    return { kind: "solved" };
+    return { kind: 'solved' };
   }
 
   const piecePosition = findTargetCornerPiecePosition(
@@ -186,25 +186,25 @@ export function recognizeCornerCase(
     holdIndex,
   );
   if (!piecePosition) {
-    return { kind: "not-in-slot" };
+    return { kind: 'not-in-slot' };
   }
 
   if (isCornerOnULayer(piecePosition)) {
     const uPosition = uLayerCornerIdAtPosition(piecePosition);
     if (uPosition) {
-      return { kind: "in-u-layer", uPosition };
+      return { kind: 'in-u-layer', uPosition };
     }
-    return { kind: "not-in-slot" };
+    return { kind: 'not-in-slot' };
   }
 
   if (isCornerOnDLayer(piecePosition)) {
     const dSlot = dLayerCornerIdAtPosition(piecePosition);
     if (dSlot && dSlot !== id) {
-      return { kind: "in-wrong-d-slot", dSlot };
+      return { kind: 'in-wrong-d-slot', dSlot };
     }
 
     if (!positionsEqual(piecePosition, CORNER_SLOT_DEF[id].pos)) {
-      return { kind: "not-in-slot" };
+      return { kind: 'not-in-slot' };
     }
 
     const whiteFace = faceForWhiteOnCorner(
@@ -212,16 +212,16 @@ export function recognizeCornerCase(
       studentState,
     );
     if (!whiteFace) {
-      return { kind: "in-slot-other" };
+      return { kind: 'in-slot-other' };
     }
 
     const [sideA, sideB] = CORNER_SLOT_DEF[id].sideFaces;
     if (whiteFace === sideA || whiteFace === sideB) {
-      return { kind: "in-slot-twisted", whiteOnFace: whiteFace };
+      return { kind: 'in-slot-twisted', whiteOnFace: whiteFace };
     }
 
-    return { kind: "in-slot-other" };
+    return { kind: 'in-slot-other' };
   }
 
-  return { kind: "not-in-slot" };
+  return { kind: 'not-in-slot' };
 }

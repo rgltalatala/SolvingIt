@@ -1,13 +1,13 @@
-import { describe, expect, it } from 'vitest'
-import type { Move } from '../../cube/cubeState'
-import { resolveVisibleDemo, type DemoSnapshot } from './lessonDemo'
+import { describe, expect, it } from 'vitest';
+import type { Move } from '../../cube/cubeState';
+import { resolveVisibleDemo, type DemoSnapshot } from './lessonDemo';
 
 const snapshot = (key: string): DemoSnapshot => ({
   moves: ['F'] as Move[],
   demoSteps: [],
   instructions: [],
   demoKey: key,
-})
+});
 
 describe('resolveVisibleDemo', () => {
   it('returns null when lesson is complete', () => {
@@ -19,11 +19,11 @@ describe('resolveVisibleDemo', () => {
         currentDemo: snapshot('current'),
         cachedDemo: snapshot('cached'),
       }),
-    ).toBeNull()
-  })
+    ).toBeNull();
+  });
 
   it('returns current demo when step is ready and has moves', () => {
-    const current = snapshot('current')
+    const current = snapshot('current');
     expect(
       resolveVisibleDemo({
         isLessonComplete: false,
@@ -32,8 +32,8 @@ describe('resolveVisibleDemo', () => {
         currentDemo: current,
         cachedDemo: snapshot('cached'),
       }),
-    ).toBe(current)
-  })
+    ).toBe(current);
+  });
 
   it('returns null when step is ready but has no demo (stuck)', () => {
     expect(
@@ -44,11 +44,11 @@ describe('resolveVisibleDemo', () => {
         currentDemo: null,
         cachedDemo: snapshot('stale'),
       }),
-    ).toBeNull()
-  })
+    ).toBeNull();
+  });
 
   it('returns cached demo while step is pending', () => {
-    const cached = snapshot('cached')
+    const cached = snapshot('cached');
     expect(
       resolveVisibleDemo({
         isLessonComplete: false,
@@ -57,6 +57,6 @@ describe('resolveVisibleDemo', () => {
         currentDemo: snapshot('current'),
         cachedDemo: cached,
       }),
-    ).toBe(cached)
-  })
-})
+    ).toBe(cached);
+  });
+});

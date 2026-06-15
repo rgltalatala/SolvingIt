@@ -6,35 +6,35 @@ export type {
   StudentHold,
   YHold,
   YRotationStep,
-} from './types'
-export { noneHold } from './types'
+} from './types';
+export { noneHold } from './types';
 
-export { isBackFaceMove, needsReorientForBack } from './backFace'
-export { composeY, holdAfterRotation } from './composeY'
+export { isBackFaceMove, needsReorientForBack } from './backFace';
+export { composeY, holdAfterRotation } from './composeY';
 export {
   centersForHold,
   getDemoStepChipLabel,
   getMoveText,
   getRotationText,
   type RotationCopyPurpose,
-} from './copy'
+} from './copy';
 export {
   demoStepsToMoves,
   expandDemoSteps,
   type DemoStep,
   type RotationPurpose,
-} from './expandDemoSteps'
-export { buildExecutionMoves } from './executionMoves'
-export { expandDemoToInstructions } from './expandInstructions'
+} from './expandDemoSteps';
+export { buildExecutionMoves } from './executionMoves';
+export { expandDemoToInstructions } from './expandInstructions';
 export {
   applyLessonToStorage,
   getLessonDemoExpansion,
   getLessonExecutionMoves,
   type ApplyLessonToStorageResult,
-} from './lessonExecution'
+} from './lessonExecution';
 export {
   FACE_MAP,
   getFaceFromMove,
   getModifierFromMove,
   translateMove,
-} from './translateMove'
+} from './translateMove';

@@ -37,14 +37,14 @@ The lesson updates the **virtual** cube on Apply only. Before applying, confirm 
 
 ## What resets when
 
-| Action | Cube state | Lesson step | `studentHold` in store | `lessonHistory` | Avoid-back callout |
-|--------|------------|-------------|------------------------|-----------------|--------------------|
-| Apply example | Updated | Next step | Cleared (`none`) | Push pre-apply snapshot | Unchanged |
-| Undo last example | Restored | Recomputed | Cleared (`none`) | Pop one snapshot | Unchanged |
-| Reset lesson tips | Unchanged | Recomputed | Cleared | Unchanged | Cleared |
-| Start lesson (from overview) | Unchanged | Fresh entry | Cleared | Cleared | Cleared |
-| Leave lesson / re-enter | Unchanged | Continues from cube | Not auto-cleared | Cleared | Persists |
-| Manual `setCubeState` | Replaced | N/A | Unchanged | Cleared | Unchanged |
+| Action                       | Cube state | Lesson step         | `studentHold` in store | `lessonHistory`         | Avoid-back callout |
+| ---------------------------- | ---------- | ------------------- | ---------------------- | ----------------------- | ------------------ |
+| Apply example                | Updated    | Next step           | Cleared (`none`)       | Push pre-apply snapshot | Unchanged          |
+| Undo last example            | Restored   | Recomputed          | Cleared (`none`)       | Pop one snapshot        | Unchanged          |
+| Reset lesson tips            | Unchanged  | Recomputed          | Cleared                | Unchanged               | Cleared            |
+| Start lesson (from overview) | Unchanged  | Fresh entry         | Cleared                | Cleared                 | Cleared            |
+| Leave lesson / re-enter      | Unchanged  | Continues from cube | Not auto-cleared       | Cleared                 | Persists           |
+| Manual `setCubeState`        | Replaced   | N/A                 | Unchanged              | Cleared                 | Unchanged          |
 
 `studentHold` in the store is only an input for expansion during apply; after each apply, orientation lives on the cube stickers.
 

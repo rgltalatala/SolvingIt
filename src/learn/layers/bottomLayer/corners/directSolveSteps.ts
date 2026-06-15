@@ -1,16 +1,18 @@
-import type { CubeState, Face, Move } from '../../../../cube/cubeState'
-import { parseFaceTurnAlgToMoves } from '../../../../cube/parseFaceTurnAlg'
-import { recognizeCornerCaseInFrdView } from './cornerCases'
-import { demoChangesState } from '../../../lessonCore'
-import { verifiedFrdDemoAtHold, studentHoldView } from './frdViewDemoBuild'
-import { formatColor, formatCornerLabel } from './cornerSlotModel'
-import type { CornerSlotId, WhiteCornersLessonStep } from './types'
-import { buildFrdULayerDemo } from './uLayerSteps'
-import { buildFrdWrongDLayerDemo } from './wrongDLayerSteps'
-import { U_LAYER_U_PREFIXES } from './uLayerSteps'
+import type { CubeState, Face, Move } from '../../../../cube/cubeState';
+import { parseFaceTurnAlgToMoves } from '../../../../cube/parseFaceTurnAlg';
+import { recognizeCornerCaseInFrdView } from './cornerCases';
+import { demoChangesState } from '../../../lessonCore';
+import { verifiedFrdDemoAtHold, studentHoldView } from './frdViewDemoBuild';
+import { formatColor, formatCornerLabel } from './cornerSlotModel';
+import type { CornerSlotId, WhiteCornersLessonStep } from './types';
+import { buildFrdULayerDemo } from './uLayerSteps';
+import { buildFrdWrongDLayerDemo } from './wrongDLayerSteps';
+import { U_LAYER_U_PREFIXES } from './uLayerSteps';
 
-export const FRD_WHITE_ON_F: Move[] = parseFaceTurnAlgToMoves("R U' R' U R U' R'")
-export const FRD_WHITE_ON_R: Move[] = parseFaceTurnAlgToMoves("R U R' U' R U R'")
+export const FRD_WHITE_ON_F: Move[] =
+  parseFaceTurnAlgToMoves("R U' R' U R U' R'");
+export const FRD_WHITE_ON_R: Move[] =
+  parseFaceTurnAlgToMoves("R U R' U' R U R'");
 
 const FRD_TWIST_FALLBACK_DEMOS: Move[][] = [
   FRD_WHITE_ON_F,
@@ -18,24 +20,24 @@ const FRD_TWIST_FALLBACK_DEMOS: Move[][] = [
   parseFaceTurnAlgToMoves("R U R' R U' R'"),
   [...FRD_WHITE_ON_R, ...FRD_WHITE_ON_F],
   [...FRD_WHITE_ON_F, ...FRD_WHITE_ON_R],
-]
+];
 
 type TwistDemoMatch = {
-  demo: Move[]
-  whiteOnFace: Face
-}
+  demo: Move[];
+  whiteOnFace: Face;
+};
 
 function demoForFrdTwist(whiteOnFace: Face): Move[] | null {
-  if (whiteOnFace === 'F') return FRD_WHITE_ON_F
-  if (whiteOnFace === 'R') return FRD_WHITE_ON_R
-  return null
+  if (whiteOnFace === 'F') return FRD_WHITE_ON_F;
+  if (whiteOnFace === 'R') return FRD_WHITE_ON_R;
+  return null;
 }
 
 function twistAlgsForCase(whiteOnFace: Face): Move[][] {
   return [
     demoForFrdTwist(whiteOnFace),
     whiteOnFace === 'F' ? FRD_WHITE_ON_R : FRD_WHITE_ON_F,
-  ].filter((demo): demo is Move[] => !!demo?.length)
+  ].filter((demo): demo is Move[] => !!demo?.length);
 }
 
 function searchTwistDemos(
@@ -45,23 +47,21 @@ function searchTwistDemos(
   solvedCornerIds: readonly CornerSlotId[] | undefined,
   options: { useFallback: boolean; requireTwistedCase: boolean },
 ): TwistDemoMatch[] {
-  const found: TwistDemoMatch[] = []
-  const twistSets = options.useFallback
-    ? FRD_TWIST_FALLBACK_DEMOS
-    : null
+  const found: TwistDemoMatch[] = [];
+  const twistSets = options.useFallback ? FRD_TWIST_FALLBACK_DEMOS : null;
 
   for (const uPrefix of U_LAYER_U_PREFIXES) {
-    const viewState = studentHoldView(studentState, holdIndex, uPrefix)
-    const cornerCase = recognizeCornerCaseInFrdView(viewState, id, holdIndex)
+    const viewState = studentHoldView(studentState, holdIndex, uPrefix);
+    const cornerCase = recognizeCornerCaseInFrdView(viewState, id, holdIndex);
 
     const twists =
       twistSets ??
       (cornerCase.kind === 'in-slot-twisted'
         ? twistAlgsForCase(cornerCase.whiteOnFace)
-        : [])
+        : []);
 
     if (options.requireTwistedCase && cornerCase.kind !== 'in-slot-twisted') {
-      continue
+      continue;
     }
 
     for (const twist of twists) {
@@ -71,15 +71,15 @@ function searchTwistDemos(
         holdIndex,
         [...uPrefix, ...twist],
         solvedCornerIds,
-      )
-      if (!demo) continue
+      );
+      if (!demo) continue;
       const whiteOnFace =
-        cornerCase.kind === 'in-slot-twisted' ? cornerCase.whiteOnFace : 'F'
-      found.push({ demo, whiteOnFace })
+        cornerCase.kind === 'in-slot-twisted' ? cornerCase.whiteOnFace : 'F';
+      found.push({ demo, whiteOnFace });
     }
   }
 
-  return found
+  return found;
 }
 
 function buildTwistedInSlotStep(
@@ -94,7 +94,7 @@ function buildTwistedInSlotStep(
     title: formatCornerLabel(cornerId),
     body: `The ${formatCornerLabel(cornerId).toLowerCase()} is in the front-right slot but twisted—white is on the ${formatColor(studentState[whiteOnFace][4])} (${whiteOnFace}) face instead of the bottom. Use the demo to orient white onto D while keeping your white cross and any corners you already solved intact.`,
     demoMoves: demo,
-  }
+  };
 }
 
 function buildULayerInsertStep(
@@ -107,7 +107,7 @@ function buildULayerInsertStep(
     title: formatCornerLabel(cornerId),
     body: `The ${formatCornerLabel(cornerId).toLowerCase()} piece is on the top layer. The demo lines it up above the front-right slot (URF), then inserts it with white on the bottom. Your white cross and any corners you already solved stay intact.`,
     demoMoves: demo,
-  }
+  };
 }
 
 function buildWrongDLayerStep(
@@ -120,17 +120,20 @@ function buildWrongDLayerStep(
     title: formatCornerLabel(cornerId),
     body: `The ${formatCornerLabel(cornerId).toLowerCase()} piece is in the wrong bottom corner slot. The demo extracts it to the top (URF), then inserts it with white on the bottom. Your white cross and any corners you already solved stay intact.`,
     demoMoves: demo,
-  }
+  };
 }
 
-function buildGenericSolveStep(cornerId: CornerSlotId, demo: Move[]): WhiteCornersLessonStep {
+function buildGenericSolveStep(
+  cornerId: CornerSlotId,
+  demo: Move[],
+): WhiteCornersLessonStep {
   return {
     kind: 'solve-corner',
     cornerId,
     title: formatCornerLabel(cornerId),
     body: `Slot the ${formatCornerLabel(cornerId).toLowerCase()} using the demo while keeping your white cross and any corners you already solved intact.`,
     demoMoves: demo,
-  }
+  };
 }
 
 export function tryFrdTwistedInSlot(
@@ -142,9 +145,14 @@ export function tryFrdTwistedInSlot(
   const match = searchTwistDemos(studentState, id, holdIndex, solvedCornerIds, {
     useFallback: false,
     requireTwistedCase: true,
-  })[0]
-  if (!match) return null
-  return buildTwistedInSlotStep(studentState, id, match.whiteOnFace, match.demo)
+  })[0];
+  if (!match) return null;
+  return buildTwistedInSlotStep(
+    studentState,
+    id,
+    match.whiteOnFace,
+    match.demo,
+  );
 }
 
 export function tryFrdULayerInsert(
@@ -153,10 +161,16 @@ export function tryFrdULayerInsert(
   holdIndex = 0,
   solvedCornerIds?: readonly CornerSlotId[],
 ): WhiteCornersLessonStep | null {
-  const demo = buildFrdULayerDemo(studentState, 'URF', id, holdIndex, solvedCornerIds)
-  if (!demo?.length) return null
+  const demo = buildFrdULayerDemo(
+    studentState,
+    'URF',
+    id,
+    holdIndex,
+    solvedCornerIds,
+  );
+  if (!demo?.length) return null;
 
-  return buildULayerInsertStep(id, demo)
+  return buildULayerInsertStep(id, demo);
 }
 
 export function tryFrdWrongDLayerExtract(
@@ -165,19 +179,27 @@ export function tryFrdWrongDLayerExtract(
   holdIndex = 0,
   solvedCornerIds?: readonly CornerSlotId[],
 ): WhiteCornersLessonStep | null {
-  const demo = buildFrdWrongDLayerDemo(studentState, 'FRD', id, holdIndex, solvedCornerIds)
-  if (!demo?.length) return null
+  const demo = buildFrdWrongDLayerDemo(
+    studentState,
+    'FRD',
+    id,
+    holdIndex,
+    solvedCornerIds,
+  );
+  if (!demo?.length) return null;
 
-  return buildWrongDLayerStep(id, demo)
+  return buildWrongDLayerStep(id, demo);
 }
 
-function shortestVerifiedDemo(candidates: (Move[] | null | undefined)[]): Move[] | null {
-  let best: Move[] | null = null
+function shortestVerifiedDemo(
+  candidates: (Move[] | null | undefined)[],
+): Move[] | null {
+  let best: Move[] | null = null;
   for (const demo of candidates) {
-    if (!demo?.length) continue
-    if (!best || demo.length < best.length) best = demo
+    if (!demo?.length) continue;
+    if (!best || demo.length < best.length) best = demo;
   }
-  return best
+  return best;
 }
 
 function collectShortestFixedDemo(
@@ -195,19 +217,25 @@ function collectShortestFixedDemo(
       useFallback: true,
       requireTwistedCase: false,
     }),
-  ].map((match) => match.demo)
+  ].map((match) => match.demo);
 
   return shortestVerifiedDemo(
     [
       buildFrdULayerDemo(studentState, 'URF', id, holdIndex, solvedCornerIds),
-      buildFrdWrongDLayerDemo(studentState, 'FRD', id, holdIndex, solvedCornerIds),
+      buildFrdWrongDLayerDemo(
+        studentState,
+        'FRD',
+        id,
+        holdIndex,
+        solvedCornerIds,
+      ),
       ...twistDemos,
     ].filter((demo): demo is Move[] => !!demo?.length),
-  )
+  );
 }
 
 function demosEqual(a: readonly Move[], b: readonly Move[]): boolean {
-  return a.length === b.length && a.every((move, index) => move === b[index])
+  return a.length === b.length && a.every((move, index) => move === b[index]);
 }
 
 function buildStepForDemo(
@@ -217,11 +245,23 @@ function buildStepForDemo(
   demo: Move[],
   solvedCornerIds?: readonly CornerSlotId[],
 ): WhiteCornersLessonStep {
-  const uDemo = buildFrdULayerDemo(studentState, 'URF', id, holdIndex, solvedCornerIds)
-  if (uDemo && demosEqual(uDemo, demo)) return buildULayerInsertStep(id, demo)
+  const uDemo = buildFrdULayerDemo(
+    studentState,
+    'URF',
+    id,
+    holdIndex,
+    solvedCornerIds,
+  );
+  if (uDemo && demosEqual(uDemo, demo)) return buildULayerInsertStep(id, demo);
 
-  const wDemo = buildFrdWrongDLayerDemo(studentState, 'FRD', id, holdIndex, solvedCornerIds)
-  if (wDemo && demosEqual(wDemo, demo)) return buildWrongDLayerStep(id, demo)
+  const wDemo = buildFrdWrongDLayerDemo(
+    studentState,
+    'FRD',
+    id,
+    holdIndex,
+    solvedCornerIds,
+  );
+  if (wDemo && demosEqual(wDemo, demo)) return buildWrongDLayerStep(id, demo);
 
   const twistMatch = [
     ...searchTwistDemos(studentState, id, holdIndex, solvedCornerIds, {
@@ -232,13 +272,18 @@ function buildStepForDemo(
       useFallback: true,
       requireTwistedCase: false,
     }),
-  ].find((match) => demosEqual(match.demo, demo))
+  ].find((match) => demosEqual(match.demo, demo));
 
   if (twistMatch) {
-    return buildTwistedInSlotStep(studentState, id, twistMatch.whiteOnFace, demo)
+    return buildTwistedInSlotStep(
+      studentState,
+      id,
+      twistMatch.whiteOnFace,
+      demo,
+    );
   }
 
-  return buildGenericSolveStep(id, demo)
+  return buildGenericSolveStep(id, demo);
 }
 
 export function tryDirectSolveStepForCornerId(
@@ -247,7 +292,19 @@ export function tryDirectSolveStepForCornerId(
   holdIndex = 0,
   solvedCornerIds?: readonly CornerSlotId[],
 ): WhiteCornersLessonStep | null {
-  const fixedDemo = collectShortestFixedDemo(studentState, id, holdIndex, solvedCornerIds)
-  if (!fixedDemo?.length || !demoChangesState(studentState, fixedDemo)) return null
-  return buildStepForDemo(studentState, id, holdIndex, fixedDemo, solvedCornerIds)
+  const fixedDemo = collectShortestFixedDemo(
+    studentState,
+    id,
+    holdIndex,
+    solvedCornerIds,
+  );
+  if (!fixedDemo?.length || !demoChangesState(studentState, fixedDemo))
+    return null;
+  return buildStepForDemo(
+    studentState,
+    id,
+    holdIndex,
+    fixedDemo,
+    solvedCornerIds,
+  );
 }

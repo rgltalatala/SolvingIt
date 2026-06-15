@@ -1,29 +1,38 @@
-import { useState } from 'react'
-import { FACE_COLOR_CONVENTION, lockFaceCenter } from '../cube/cubeState'
-import type { Face, FaceState } from '../cube/cubeState'
-import { ColorPicker } from './ColorPicker'
-import { FaceGrid } from './FaceGrid'
+import { useState } from 'react';
+import { FACE_COLOR_CONVENTION, lockFaceCenter } from '../cube/cubeState';
+import type { Face, FaceState } from '../cube/cubeState';
+import { ColorPicker } from './ColorPicker';
+import { FaceGrid } from './FaceGrid';
 
 interface CorrectionPanelProps {
-  face: Face
-  detectedFace: FaceState
-  onConfirm: (faceState: FaceState) => void
-  onRescan: () => void
+  face: Face;
+  detectedFace: FaceState;
+  onConfirm: (faceState: FaceState) => void;
+  onRescan: () => void;
 }
 
-export function CorrectionPanel({ face, detectedFace, onConfirm, onRescan }: CorrectionPanelProps) {
-  const expectedCenterColor = FACE_COLOR_CONVENTION[face]
-  const initialDraft = lockFaceCenter(face, detectedFace)
+export function CorrectionPanel({
+  face,
+  detectedFace,
+  onConfirm,
+  onRescan,
+}: CorrectionPanelProps) {
+  const expectedCenterColor = FACE_COLOR_CONVENTION[face];
+  const initialDraft = lockFaceCenter(face, detectedFace);
 
-  const [draft, setDraft] = useState<FaceState>(initialDraft)
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
-  const [activeColor, setActiveColor] = useState<FaceState[number] | null>(null)
-  const [centerError, setCenterError] = useState<string | null>(null)
+  const [draft, setDraft] = useState<FaceState>(initialDraft);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [activeColor, setActiveColor] = useState<FaceState[number] | null>(
+    null,
+  );
+  const [centerError, setCenterError] = useState<string | null>(null);
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-4 rounded-xl border border-slate-600 bg-slate-900 p-5">
       <h2 className="text-xl font-semibold">Review {face} face</h2>
-      <p className="text-sm text-slate-300">Tap a sticker, choose a color, then confirm.</p>
+      <p className="text-sm text-slate-300">
+        Tap a sticker, choose a color, then confirm.
+      </p>
       <FaceGrid
         faceState={draft}
         selectedIndex={selectedIndex}
@@ -31,15 +40,18 @@ export function CorrectionPanel({ face, detectedFace, onConfirm, onRescan }: Cor
         lockedIndexes={[4]}
         onSelectIndex={setSelectedIndex}
         onUpdate={(next) => {
-          setDraft(lockFaceCenter(face, next))
-          if (centerError) setCenterError(null)
+          setDraft(lockFaceCenter(face, next));
+          if (centerError) setCenterError(null);
         }}
       />
       <p className="text-xs text-slate-400">
-        Center sticker is locked to {expectedCenterColor} because cube centers never move.
+        Center sticker is locked to {expectedCenterColor} because cube centers
+        never move.
       </p>
       <ColorPicker activeColor={activeColor} onSelect={setActiveColor} />
-      {centerError ? <p className="text-sm font-medium text-rose-300">{centerError}</p> : null}
+      {centerError ? (
+        <p className="text-sm font-medium text-rose-300">{centerError}</p>
+      ) : null}
       <div className="mt-2 flex gap-3">
         <button
           type="button"
@@ -53,15 +65,17 @@ export function CorrectionPanel({ face, detectedFace, onConfirm, onRescan }: Cor
           className="rounded-md bg-cyan-500 px-4 py-2 font-semibold text-slate-950"
           onClick={() => {
             if (draft[4] !== expectedCenterColor) {
-              setCenterError(`Center must be ${expectedCenterColor}. Please re-scan this face.`)
-              return
+              setCenterError(
+                `Center must be ${expectedCenterColor}. Please re-scan this face.`,
+              );
+              return;
             }
-            onConfirm(draft)
+            onConfirm(draft);
           }}
         >
           Confirm
         </button>
       </div>
     </div>
-  )
+  );
 }

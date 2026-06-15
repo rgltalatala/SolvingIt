@@ -1,28 +1,28 @@
-import { useMemo, useTransition } from "react";
-import type { Move } from "../cube/cubeState";
+import { useMemo, useTransition } from 'react';
+import type { Move } from '../cube/cubeState';
 import {
   cubeStateToStudentFrame,
   faceCentersFromCubeState,
   formatColorLabel,
   isWholeCubeRotation,
   studentLessonHoldFaceCenters,
-} from "../cube/cubeState";
-import { resolveLessonStorageDemo } from "../learn/layers/bottomLayer/corners";
+} from '../cube/cubeState';
+import { resolveLessonStorageDemo } from '../learn/layers/bottomLayer/corners';
 import {
   getRotationText,
   type DemoStep,
   type Instruction,
-} from "../learn/studentHold";
-import type { YRotationStep } from "../learn/studentHold/types";
-import { useCubeStore } from "../store/cubeStore";
-import { useWhiteCornerLessonStep } from "./lessons/bottomLayer/useWhiteCornerLessonStep";
-import { LessonApplyPanel } from "./lessons/LessonApplyPanel";
-import { LessonAvoidBackPanel } from "./lessons/LessonAvoidBackPanel";
-import { LessonCubeStage } from "./lessons/LessonCubeStage";
-import { LessonHeaderActions } from "./lessons/LessonHeaderActions";
-import { PHYSICAL_CUBE_MATCH_NOTE } from "./lessons/lessonCopy";
-import { LessonUnavailable } from "./lessons/LessonUnavailable";
-import { useLessonDemoPipeline } from "./lessons/useLessonDemoPipeline";
+} from '../learn/studentHold';
+import type { YRotationStep } from '../learn/studentHold/types';
+import { useCubeStore } from '../store/cubeStore';
+import { useWhiteCornerLessonStep } from './lessons/bottomLayer/useWhiteCornerLessonStep';
+import { LessonApplyPanel } from './lessons/LessonApplyPanel';
+import { LessonAvoidBackPanel } from './lessons/LessonAvoidBackPanel';
+import { LessonCubeStage } from './lessons/LessonCubeStage';
+import { LessonHeaderActions } from './lessons/LessonHeaderActions';
+import { PHYSICAL_CUBE_MATCH_NOTE } from './lessons/lessonCopy';
+import { LessonUnavailable } from './lessons/LessonUnavailable';
+import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
 
 function expandHoldReorientDemo(moves: Move[]): {
   steps: DemoStep[];
@@ -31,11 +31,11 @@ function expandHoldReorientDemo(moves: Move[]): {
   const steps: DemoStep[] = moves
     .filter(isWholeCubeRotation)
     .map((rotation) => ({
-      type: "rotation" as const,
+      type: 'rotation' as const,
       rotation: rotation as YRotationStep,
     }));
   const instructions: Instruction[] = steps.map((step) => ({
-    type: "rotation" as const,
+    type: 'rotation' as const,
     rotation: step.rotation,
     text: getRotationText(step.rotation),
   }));
@@ -91,7 +91,7 @@ export function LearningCornersView() {
   const demoMoves = useMemo((): Move[] => {
     if (
       step &&
-      "demoMoves" in step &&
+      'demoMoves' in step &&
       step.demoMoves &&
       step.demoMoves.length > 0
     ) {
@@ -100,14 +100,14 @@ export function LearningCornersView() {
     return [];
   }, [step]);
 
-  const isHoldReorientStep = step?.kind === "reorient-hold";
+  const isHoldReorientStep = step?.kind === 'reorient-hold';
 
   const storageDemoMoves = useMemo((): Move[] => {
     if (
       isHoldReorientStep ||
       !studentFrame ||
       !step ||
-      step.kind !== "solve-corner" ||
+      step.kind !== 'solve-corner' ||
       !demoMoves.length
     ) {
       return demoMoves;
@@ -132,14 +132,14 @@ export function LearningCornersView() {
 
   const viewDemoMoves = useMemo((): Move[] => {
     if (isHoldReorientStep) return demoMoves;
-    if (step?.kind === "solve-corner" && storageDemoMoves.length > 0) {
+    if (step?.kind === 'solve-corner' && storageDemoMoves.length > 0) {
       return storageDemoMoves;
     }
     return demoMoves;
   }, [demoMoves, storageDemoMoves, step?.kind, isHoldReorientStep]);
 
   const stepKey = useMemo(
-    () => (step ? `${step.kind}:${viewDemoMoves.join(" ")}` : "none"),
+    () => (step ? `${step.kind}:${viewDemoMoves.join(' ')}` : 'none'),
     [step, viewDemoMoves],
   );
 
@@ -175,39 +175,39 @@ export function LearningCornersView() {
   const canUndo = lastSessionEntry !== null && canUndoLesson;
 
   if (!cubeState || !studentFrame) {
-    return <LessonUnavailable onBack={() => setAppPhase("ready")} />;
+    return <LessonUnavailable onBack={() => setAppPhase('ready')} />;
   }
 
   const displayStep =
     step ??
     (showPreparingOverlay
       ? {
-          kind: "solve-corner" as const,
-          title: "Preparing lesson…",
-          body: "",
-          cornerId: "FRD" as const,
+          kind: 'solve-corner' as const,
+          title: 'Preparing lesson…',
+          body: '',
+          cornerId: 'FRD' as const,
         }
       : {
-          kind: "solve-corner" as const,
-          title: "White corners",
-          body: "",
-          cornerId: "FRD" as const,
+          kind: 'solve-corner' as const,
+          title: 'White corners',
+          body: '',
+          cornerId: 'FRD' as const,
         });
 
-  const isReorientStep = step?.kind === "reorient-hold";
+  const isReorientStep = step?.kind === 'reorient-hold';
   const canApplyDemo =
     step !== null &&
     !isStepPending &&
     demoMoves.length > 0 &&
-    step.kind !== "complete" &&
-    step.kind !== "cross-prerequisite";
+    step.kind !== 'complete' &&
+    step.kind !== 'cross-prerequisite';
 
   const showRotationCallout =
     canApplyDemo &&
     avoidBackMoves &&
     showAvoidBackToggle &&
     !hasSeenAvoidBackCallout &&
-    previewMoves.includes("y2");
+    previewMoves.includes('y2');
 
   const handleRestartLessonTips = () => {
     resetLessonSession();
@@ -231,16 +231,16 @@ export function LearningCornersView() {
   const handleApplyDemo = () => {
     if (!step || !canApplyDemo) return;
     startLessonTransition(() => {
-      if (step.kind === "reorient-hold") {
+      if (step.kind === 'reorient-hold') {
         advanceAfterStep(step);
         applyLessonDemoMoves(step.demoMoves);
         return;
       }
-      if (step.kind === "solve-corner") {
+      if (step.kind === 'solve-corner') {
         advanceAfterStep(step);
         if (avoidOn) {
           applyLessonStep(storageDemoMoves, { avoidBackMoves: true });
-          if (previewMoves.includes("y2") && !hasSeenAvoidBackCallout) {
+          if (previewMoves.includes('y2') && !hasSeenAvoidBackCallout) {
             markAvoidBackCalloutSeen();
           }
         } else {
@@ -256,12 +256,12 @@ export function LearningCornersView() {
         <div>
           <h1 className="text-3xl font-bold">Lesson: White corners</h1>
           <p className="mt-1 text-slate-300">
-            Hold your cube with{" "}
-            <span className="text-slate-100">white on the bottom</span> and{" "}
-            <span className="text-slate-100">yellow on top</span>. Face{" "}
+            Hold your cube with{' '}
+            <span className="text-slate-100">white on the bottom</span> and{' '}
+            <span className="text-slate-100">yellow on top</span>. Face{' '}
             <span className="text-slate-100">
               {formatColorLabel(lessonHold.F)} toward you
-            </span>{" "}
+            </span>{' '}
             — that is the <span className="text-slate-100">front (F)</span> face
             in the diagram below.
           </p>
@@ -270,9 +270,11 @@ export function LearningCornersView() {
               {PHYSICAL_CUBE_MATCH_NOTE}
             </p>
           ) : null}
-          {step && step.kind !== "complete" && step.kind !== "cross-prerequisite" ? (
+          {step &&
+          step.kind !== 'complete' &&
+          step.kind !== 'cross-prerequisite' ? (
             <p className="mt-2 text-sm text-slate-400">
-              Progress: <span className="text-slate-200">{solvedSlots}/4</span>{" "}
+              Progress: <span className="text-slate-200">{solvedSlots}/4</span>{' '}
               white corners solved (white on D, side stickers match their
               centers).
             </p>
@@ -288,12 +290,12 @@ export function LearningCornersView() {
                 you.
               </li>
               <li>
-                <span className="text-slate-300">Undo last example</span>{" "}
+                <span className="text-slate-300">Undo last example</span>{' '}
                 restores the virtual cube before the last apply (corner demo or
                 reorient).
               </li>
               <li>
-                <span className="text-slate-300">Reset corner session</span>{" "}
+                <span className="text-slate-300">Reset corner session</span>{' '}
                 clears hold tracking and re-counts solved corners from the
                 current cube — your scramble is unchanged.
               </li>
@@ -304,7 +306,7 @@ export function LearningCornersView() {
           canUndo={canUndo}
           isStepPending={isStepPending}
           onUndo={handleUndoLessonStep}
-          onBack={() => setAppPhase("ready")}
+          onBack={() => setAppPhase('ready')}
           onResetTips={handleRestartLessonTips}
           extraActions={
             <button
@@ -328,7 +330,7 @@ export function LearningCornersView() {
       />
 
       <article
-        className={`rounded-xl border border-slate-700 bg-slate-900/80 p-4 ${showPreparingOverlay ? "opacity-60" : ""}`}
+        className={`rounded-xl border border-slate-700 bg-slate-900/80 p-4 ${showPreparingOverlay ? 'opacity-60' : ''}`}
       >
         <h2 className="text-lg font-semibold text-slate-100">
           {displayStep.title}
@@ -339,19 +341,19 @@ export function LearningCornersView() {
           </p>
         ) : null}
 
-        {step?.kind === "cross-prerequisite" ? (
+        {step?.kind === 'cross-prerequisite' ? (
           <div className="mt-4">
             <button
               type="button"
               className="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-600"
-              onClick={() => setActiveLesson("white-cross")}
+              onClick={() => setActiveLesson('white-cross')}
             >
               Go to white cross lesson
             </button>
           </div>
         ) : null}
 
-        {step && step.kind !== "complete" && showAvoidBackToggle ? (
+        {step && step.kind !== 'complete' && showAvoidBackToggle ? (
           <LessonAvoidBackPanel
             frontColor={lessonHold.F}
             avoidBackMoves={avoidBackMoves}
@@ -363,13 +365,15 @@ export function LearningCornersView() {
           />
         ) : null}
 
-        {step && step.kind !== "complete" && step.kind !== "cross-prerequisite" ? (
+        {step &&
+        step.kind !== 'complete' &&
+        step.kind !== 'cross-prerequisite' ? (
           <p className="mt-3 text-xs text-slate-500">
             Same hold as the diagram: {formatColorLabel(lessonHold.F)} on F
-            (front), {formatColorLabel(lessonHold.U)} on U (top),{" "}
+            (front), {formatColorLabel(lessonHold.U)} on U (top),{' '}
             {formatColorLabel(lessonHold.D)} on D (bottom).
             {isReorientStep
-              ? " After you turn the cube in your hands to match, continue — the virtual scramble stays the same."
+              ? ' After you turn the cube in your hands to match, continue — the virtual scramble stays the same.'
               : null}
           </p>
         ) : null}
@@ -378,10 +382,12 @@ export function LearningCornersView() {
           <LessonApplyPanel
             hint={
               isReorientStep
-                ? "When your physical cube matches the hold shown, continue to the next step."
-                : "When your physical cube matches the diagram and you have stepped through the example, apply here to update the virtual cube and continue."
+                ? 'When your physical cube matches the hold shown, continue to the next step.'
+                : 'When your physical cube matches the diagram and you have stepped through the example, apply here to update the virtual cube and continue.'
             }
-            buttonLabel={isReorientStep ? "Continue" : "Apply example & continue"}
+            buttonLabel={
+              isReorientStep ? 'Continue' : 'Apply example & continue'
+            }
             disabled={isStepPending}
             onApply={handleApplyDemo}
           />

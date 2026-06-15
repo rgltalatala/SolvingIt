@@ -1,15 +1,15 @@
-import { formatColorLabel, type Color } from '../../cube/cubeState'
+import { formatColorLabel, type Color } from '../../cube/cubeState';
 
 type LessonAvoidBackPanelProps = {
-  frontColor: Color
-  avoidBackMoves: boolean
-  onToggleAvoidBack: () => void
-  rememberAvoidBackDefault: boolean
-  onRememberDefaultChange: (on: boolean) => void
-  showRotationCallout: boolean
-  onMarkCalloutSeen: () => void
-  holdNote?: string
-}
+  frontColor: Color;
+  avoidBackMoves: boolean;
+  onToggleAvoidBack: () => void;
+  rememberAvoidBackDefault: boolean;
+  onRememberDefaultChange: (on: boolean) => void;
+  showRotationCallout: boolean;
+  onMarkCalloutSeen: () => void;
+  holdNote?: string;
+};
 
 export function LessonAvoidBackPanel({
   frontColor,
@@ -29,9 +29,10 @@ export function LessonAvoidBackPanel({
             Avoid back face for this example
           </p>
           <p className="text-xs text-slate-400">
-            This step’s example uses a <span className="font-mono">B</span> move. Toggle on to{' '}
-            <span className="text-slate-300">y2</span> at the start, do the example without turning
-            B, then <span className="text-slate-300">y2</span> again so{' '}
+            This step’s example uses a <span className="font-mono">B</span>{' '}
+            move. Toggle on to <span className="text-slate-300">y2</span> at the
+            start, do the example without turning B, then{' '}
+            <span className="text-slate-300">y2</span> again so{' '}
             {formatColorLabel(frontColor)} is on front{holdNote}.
           </p>
         </div>
@@ -59,8 +60,9 @@ export function LessonAvoidBackPanel({
       {showRotationCallout ? (
         <div className="flex flex-col gap-2 rounded-md border border-amber-700/40 bg-amber-950/30 p-2 text-amber-100">
           <p className="text-xs">
-            Tip: the preview starts and ends with <span className="font-mono">y2</span> so you
-            return to the same hold ({formatColorLabel(frontColor)} on front). Step through the full
+            Tip: the preview starts and ends with{' '}
+            <span className="font-mono">y2</span> so you return to the same hold
+            ({formatColorLabel(frontColor)} on front). Step through the full
             sequence on your cube.
           </p>
           <div>
@@ -75,5 +77,5 @@ export function LessonAvoidBackPanel({
         </div>
       ) : null}
     </div>
-  )
+  );
 }

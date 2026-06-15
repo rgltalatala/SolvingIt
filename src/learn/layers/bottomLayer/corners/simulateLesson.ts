@@ -3,22 +3,36 @@ import {
   cloneCubeState,
   cubeStateToStudentFrame,
   type CubeState,
-} from '../../../../cube/cubeState'
-import { getLessonExecutionMoves, noneHold } from '../../../studentHold'
-import { normalizeHoldToBlue, targetHoldIndex, type CornerHoldIndex } from './cornerHold'
-import { getWhiteCornerLessonStep, getWhiteCornerLessonStepAsync } from './computeLessonStep'
-import { resolveLessonStorageDemo } from './frdViewDemoBuild'
-import { CORNER_ORDER, cornerSlotSolved, isWhiteCornersComplete } from './cornerSlotModel'
+} from '../../../../cube/cubeState';
+import { getLessonExecutionMoves, noneHold } from '../../../studentHold';
+import {
+  normalizeHoldToBlue,
+  targetHoldIndex,
+  type CornerHoldIndex,
+} from './cornerHold';
+import {
+  getWhiteCornerLessonStep,
+  getWhiteCornerLessonStepAsync,
+} from './computeLessonStep';
+import { resolveLessonStorageDemo } from './frdViewDemoBuild';
+import {
+  CORNER_ORDER,
+  cornerSlotSolved,
+  isWhiteCornersComplete,
+} from './cornerSlotModel';
 import type {
   CornerSlotId,
   SimulateWhiteCornersLessonResult,
   WhiteCornerLessonStepOptions,
   WhiteCornersLessonStep,
-} from './types'
+} from './types';
 
-function applyStepDemo(storage: CubeState, demoMoves: readonly string[]): CubeState {
-  const { moves } = getLessonExecutionMoves([...demoMoves], false, noneHold())
-  return applyMovesInStudentHold(storage, moves)
+function applyStepDemo(
+  storage: CubeState,
+  demoMoves: readonly string[],
+): CubeState {
+  const { moves } = getLessonExecutionMoves([...demoMoves], false, noneHold());
+  return applyMovesInStudentHold(storage, moves);
 }
 
 async function runWhiteCornersLessonSimulation(
@@ -29,33 +43,36 @@ async function runWhiteCornersLessonSimulation(
     options: WhiteCornerLessonStepOptions,
   ) => WhiteCornersLessonStep | Promise<WhiteCornersLessonStep>,
 ): Promise<SimulateWhiteCornersLessonResult> {
-  let currentHoldIndex: CornerHoldIndex = 0
-  let storage = cloneCubeState(storageCube)
-  let student = cubeStateToStudentFrame(storage)
+  let currentHoldIndex: CornerHoldIndex = 0;
+  let storage = cloneCubeState(storageCube);
+  let student = cubeStateToStudentFrame(storage);
   const solvedCornerIds: CornerSlotId[] = CORNER_ORDER.filter((id) =>
     cornerSlotSolved(normalizeHoldToBlue(student, 0), id),
-  )
-  let lessonStepsSimulated = 0
-  let lastStepKind: WhiteCornersLessonStep['kind'] | undefined
+  );
+  let lessonStepsSimulated = 0;
+  let lastStepKind: WhiteCornersLessonStep['kind'] | undefined;
 
   const lessonOptions = (): WhiteCornerLessonStepOptions => ({
     currentHoldIndex,
     solvedCornerIds,
-  })
+  });
 
   for (let i = 0; i < maxLessonSteps; i += 1) {
-    if (isWhiteCornersComplete(student, currentHoldIndex, solvedCornerIds) && currentHoldIndex === 0) {
+    if (
+      isWhiteCornersComplete(student, currentHoldIndex, solvedCornerIds) &&
+      currentHoldIndex === 0
+    ) {
       return {
         lessonStepsSimulated,
         cornersComplete: true,
         lastStepKind,
         stuckNoDemo: false,
         finalHoldIndex: currentHoldIndex,
-      }
+      };
     }
 
-    const step = await getStep(student, lessonOptions())
-    lastStepKind = step.kind
+    const step = await getStep(student, lessonOptions());
+    lastStepKind = step.kind;
 
     if (step.kind === 'complete') {
       return {
@@ -64,7 +81,7 @@ async function runWhiteCornersLessonSimulation(
         lastStepKind,
         stuckNoDemo: false,
         finalHoldIndex: currentHoldIndex,
-      }
+      };
     }
 
     if (step.kind === 'cross-prerequisite') {
@@ -74,106 +91,121 @@ async function runWhiteCornersLessonSimulation(
         lastStepKind,
         stuckNoDemo: true,
         finalHoldIndex: currentHoldIndex,
-      }
+      };
     }
 
     if (step.kind === 'reorient-hold') {
       if (!step.demoMoves.length) {
         return {
           lessonStepsSimulated,
-          cornersComplete: isWhiteCornersComplete(student, currentHoldIndex, solvedCornerIds),
+          cornersComplete: isWhiteCornersComplete(
+            student,
+            currentHoldIndex,
+            solvedCornerIds,
+          ),
           lastStepKind,
           stuckNoDemo: true,
           finalHoldIndex: currentHoldIndex,
-        }
+        };
       }
-      storage = applyStepDemo(storage, step.demoMoves)
-      student = cubeStateToStudentFrame(storage)
+      storage = applyStepDemo(storage, step.demoMoves);
+      student = cubeStateToStudentFrame(storage);
       if (step.returnToInitialHold) {
-        currentHoldIndex = 0
+        currentHoldIndex = 0;
       } else if (step.targetCornerId) {
-        currentHoldIndex = targetHoldIndex(step.targetCornerId)
+        currentHoldIndex = targetHoldIndex(step.targetCornerId);
       }
-      lessonStepsSimulated += 1
-      continue
+      lessonStepsSimulated += 1;
+      continue;
     }
 
     if (step.kind === 'solve-corner') {
       if (!step.demoMoves?.length) {
         return {
           lessonStepsSimulated,
-          cornersComplete: isWhiteCornersComplete(student, currentHoldIndex, solvedCornerIds),
+          cornersComplete: isWhiteCornersComplete(
+            student,
+            currentHoldIndex,
+            solvedCornerIds,
+          ),
           lastStepKind,
           stuckNoDemo: true,
           finalHoldIndex: currentHoldIndex,
-        }
+        };
       }
-      const applyMovesList =
-        resolveLessonStorageDemo(
-          student,
-          step.cornerId,
-          currentHoldIndex,
-          [...step.demoMoves],
-          solvedCornerIds,
-        ) ?? [...step.demoMoves]
-      storage = applyStepDemo(storage, applyMovesList)
-      student = cubeStateToStudentFrame(storage)
+      const applyMovesList = resolveLessonStorageDemo(
+        student,
+        step.cornerId,
+        currentHoldIndex,
+        [...step.demoMoves],
+        solvedCornerIds,
+      ) ?? [...step.demoMoves];
+      storage = applyStepDemo(storage, applyMovesList);
+      student = cubeStateToStudentFrame(storage);
       if (!solvedCornerIds.includes(step.cornerId)) {
-        solvedCornerIds.push(step.cornerId)
+        solvedCornerIds.push(step.cornerId);
       }
-      lessonStepsSimulated += 1
-      continue
+      lessonStepsSimulated += 1;
+      continue;
     }
   }
 
   return {
     lessonStepsSimulated,
     cornersComplete:
-      isWhiteCornersComplete(student, currentHoldIndex, solvedCornerIds) && currentHoldIndex === 0,
+      isWhiteCornersComplete(student, currentHoldIndex, solvedCornerIds) &&
+      currentHoldIndex === 0,
     lastStepKind,
-    stuckNoDemo: !isWhiteCornersComplete(student, currentHoldIndex, solvedCornerIds),
+    stuckNoDemo: !isWhiteCornersComplete(
+      student,
+      currentHoldIndex,
+      solvedCornerIds,
+    ),
     finalHoldIndex: currentHoldIndex,
-  }
+  };
 }
 
 export function simulateWhiteCornersLessonOnStorageCube(
   storageCube: CubeState,
   maxLessonSteps = 120,
 ): SimulateWhiteCornersLessonResult {
-  return runWhiteCornersLessonSimulationSync(storageCube, maxLessonSteps)
+  return runWhiteCornersLessonSimulationSync(storageCube, maxLessonSteps);
 }
 
 function runWhiteCornersLessonSimulationSync(
   storageCube: CubeState,
   maxLessonSteps: number,
 ): SimulateWhiteCornersLessonResult {
-  let currentHoldIndex: CornerHoldIndex = 0
-  let storage = cloneCubeState(storageCube)
-  let student = cubeStateToStudentFrame(storage)
+  let currentHoldIndex: CornerHoldIndex = 0;
+  let storage = cloneCubeState(storageCube);
+  let student = cubeStateToStudentFrame(storage);
   const solvedCornerIds: CornerSlotId[] = CORNER_ORDER.filter((id) =>
     cornerSlotSolved(normalizeHoldToBlue(student, 0), id),
-  )
-  let lessonStepsSimulated = 0
-  let lastStepKind: WhiteCornersLessonStep['kind'] | undefined
+  );
+  let lessonStepsSimulated = 0;
+  let lastStepKind: WhiteCornersLessonStep['kind'] | undefined;
 
   const lessonOptions = (): WhiteCornerLessonStepOptions => ({
     currentHoldIndex,
     solvedCornerIds,
-  })
+  });
 
   for (let i = 0; i < maxLessonSteps; i += 1) {
-    if (isWhiteCornersComplete(student, currentHoldIndex, solvedCornerIds) && currentHoldIndex === 0) {
+    if (
+      isWhiteCornersComplete(student, currentHoldIndex, solvedCornerIds) &&
+      currentHoldIndex === 0
+    ) {
       return {
         lessonStepsSimulated,
         cornersComplete: true,
         lastStepKind,
         stuckNoDemo: false,
         finalHoldIndex: currentHoldIndex,
-      }
+      };
     }
 
-    const step = getWhiteCornerLessonStep(student, lessonOptions())
-    lastStepKind = step.kind
+    const step = getWhiteCornerLessonStep(student, lessonOptions());
+    lastStepKind = step.kind;
 
     if (step.kind === 'complete') {
       return {
@@ -182,7 +214,7 @@ function runWhiteCornersLessonSimulationSync(
         lastStepKind,
         stuckNoDemo: false,
         finalHoldIndex: currentHoldIndex,
-      }
+      };
     }
 
     if (step.kind === 'cross-prerequisite') {
@@ -192,66 +224,78 @@ function runWhiteCornersLessonSimulationSync(
         lastStepKind,
         stuckNoDemo: true,
         finalHoldIndex: currentHoldIndex,
-      }
+      };
     }
 
     if (step.kind === 'reorient-hold') {
       if (!step.demoMoves.length) {
         return {
           lessonStepsSimulated,
-          cornersComplete: isWhiteCornersComplete(student, currentHoldIndex, solvedCornerIds),
+          cornersComplete: isWhiteCornersComplete(
+            student,
+            currentHoldIndex,
+            solvedCornerIds,
+          ),
           lastStepKind,
           stuckNoDemo: true,
           finalHoldIndex: currentHoldIndex,
-        }
+        };
       }
-      storage = applyStepDemo(storage, step.demoMoves)
-      student = cubeStateToStudentFrame(storage)
+      storage = applyStepDemo(storage, step.demoMoves);
+      student = cubeStateToStudentFrame(storage);
       if (step.returnToInitialHold) {
-        currentHoldIndex = 0
+        currentHoldIndex = 0;
       } else if (step.targetCornerId) {
-        currentHoldIndex = targetHoldIndex(step.targetCornerId)
+        currentHoldIndex = targetHoldIndex(step.targetCornerId);
       }
-      lessonStepsSimulated += 1
-      continue
+      lessonStepsSimulated += 1;
+      continue;
     }
 
     if (step.kind === 'solve-corner') {
       if (!step.demoMoves?.length) {
         return {
           lessonStepsSimulated,
-          cornersComplete: isWhiteCornersComplete(student, currentHoldIndex, solvedCornerIds),
+          cornersComplete: isWhiteCornersComplete(
+            student,
+            currentHoldIndex,
+            solvedCornerIds,
+          ),
           lastStepKind,
           stuckNoDemo: true,
           finalHoldIndex: currentHoldIndex,
-        }
+        };
       }
-      const applyMovesList =
-        resolveLessonStorageDemo(
-          student,
-          step.cornerId,
-          currentHoldIndex,
-          [...step.demoMoves],
-          solvedCornerIds,
-        ) ?? [...step.demoMoves]
-      storage = applyStepDemo(storage, applyMovesList)
-      student = cubeStateToStudentFrame(storage)
+      const applyMovesList = resolveLessonStorageDemo(
+        student,
+        step.cornerId,
+        currentHoldIndex,
+        [...step.demoMoves],
+        solvedCornerIds,
+      ) ?? [...step.demoMoves];
+      storage = applyStepDemo(storage, applyMovesList);
+      student = cubeStateToStudentFrame(storage);
       if (!solvedCornerIds.includes(step.cornerId)) {
-        solvedCornerIds.push(step.cornerId)
+        solvedCornerIds.push(step.cornerId);
       }
-      lessonStepsSimulated += 1
-      continue
+      lessonStepsSimulated += 1;
+      continue;
     }
   }
 
   return {
     lessonStepsSimulated,
     cornersComplete:
-      isWhiteCornersComplete(student, currentHoldIndex, solvedCornerIds) && currentHoldIndex === 0,
+      isWhiteCornersComplete(student, currentHoldIndex, solvedCornerIds) &&
+      currentHoldIndex === 0,
     lastStepKind,
-    stuckNoDemo: !isWhiteCornersComplete(student, currentHoldIndex, solvedCornerIds),
+    stuckNoDemo: !isWhiteCornersComplete(
+      student,
+      currentHoldIndex,
+      solvedCornerIds,
+    ),
     finalHoldIndex: currentHoldIndex,
-  }
+  };
 }
 
 export async function simulateWhiteCornersLessonOnStorageCubeAsync(
@@ -262,5 +306,5 @@ export async function simulateWhiteCornersLessonOnStorageCubeAsync(
     storageCube,
     maxLessonSteps,
     (student, options) => getWhiteCornerLessonStepAsync(student, options),
-  )
+  );
 }

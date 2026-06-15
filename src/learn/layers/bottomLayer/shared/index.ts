@@ -8,7 +8,7 @@ export {
   isMiddleLayerEdge,
   whiteStickerOnD,
   whiteStickerOnU,
-} from "./pieceQueries";
+} from './pieceQueries';
 
-export { isWhiteCrossComplete } from "../cross/crossSlotModel";
-export { formatColorLabel as formatColor } from "../../../../cube/cubeState";
+export { isWhiteCrossComplete } from '../cross/crossSlotModel';
+export { formatColorLabel as formatColor } from '../../../../cube/cubeState';

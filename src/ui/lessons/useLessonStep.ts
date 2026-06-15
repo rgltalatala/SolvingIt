@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import type { CubeState } from "../../cube/cubeState";
-import { cubeStateToCubeJsString } from "../../cube/cubeStateToFacelets";
+import { useEffect, useMemo, useState } from 'react';
+import type { CubeState } from '../../cube/cubeState';
+import { cubeStateToCubeJsString } from '../../cube/cubeStateToFacelets';
 
 /** Only show the preparing overlay if async planning is still running after this long (avoids flash on cache hits). */
 export const PREPARING_OVERLAY_DELAY_MS = 200;
@@ -17,25 +17,25 @@ export function useLessonStep<TStep>(
   studentFrame: CubeState | null,
   options: UseLessonStepOptions<TStep>,
 ) {
-  const frameKey = studentFrame ? cubeStateToCubeJsString(studentFrame) : "";
+  const frameKey = studentFrame ? cubeStateToCubeJsString(studentFrame) : '';
   const planningKey = options.sessionKey
     ? `${frameKey}|${options.sessionKey}`
     : frameKey;
 
   const [step, setStep] = useState<TStep | null>(null);
-  const [stepReadyKey, setStepReadyKey] = useState("");
+  const [stepReadyKey, setStepReadyKey] = useState('');
   const [stepEpoch, setStepEpoch] = useState(0);
   const [showPreparingOverlay, setShowPreparingOverlay] = useState(false);
 
   useEffect(() => {
     if (!studentFrame || !planningKey) {
       setStep(null);
-      setStepReadyKey("");
+      setStepReadyKey('');
       return;
     }
 
     let cancelled = false;
-    setStepReadyKey("");
+    setStepReadyKey('');
 
     void (async () => {
       await new Promise<void>((resolve) => setTimeout(resolve, 0));

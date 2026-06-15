@@ -1,28 +1,32 @@
-export { bfsShortestPath, bfsShortestPathAsync, type BfsSearchOptions } from './bfsSearch'
+export {
+  bfsShortestPath,
+  bfsShortestPathAsync,
+  type BfsSearchOptions,
+} from './bfsSearch';
 export {
   clearAllLessonDemoCaches,
   createDemoCache,
   registerLessonDemoCache,
   type DemoCache,
-} from './demoCache'
-export { normalizeLessonDemoMovesInStep } from './normalizeDemoStep'
+} from './demoCache';
+export { normalizeLessonDemoMovesInStep } from './normalizeDemoStep';
 export {
   lessonStepHasDemo,
   pickBestPermuteInTier,
   slotsGainedAfterDemo,
   type PermuteCandidate,
-} from './permuteScoring'
+} from './permuteScoring';
 export {
   simulateLessonOnStorageCube,
   type SimulateLessonOnStorageCubeOptions,
   type SimulateLessonOnStorageCubeResult,
   type SimulateLessonStep,
-} from './simulateLesson'
-export { demoChangesState } from './demoChangesState'
+} from './simulateLesson';
+export { demoChangesState } from './demoChangesState';
 export {
   findVerifiedDemoWithTiers,
   findVerifiedDemoWithTiersAsync,
   type FindVerifiedDemoAsyncOptions,
   type FindVerifiedDemoOptions,
   type VerifiedDemoSearchTier,
-} from './verifiedDemoFinder'
+} from './verifiedDemoFinder';

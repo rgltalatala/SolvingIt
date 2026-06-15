@@ -1,8 +1,8 @@
-import { wholeCubeMove } from "./wholeCube";
+import { wholeCubeMove } from './wholeCube';
 
-export type Face = "U" | "D" | "F" | "B" | "L" | "R";
+export type Face = 'U' | 'D' | 'F' | 'B' | 'L' | 'R';
 
-export type Color = "white" | "yellow" | "green" | "blue" | "red" | "orange";
+export type Color = 'white' | 'yellow' | 'green' | 'blue' | 'red' | 'orange';
 
 export type FaceState = [
   Color,
@@ -19,105 +19,105 @@ export type FaceState = [
 export type CubeState = Record<Face, FaceState>;
 
 export type FaceMove =
-  | "U"
+  | 'U'
   | "U'"
-  | "U2"
-  | "D"
+  | 'U2'
+  | 'D'
   | "D'"
-  | "D2"
-  | "F"
+  | 'D2'
+  | 'F'
   | "F'"
-  | "F2"
-  | "B"
+  | 'F2'
+  | 'B'
   | "B'"
-  | "B2"
-  | "L"
+  | 'B2'
+  | 'L'
   | "L'"
-  | "L2"
-  | "R"
+  | 'L2'
+  | 'R'
   | "R'"
-  | "R2";
+  | 'R2';
 
 export type SliceMove =
-  | "M"
+  | 'M'
   | "M'"
-  | "M2"
-  | "E"
+  | 'M2'
+  | 'E'
   | "E'"
-  | "E2"
-  | "S"
+  | 'E2'
+  | 'S'
   | "S'"
-  | "S2";
+  | 'S2';
 
 export type WideMove =
-  | "u"
+  | 'u'
   | "u'"
-  | "u2"
-  | "d"
+  | 'u2'
+  | 'd'
   | "d'"
-  | "d2"
-  | "f"
+  | 'd2'
+  | 'f'
   | "f'"
-  | "f2"
-  | "b"
+  | 'f2'
+  | 'b'
   | "b'"
-  | "b2"
-  | "l"
+  | 'b2'
+  | 'l'
   | "l'"
-  | "l2"
-  | "r"
+  | 'l2'
+  | 'r'
   | "r'"
-  | "r2"
-  | "Rw"
+  | 'r2'
+  | 'Rw'
   | "Rw'"
-  | "Rw2"
-  | "Lw"
+  | 'Rw2'
+  | 'Lw'
   | "Lw'"
-  | "Lw2"
-  | "Uw"
+  | 'Lw2'
+  | 'Uw'
   | "Uw'"
-  | "Uw2"
-  | "Dw"
+  | 'Uw2'
+  | 'Dw'
   | "Dw'"
-  | "Dw2"
-  | "Fw"
+  | 'Dw2'
+  | 'Fw'
   | "Fw'"
-  | "Fw2"
-  | "Bw"
+  | 'Fw2'
+  | 'Bw'
   | "Bw'"
-  | "Bw2";
+  | 'Bw2';
 
 export type Rotation =
-  | "x"
+  | 'x'
   | "x'"
-  | "x2"
-  | "y"
+  | 'x2'
+  | 'y'
   | "y'"
-  | "y2"
-  | "z"
+  | 'y2'
+  | 'z'
   | "z'"
-  | "z2";
+  | 'z2';
 
 export type Move = FaceMove | SliceMove | WideMove | Rotation;
 
-export const FACE_ORDER: Face[] = ["U", "D", "F", "B", "R", "L"];
+export const FACE_ORDER: Face[] = ['U', 'D', 'F', 'B', 'R', 'L'];
 
 export const FACE_COLOR_CONVENTION: Record<Face, Color> = {
-  U: "white",
-  D: "yellow",
-  F: "green",
-  B: "blue",
-  R: "red",
-  L: "orange",
+  U: 'white',
+  D: 'yellow',
+  F: 'green',
+  B: 'blue',
+  R: 'red',
+  L: 'orange',
 };
 
 export const COLORS: Color[] = [
-  "white",
-  "yellow",
-  "green",
-  "blue",
-  "red",
-  "orange",
+  'white',
+  'yellow',
+  'green',
+  'blue',
+  'red',
+  'orange',
 ];
 
 export const COLOR_TO_FACE = Object.fromEntries(
@@ -149,12 +149,12 @@ export function lockFaceCenter(face: Face, faceState: FaceState): FaceState {
 
 export function createSolvedCubeState(): CubeState {
   return {
-    U: Array(9).fill("white") as FaceState,
-    D: Array(9).fill("yellow") as FaceState,
-    F: Array(9).fill("green") as FaceState,
-    B: Array(9).fill("blue") as FaceState,
-    R: Array(9).fill("red") as FaceState,
-    L: Array(9).fill("orange") as FaceState,
+    U: Array(9).fill('white') as FaceState,
+    D: Array(9).fill('yellow') as FaceState,
+    F: Array(9).fill('green') as FaceState,
+    B: Array(9).fill('blue') as FaceState,
+    R: Array(9).fill('red') as FaceState,
+    L: Array(9).fill('orange') as FaceState,
   };
 }
 
@@ -188,7 +188,7 @@ function rotateFaceClockwise(face: FaceState): FaceState {
  * Stored scan uses white U / yellow D.
  */
 export function turnX2(state: CubeState): CubeState {
-  return wholeCubeMove(state, "x2");
+  return wholeCubeMove(state, 'x2');
 }
 
 /** Virtual cube with white on D and yellow on U for the white-cross lesson. */
@@ -332,12 +332,12 @@ function turnR(state: CubeState): CubeState {
 function baseMove(move: Move): Face | null {
   const c = move[0];
   if (
-    c === "U" ||
-    c === "D" ||
-    c === "F" ||
-    c === "B" ||
-    c === "L" ||
-    c === "R"
+    c === 'U' ||
+    c === 'D' ||
+    c === 'F' ||
+    c === 'B' ||
+    c === 'L' ||
+    c === 'R'
   ) {
     return c;
   }
@@ -345,7 +345,7 @@ function baseMove(move: Move): Face | null {
 }
 
 function turnsForMove(move: Move): number {
-  if (move.endsWith("2")) return 2;
+  if (move.endsWith('2')) return 2;
   if (move.endsWith("'")) return 3;
   return 1;
 }
@@ -406,9 +406,9 @@ export function applyMovesInStudentHold(
   storageState: CubeState,
   moves: Move[],
 ): CubeState {
-  const student = wholeCubeMove(storageState, "x2");
+  const student = wholeCubeMove(storageState, 'x2');
   const after = applyMoves(student, moves);
-  return wholeCubeMove(after, "x2");
+  return wholeCubeMove(after, 'x2');
 }
 
 /** e.g. R → R2 for insert moves in lessons */
@@ -418,15 +418,15 @@ export function faceDoubleTurn(face: Face): Move {
 
 /** WCA whole-cube rotations (x/y/z); applied via cubejs in {@link wholeCubeMove}. */
 export const WHOLE_CUBE_ROTATION_MOVES: ReadonlySet<Move> = new Set([
-  "x",
+  'x',
   "x'",
-  "x2",
-  "y",
+  'x2',
+  'y',
   "y'",
-  "y2",
-  "z",
+  'y2',
+  'z',
   "z'",
-  "z2",
+  'z2',
 ]);
 
 export function isWholeCubeRotation(move: Move): boolean {
@@ -447,22 +447,22 @@ export function applyMove(state: CubeState, move: Move): CubeState {
   const turns = turnsForMove(move);
   for (let i = 0; i < turns; i += 1) {
     switch (base) {
-      case "U":
+      case 'U':
         next = turnU(next);
         break;
-      case "D":
+      case 'D':
         next = turnD(next);
         break;
-      case "F":
+      case 'F':
         next = turnF(next);
         break;
-      case "B":
+      case 'B':
         next = turnB(next);
         break;
-      case "L":
+      case 'L':
         next = turnL(next);
         break;
-      case "R":
+      case 'R':
         next = turnR(next);
         break;
     }

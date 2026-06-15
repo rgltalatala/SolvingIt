@@ -1,4 +1,4 @@
-export const WHITE_CORNERS_LESSON_ID = 'white-corners' as const
+export const WHITE_CORNERS_LESSON_ID = 'white-corners' as const;
 
 export type {
   CornerSlotId,
@@ -6,9 +6,9 @@ export type {
   WhiteCornerLessonStepOptions,
   WhiteCornersLessonStep,
   WhiteCornersStepKind,
-} from './types'
+} from './types';
 
-export { CORNER_ORDER, WHITE_CORNERS_STEP_KINDS } from './types'
+export { CORNER_ORDER, WHITE_CORNERS_STEP_KINDS } from './types';
 
 export {
   activeCornerId,
@@ -19,17 +19,21 @@ export {
   formatCornerLabel,
   isWhiteCornersComplete,
   mustPreserveCornerIds,
-} from './cornerSlotModel'
+} from './cornerSlotModel';
 
-export type { CornerCase, ULayerCornerId, WrongDLayerSlotId } from './cornerCases'
+export type {
+  CornerCase,
+  ULayerCornerId,
+  WrongDLayerSlotId,
+} from './cornerCases';
 export {
   cornerSolvedInFrdView,
   isCornerPieceInSlot,
   recognizeCornerCase,
   recognizeCornerCaseInFrdView,
-} from './cornerCases'
+} from './cornerCases';
 
-export type { CornerHoldIndex } from './cornerHold'
+export type { CornerHoldIndex } from './cornerHold';
 export {
   formatHoldFaceLabel,
   holdIndexToY,
@@ -37,7 +41,7 @@ export {
   relativeY,
   returnToBlueY,
   targetHoldIndex,
-} from './cornerHold'
+} from './cornerHold';
 
 export {
   cornerPreservedAtLessonHold,
@@ -45,16 +49,19 @@ export {
   isLessonStateValid,
   isVerifiedCornerSlotDemo,
   preservesLessonStateAfterDemo,
-} from './preserveLessonState'
+} from './preserveLessonState';
 
-export { resolveLessonStorageDemo } from './frdViewDemoBuild'
+export { resolveLessonStorageDemo } from './frdViewDemoBuild';
 
-export { getWhiteCornerLessonStep, getWhiteCornerLessonStepAsync } from './computeLessonStep'
+export {
+  getWhiteCornerLessonStep,
+  getWhiteCornerLessonStepAsync,
+} from './computeLessonStep';
 
 export {
   simulateWhiteCornersLessonOnStorageCube,
   simulateWhiteCornersLessonOnStorageCubeAsync,
-} from './simulateLesson'
+} from './simulateLesson';
 
 // Re-exports used by corner lesson tests (import from submodules in new code).
 export {
@@ -63,5 +70,5 @@ export {
   FRD_URF_WHITE_ON_R,
   FRD_URF_WHITE_ON_U,
   insertMovesFromUrf,
-} from './uLayerSteps'
-export { FRD_WHITE_ON_F, FRD_WHITE_ON_R } from './directSolveSteps'
+} from './uLayerSteps';
+export { FRD_WHITE_ON_F, FRD_WHITE_ON_R } from './directSolveSteps';

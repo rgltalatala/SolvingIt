@@ -1,8 +1,12 @@
-import { applyMovesInStudentHold } from '../../cube/cubeState'
-import type { CubeState, Move } from '../../cube/cubeState'
-import { demoStepsToMoves, expandDemoSteps, type ExpandDemoStepsResult } from './expandDemoSteps'
-import type { BuildExecutionResult, StudentHold } from './types'
-import { noneHold } from './types'
+import { applyMovesInStudentHold } from '../../cube/cubeState';
+import type { CubeState, Move } from '../../cube/cubeState';
+import {
+  demoStepsToMoves,
+  expandDemoSteps,
+  type ExpandDemoStepsResult,
+} from './expandDemoSteps';
+import type { BuildExecutionResult, StudentHold } from './types';
+import { noneHold } from './types';
 
 /** Expanded demo steps for preview UI (chips, rotation labels) and execution move list. */
 export function getLessonDemoExpansion(
@@ -10,7 +14,7 @@ export function getLessonDemoExpansion(
   avoidBackMoves: boolean,
   initialHold: StudentHold = noneHold(),
 ): ExpandDemoStepsResult {
-  return expandDemoSteps(rawDemoMoves, initialHold, avoidBackMoves)
+  return expandDemoSteps(rawDemoMoves, initialHold, avoidBackMoves);
 }
 
 /**
@@ -22,15 +26,19 @@ export function getLessonExecutionMoves(
   avoidBackMoves: boolean,
   initialHold: StudentHold = noneHold(),
 ): BuildExecutionResult {
-  const { steps, finalHold } = getLessonDemoExpansion(rawDemoMoves, avoidBackMoves, initialHold)
-  return { moves: demoStepsToMoves(steps), finalHold }
+  const { steps, finalHold } = getLessonDemoExpansion(
+    rawDemoMoves,
+    avoidBackMoves,
+    initialHold,
+  );
+  return { moves: demoStepsToMoves(steps), finalHold };
 }
 
 export type ApplyLessonToStorageResult = {
-  cubeState: CubeState
-  studentHold: StudentHold
-  moves: Move[]
-}
+  cubeState: CubeState;
+  studentHold: StudentHold;
+  moves: Move[];
+};
 
 /** Apply a lesson step to storage cube; returns null when there is nothing to apply. */
 export function applyLessonToStorage(
@@ -39,14 +47,18 @@ export function applyLessonToStorage(
   studentHold: StudentHold,
   avoidBackMoves: boolean,
 ): ApplyLessonToStorageResult | null {
-  if (rawDemoMoves.length === 0) return null
+  if (rawDemoMoves.length === 0) return null;
 
-  const { moves } = getLessonExecutionMoves(rawDemoMoves, avoidBackMoves, studentHold)
-  const cubeState = applyMovesInStudentHold(storageState, moves)
+  const { moves } = getLessonExecutionMoves(
+    rawDemoMoves,
+    avoidBackMoves,
+    studentHold,
+  );
+  const cubeState = applyMovesInStudentHold(storageState, moves);
   return {
     cubeState,
     /** y-rotations are applied on the cube; hold is only used during avoid-back expansion. */
     studentHold: noneHold(),
     moves,
-  }
+  };
 }

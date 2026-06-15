@@ -1,14 +1,14 @@
-import { applyMoves } from '../../../../cube/cubeState'
-import type { CubeState, Move } from '../../../../cube/cubeState'
-import { isWholeCubeRotation } from '../../../../cube/cubeState'
-import { isVerifiedCornerSlotDemo } from './preserveLessonState'
-import type { CornerSlotId } from './types'
+import { applyMoves } from '../../../../cube/cubeState';
+import type { CubeState, Move } from '../../../../cube/cubeState';
+import { isWholeCubeRotation } from '../../../../cube/cubeState';
+import { isVerifiedCornerSlotDemo } from './preserveLessonState';
+import type { CornerSlotId } from './types';
 import {
   setupMovesForWrongDSlotInHoldView,
   setupMovesForWrongDSlotStorage,
-} from './wrongDLayerSteps'
-import { U_LAYER_U_PREFIXES } from './uLayerSteps'
-import { CORNER_ORDER } from './types'
+} from './wrongDLayerSteps';
+import { U_LAYER_U_PREFIXES } from './uLayerSteps';
+import { CORNER_ORDER } from './types';
 
 /**
  * Cube state for FRD-view case recognition. Reorient steps bake y into the cube;
@@ -19,36 +19,36 @@ export function studentHoldView(
   _holdIndex: number,
   uPrefix: Move[] = [],
 ): CubeState {
-  return uPrefix.length ? applyMoves(studentState, uPrefix) : studentState
+  return uPrefix.length ? applyMoves(studentState, uPrefix) : studentState;
 }
 
 /** True when every move is a face turn (no whole-cube y rotations). */
 export function isStudentFacingDemo(demo: readonly Move[]): boolean {
-  return demo.length > 0 && !demo.some(isWholeCubeRotation)
+  return demo.length > 0 && !demo.some(isWholeCubeRotation);
 }
 
 function inferWrongDStorageCandidates(
   studentDemo: Move[],
   holdIndex: number,
 ): Move[][] {
-  if (holdIndex !== 0) return []
-  const candidates: Move[][] = []
+  if (holdIndex !== 0) return [];
+  const candidates: Move[][] = [];
   for (const dSlot of CORNER_ORDER) {
-    if (dSlot === 'FRD') continue
-    const setupView = setupMovesForWrongDSlotInHoldView(dSlot)
-    const setupStorage = setupMovesForWrongDSlotStorage(dSlot)
+    if (dSlot === 'FRD') continue;
+    const setupView = setupMovesForWrongDSlotInHoldView(dSlot);
+    const setupStorage = setupMovesForWrongDSlotStorage(dSlot);
     for (const uPrefix of U_LAYER_U_PREFIXES) {
-      const prefix = [...uPrefix, ...setupView]
-      if (prefix.length > studentDemo.length) continue
-      if (!prefix.every((move, index) => studentDemo[index] === move)) continue
+      const prefix = [...uPrefix, ...setupView];
+      if (prefix.length > studentDemo.length) continue;
+      if (!prefix.every((move, index) => studentDemo[index] === move)) continue;
       candidates.push([
         ...uPrefix,
         ...setupStorage,
         ...studentDemo.slice(prefix.length),
-      ])
+      ]);
     }
   }
-  return candidates
+  return candidates;
 }
 
 /** Resolve the storage-frame demo that verifies for apply / undo. */
@@ -64,14 +64,14 @@ export function resolveLessonStorageDemo(
     ...storageCandidates,
     ...inferWrongDStorageCandidates(studentDemo, holdIndex),
     studentDemo,
-  ]
+  ];
 
-  const seen = new Set<string>()
+  const seen = new Set<string>();
   for (const demo of candidates) {
-    if (!demo.length) continue
-    const key = demo.join(' ')
-    if (seen.has(key)) continue
-    seen.add(key)
+    if (!demo.length) continue;
+    const key = demo.join(' ');
+    if (seen.has(key)) continue;
+    seen.add(key);
     if (
       isVerifiedCornerSlotDemo(
         studentState,
@@ -81,10 +81,10 @@ export function resolveLessonStorageDemo(
         solvedCornerIds,
       )
     ) {
-      return demo
+      return demo;
     }
   }
-  return null
+  return null;
 }
 
 /**
@@ -100,7 +100,7 @@ export function verifiedFrdDemoAtHold(
   solvedCornerIds?: readonly CornerSlotId[],
   storageCandidates: readonly Move[][] = [],
 ): Move[] | null {
-  if (!studentDemo.length || !isStudentFacingDemo(studentDemo)) return null
+  if (!studentDemo.length || !isStudentFacingDemo(studentDemo)) return null;
 
   const studentVerifies = isVerifiedCornerSlotDemo(
     studentState,
@@ -108,7 +108,7 @@ export function verifiedFrdDemoAtHold(
     studentDemo,
     holdIndex,
     solvedCornerIds,
-  )
+  );
   const storageDemo = resolveLessonStorageDemo(
     studentState,
     targetId,
@@ -116,9 +116,9 @@ export function verifiedFrdDemoAtHold(
     studentDemo,
     solvedCornerIds,
     storageCandidates,
-  )
+  );
 
-  if (!studentVerifies && !storageDemo) return null
+  if (!studentVerifies && !storageDemo) return null;
 
-  return studentDemo
+  return studentDemo;
 }
