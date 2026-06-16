@@ -77,4 +77,20 @@ describe('MoveSequenceDemo', () => {
       screen.getByRole('button', { name: 'Previous move' }),
     ).toBeDisabled();
   });
+
+  it('renders trailing actions in the demo control row', () => {
+    render(
+      <MoveSequenceDemo
+        baseCubeState={baseCubeState}
+        moves={['F']}
+        trailingActions={
+          <button type="button">Apply example &amp; continue</button>
+        }
+      />,
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'Apply example & continue' }),
+    ).toBeInTheDocument();
+  });
 });

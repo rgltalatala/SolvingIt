@@ -1,8 +1,8 @@
+import type { ReactNode } from 'react';
 import type { CubeState } from '../../cube/cubeState';
 import { CubeView } from '../../cube3d/CubeView';
 import { MoveSequenceDemo } from '../MoveSequenceDemo';
 import type { DemoSnapshot } from './lessonDemo';
-import { LessonPreparingOverlay } from './LessonPreparingOverlay';
 
 type LessonCubeStageProps = {
   isComplete: boolean;
@@ -11,6 +11,7 @@ type LessonCubeStageProps = {
   visibleDemo: DemoSnapshot | null;
   showPreparingOverlay: boolean;
   preparingSubtitle?: string;
+  trailingActions?: ReactNode;
 };
 
 export function LessonCubeStage({
@@ -20,6 +21,7 @@ export function LessonCubeStage({
   visibleDemo,
   showPreparingOverlay,
   preparingSubtitle,
+  trailingActions,
 }: LessonCubeStageProps) {
   if (isComplete) {
     return (
@@ -41,9 +43,18 @@ export function LessonCubeStage({
         instructions={visibleDemo?.instructions}
         meshRotation={[0, 0, 0]}
         frameClassName="h-[420px] w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-950"
+        trailingActions={trailingActions}
       />
       {showPreparingOverlay ? (
-        <LessonPreparingOverlay subtitle={preparingSubtitle} />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-xl bg-slate-950/75 px-4 text-center">
+          <p className="text-sm font-semibold text-slate-100">
+            Preparing next example…
+          </p>
+          <p className="text-xs text-slate-400">
+            {preparingSubtitle ??
+              'Finding a short demo sequence for this cube.'}
+          </p>
+        </div>
       ) : null}
     </div>
   );

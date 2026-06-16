@@ -8,7 +8,7 @@ import {
 } from '../cube/cubeState';
 import { useCubeStore } from '../store/cubeStore';
 import { useWhiteCrossLessonStep } from './lessons/bottomLayer/useWhiteCrossLessonStep';
-import { LessonApplyPanel } from './lessons/LessonApplyPanel';
+import { LessonApplyButton, LessonApplyPanel } from './lessons/LessonApplyPanel';
 import { LessonAvoidBackPanel } from './lessons/LessonAvoidBackPanel';
 import { LessonCubeStage } from './lessons/LessonCubeStage';
 import { LessonHeaderActions } from './lessons/LessonHeaderActions';
@@ -139,6 +139,24 @@ export function LearningCrossView() {
     });
   };
 
+  const trailingActions = canApplyDemo ? (
+    <LessonApplyButton
+      buttonLabel="Apply example & continue"
+      disabled={isStepPending}
+      onApply={() => {
+        startLessonTransition(() => {
+          if (avoidOn) {
+            applyLessonStep(demoMoves, { avoidBackMoves: true });
+            if (previewMoves.includes('y2') && !hasSeenAvoidBackCallout)
+              markAvoidBackCalloutSeen();
+          } else {
+            applyLessonDemoMoves(demoMoves);
+          }
+        });
+      }}
+    />
+  ) : undefined;
+
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-6">
       <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -220,6 +238,7 @@ export function LearningCrossView() {
         completeCanvasKey="lesson-complete-cube"
         visibleDemo={visibleDemo}
         showPreparingOverlay={showPreparingOverlay}
+        trailingActions={trailingActions}
       />
 
       <article
@@ -273,22 +292,7 @@ export function LearningCrossView() {
           </>
         ) : null}
         {canApplyDemo ? (
-          <LessonApplyPanel
-            hint="When your physical cube matches the diagram and you have stepped through the example (or reproduced it on your cube), apply here to update the virtual cube and continue the lesson."
-            buttonLabel="Apply example & continue"
-            disabled={isStepPending}
-            onApply={() => {
-              startLessonTransition(() => {
-                if (avoidOn) {
-                  applyLessonStep(demoMoves, { avoidBackMoves: true });
-                  if (previewMoves.includes('y2') && !hasSeenAvoidBackCallout)
-                    markAvoidBackCalloutSeen();
-                } else {
-                  applyLessonDemoMoves(demoMoves);
-                }
-              });
-            }}
-          />
+          <LessonApplyPanel hint="When your physical cube matches the diagram and you have stepped through the example (or reproduced it on your cube), apply here to update the virtual cube and continue the lesson." />
         ) : null}
       </article>
     </section>

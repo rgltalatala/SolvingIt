@@ -6,8 +6,17 @@ import { useCubeStore } from '../store/cubeStore';
 import { LearningCrossView } from './LearningCrossView';
 
 vi.mock('./MoveSequenceDemo', () => ({
-  MoveSequenceDemo: ({ moves }: { moves: string[] }) => (
-    <div data-testid="move-sequence-demo">{moves.join(' ') || 'no-moves'}</div>
+  MoveSequenceDemo: ({
+    moves,
+    trailingActions,
+  }: {
+    moves: string[];
+    trailingActions?: React.ReactNode;
+  }) => (
+    <div data-testid="move-sequence-demo">
+      {moves.join(' ') || 'no-moves'}
+      {trailingActions}
+    </div>
   ),
 }));
 

@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import type { CubeState, Move } from '../cube/cubeState';
 import {
   faceCentersFromCubeState,
@@ -29,6 +36,8 @@ export interface MoveSequenceDemoProps {
   instructions?: Instruction[];
   meshRotation?: [number, number, number];
   frameClassName?: string;
+  /** Rendered at the end of the demo control row (e.g. apply / continue). */
+  trailingActions?: ReactNode;
 }
 
 /**
@@ -42,6 +51,7 @@ export function MoveSequenceDemo({
   instructions,
   meshRotation = [0, 0, 0],
   frameClassName = 'h-[280px] w-full min-h-[240px] overflow-hidden rounded-lg border border-slate-600 bg-slate-950',
+  trailingActions,
 }: MoveSequenceDemoProps) {
   const [applied, setApplied] = useState(0);
   const [animating, setAnimating] = useState(false);
@@ -194,46 +204,51 @@ export function MoveSequenceDemo({
         moveAnimation={moveAnimation}
       />
 
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-700"
+            onClick={handleReset}
+          >
+            Reset
+          </button>
+          <button
+            type="button"
+            className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-700 disabled:opacity-40"
+            onClick={handlePrev}
+            disabled={!hasMoves || animating || applied <= 0}
+          >
+            Previous move
+          </button>
+          <button
+            type="button"
+            className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-700 disabled:opacity-40"
+            onClick={handleNext}
+            disabled={!hasMoves || animating || applied >= moves.length}
+          >
+            Next move
+          </button>
+          <button
+            type="button"
+            className="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600 disabled:opacity-40"
+            onClick={handlePlayAll}
+            disabled={!hasMoves || animating}
+          >
+            {playing ? 'Playing…' : 'Play all'}
+          </button>
+        </div>
+        {trailingActions ? (
+          <div className="ml-auto flex shrink-0 items-center">{trailingActions}</div>
+        ) : null}
+      </div>
+
       {instructions && instructions.length > 0 ? (
         <LessonInstructionDemo
           instructions={instructions}
           activeIndex={instructionIndex}
         />
       ) : null}
-
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-700"
-          onClick={handleReset}
-        >
-          Reset
-        </button>
-        <button
-          type="button"
-          className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-700 disabled:opacity-40"
-          onClick={handlePrev}
-          disabled={!hasMoves || animating || applied <= 0}
-        >
-          Previous move
-        </button>
-        <button
-          type="button"
-          className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-700 disabled:opacity-40"
-          onClick={handleNext}
-          disabled={!hasMoves || animating || applied >= moves.length}
-        >
-          Next move
-        </button>
-        <button
-          type="button"
-          className="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600 disabled:opacity-40"
-          onClick={handlePlayAll}
-          disabled={!hasMoves || animating}
-        >
-          {playing ? 'Playing…' : 'Play all'}
-        </button>
-      </div>
 
       {hasMoves ? (
         <div className="flex flex-wrap gap-1.5">

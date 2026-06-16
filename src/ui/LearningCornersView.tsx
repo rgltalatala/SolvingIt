@@ -16,7 +16,10 @@ import {
 import type { YRotationStep } from '../learn/studentHold/types';
 import { useCubeStore } from '../store/cubeStore';
 import { useWhiteCornerLessonStep } from './lessons/bottomLayer/useWhiteCornerLessonStep';
-import { LessonApplyPanel } from './lessons/LessonApplyPanel';
+import {
+  LessonApplyButton,
+  LessonApplyPanel,
+} from './lessons/LessonApplyPanel';
 import { LessonAvoidBackPanel } from './lessons/LessonAvoidBackPanel';
 import { LessonCubeStage } from './lessons/LessonCubeStage';
 import { LessonHeaderActions } from './lessons/LessonHeaderActions';
@@ -28,16 +31,15 @@ function expandHoldReorientDemo(moves: Move[]): {
   steps: DemoStep[];
   instructions: Instruction[];
 } {
-  const steps: DemoStep[] = moves
-    .filter(isWholeCubeRotation)
-    .map((rotation) => ({
-      type: 'rotation' as const,
-      rotation: rotation as YRotationStep,
-    }));
-  const instructions: Instruction[] = steps.map((step) => ({
+  const rotations = moves.filter(isWholeCubeRotation) as YRotationStep[];
+  const steps: DemoStep[] = rotations.map((rotation) => ({
     type: 'rotation' as const,
-    rotation: step.rotation,
-    text: getRotationText(step.rotation),
+    rotation,
+  }));
+  const instructions: Instruction[] = rotations.map((rotation) => ({
+    type: 'rotation' as const,
+    rotation,
+    text: getRotationText(rotation),
   }));
   return { steps, instructions };
 }
@@ -250,6 +252,14 @@ export function LearningCornersView() {
     });
   };
 
+  const trailingActions = canApplyDemo ? (
+    <LessonApplyButton
+      buttonLabel={isReorientStep ? 'Continue' : 'Apply example & continue'}
+      disabled={isStepPending}
+      onApply={handleApplyDemo}
+    />
+  ) : undefined;
+
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-6">
       <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -327,6 +337,7 @@ export function LearningCornersView() {
         visibleDemo={visibleDemo}
         showPreparingOverlay={showPreparingOverlay}
         preparingSubtitle="Finding a short demo sequence for this corner."
+        trailingActions={trailingActions}
       />
 
       <article
@@ -385,11 +396,6 @@ export function LearningCornersView() {
                 ? 'When your physical cube matches the hold shown, continue to the next step.'
                 : 'When your physical cube matches the diagram and you have stepped through the example, apply here to update the virtual cube and continue.'
             }
-            buttonLabel={
-              isReorientStep ? 'Continue' : 'Apply example & continue'
-            }
-            disabled={isStepPending}
-            onApply={handleApplyDemo}
           />
         ) : null}
 
