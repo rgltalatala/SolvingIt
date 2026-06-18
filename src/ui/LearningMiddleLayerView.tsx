@@ -1,4 +1,5 @@
 import { useMemo, useTransition } from 'react';
+import type { Color } from '../cube/cubeState';
 import type { Move } from '../cube/cubeState';
 import {
   cubeStateToStudentFrame,
@@ -7,7 +8,6 @@ import {
   isWholeCubeRotation,
   studentLessonHoldFaceCenters,
 } from '../cube/cubeState';
-import { resolveLessonStorageDemo } from '../learn/layers/bottomLayer/corners';
 import {
   getRotationText,
   type DemoStep,
@@ -15,18 +15,16 @@ import {
 } from '../learn/studentHold';
 import type { YRotationStep } from '../learn/studentHold/types';
 import { useCubeStore } from '../store/cubeStore';
-import { useWhiteCornerLessonStep } from './lessons/bottomLayer/useWhiteCornerLessonStep';
+import { useMiddleLayerLessonStep } from './lessons/middleLayer/useMiddleLayerLessonStep';
 import {
   LessonApplyButton,
   LessonApplyPanel,
 } from './lessons/LessonApplyPanel';
-import { LessonAvoidBackPanel } from './lessons/LessonAvoidBackPanel';
 import { LessonCubeStage } from './lessons/LessonCubeStage';
 import { LessonHeaderActions } from './lessons/LessonHeaderActions';
 import { PHYSICAL_CUBE_MATCH_NOTE } from './lessons/lessonCopy';
 import { LessonUnavailable } from './lessons/LessonUnavailable';
 import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
-import { MIDDLE_LAYER_EDGES_LESSON_ID } from '../learn/layers/middleLayer/edges';
 
 function expandHoldReorientDemo(moves: Move[]): {
   steps: DemoStep[];
@@ -50,20 +48,13 @@ function expandReorientDemoForPipeline(moves: Move[]) {
   return { ...expanded, previewMoves: moves };
 }
 
-export function LearningCornersView() {
+export function LearningMiddleLayerView() {
   const cubeState = useCubeStore((state) => state.cubeState);
   const setAppPhase = useCubeStore((state) => state.setAppPhase);
   const setActiveLesson = useCubeStore((state) => state.setActiveLesson);
   const activeLesson = useCubeStore((state) => state.activeLesson);
   const applyLessonDemoMoves = useCubeStore(
     (state) => state.applyLessonDemoMoves,
-  );
-  const applyLessonStep = useCubeStore((state) => state.applyLessonStep);
-  const hasSeenAvoidBackCallout = useCubeStore(
-    (state) => state.hasSeenAvoidBackCallout,
-  );
-  const markAvoidBackCalloutSeen = useCubeStore(
-    (state) => state.markAvoidBackCalloutSeen,
   );
   const resetLessonSession = useCubeStore((state) => state.resetLessonSession);
   const undoLessonStep = useCubeStore((state) => state.undoLessonStep);
@@ -84,12 +75,11 @@ export function LearningCornersView() {
     solvedSlots,
     recomputeStep,
     currentHoldIndex,
-    solvedCornerIds,
     sessionUndoStack,
     advanceAfterStep,
-    undoCornerSessionStep,
-    resetCornerSession,
-  } = useWhiteCornerLessonStep(studentFrame, { resetKey: activeLesson });
+    undoMiddleSessionStep,
+    resetMiddleSession,
+  } = useMiddleLayerLessonStep(studentFrame, { resetKey: activeLesson });
 
   const demoMoves = useMemo((): Move[] => {
     if (
@@ -105,58 +95,13 @@ export function LearningCornersView() {
 
   const isHoldReorientStep = step?.kind === 'reorient-hold';
 
-  const storageDemoMoves = useMemo((): Move[] => {
-    if (
-      isHoldReorientStep ||
-      !studentFrame ||
-      !step ||
-      step.kind !== 'solve-corner' ||
-      !demoMoves.length
-    ) {
-      return demoMoves;
-    }
-    return (
-      resolveLessonStorageDemo(
-        studentFrame,
-        step.cornerId,
-        currentHoldIndex,
-        demoMoves,
-        solvedCornerIds,
-      ) ?? demoMoves
-    );
-  }, [
-    demoMoves,
-    studentFrame,
-    step,
-    isHoldReorientStep,
-    currentHoldIndex,
-    solvedCornerIds,
-  ]);
-
-  const viewDemoMoves = useMemo((): Move[] => {
-    if (isHoldReorientStep) return demoMoves;
-    if (step?.kind === 'solve-corner' && storageDemoMoves.length > 0) {
-      return storageDemoMoves;
-    }
-    return demoMoves;
-  }, [demoMoves, storageDemoMoves, step?.kind, isHoldReorientStep]);
-
   const stepKey = useMemo(
-    () => (step ? `${step.kind}:${viewDemoMoves.join(' ')}` : 'none'),
-    [step, viewDemoMoves],
+    () => (step ? `${step.kind}:${demoMoves.join(' ')}` : 'none'),
+    [step, demoMoves],
   );
 
-  const {
-    visibleDemo,
-    showAvoidBackToggle,
-    avoidBackMoves,
-    setAvoidBackMoves,
-    rememberAvoidBackDefault,
-    setRememberAvoidBackDefault,
-    avoidOn,
-    previewMoves,
-  } = useLessonDemoPipeline({
-    demoMoves: viewDemoMoves,
+  const { visibleDemo } = useLessonDemoPipeline({
+    demoMoves,
     stepKey,
     isLessonComplete,
     isStepPending,
@@ -185,16 +130,18 @@ export function LearningCornersView() {
     step ??
     (showPreparingOverlay
       ? {
-          kind: 'solve-corner' as const,
+          kind: 'align-u' as const,
           title: 'Preparing lesson…',
           body: '',
-          cornerId: 'FRD' as const,
+          demoMoves: [] as Move[],
+          edgeColors: ['green', 'red'] as [Color, Color],
         }
       : {
-          kind: 'solve-corner' as const,
-          title: 'White corners',
+          kind: 'align-u' as const,
+          title: 'Middle layer edges',
           body: '',
-          cornerId: 'FRD' as const,
+          demoMoves: [] as Move[],
+          edgeColors: ['green', 'red'] as [Color, Color],
         });
 
   const isReorientStep = step?.kind === 'reorient-hold';
@@ -203,23 +150,15 @@ export function LearningCornersView() {
     !isStepPending &&
     demoMoves.length > 0 &&
     step.kind !== 'complete' &&
-    step.kind !== 'cross-prerequisite';
-
-  const showRotationCallout =
-    canApplyDemo &&
-    avoidBackMoves &&
-    showAvoidBackToggle &&
-    !hasSeenAvoidBackCallout &&
-    previewMoves.includes('y2');
+    step.kind !== 'cross-corners-prerequisite';
 
   const handleRestartLessonTips = () => {
     resetLessonSession();
-    setAvoidBackMoves(false);
     recomputeStep();
   };
 
-  const handleResetCornerSession = () => {
-    resetCornerSession(studentFrame);
+  const handleResetMiddleSession = () => {
+    resetMiddleSession(studentFrame);
     recomputeStep();
   };
 
@@ -227,28 +166,20 @@ export function LearningCornersView() {
     if (!canUndo || isStepPending) return;
     startLessonTransition(() => {
       undoLessonStep();
-      undoCornerSessionStep();
+      undoMiddleSessionStep();
     });
   };
 
   const handleApplyDemo = () => {
     if (!step || !canApplyDemo) return;
     startLessonTransition(() => {
-      if (step.kind === 'reorient-hold') {
-        advanceAfterStep(step);
+      if (
+        step.kind === 'reorient-hold' ||
+        step.kind === 'align-u' ||
+        step.kind === 'solve-edge'
+      ) {
+        advanceAfterStep(step, studentFrame);
         applyLessonDemoMoves(step.demoMoves);
-        return;
-      }
-      if (step.kind === 'solve-corner') {
-        advanceAfterStep(step);
-        if (avoidOn) {
-          applyLessonStep(storageDemoMoves, { avoidBackMoves: true });
-          if (previewMoves.includes('y2') && !hasSeenAvoidBackCallout) {
-            markAvoidBackCalloutSeen();
-          }
-        } else {
-          applyLessonDemoMoves(storageDemoMoves);
-        }
       }
     });
   };
@@ -265,7 +196,7 @@ export function LearningCornersView() {
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-6">
       <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Lesson: White corners</h1>
+          <h1 className="text-3xl font-bold">Lesson: Middle layer edges</h1>
           <p className="mt-1 text-slate-300">
             Hold your cube with{' '}
             <span className="text-slate-100">white on the bottom</span> and{' '}
@@ -283,11 +214,10 @@ export function LearningCornersView() {
           ) : null}
           {step &&
           step.kind !== 'complete' &&
-          step.kind !== 'cross-prerequisite' ? (
+          step.kind !== 'cross-corners-prerequisite' ? (
             <p className="mt-2 text-sm text-slate-400">
               Progress: <span className="text-slate-200">{solvedSlots}/4</span>{' '}
-              white corners solved (white on D, side stickers match their
-              centers).
+              middle-layer edges solved (side stickers match their centers).
             </p>
           ) : null}
           <details className="mt-3 text-sm text-slate-400">
@@ -297,18 +227,16 @@ export function LearningCornersView() {
             <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-relaxed">
               <li>
                 <span className="text-slate-300">Reorient steps</span> rotate
-                the virtual cube (whole-cube y turns) so the next corner faces
-                you.
+                the virtual cube so the correct face is toward you.
               </li>
               <li>
                 <span className="text-slate-300">Undo last example</span>{' '}
-                restores the virtual cube before the last apply (corner demo or
-                reorient).
+                restores the virtual cube before the last apply.
               </li>
               <li>
-                <span className="text-slate-300">Reset corner session</span>{' '}
-                clears hold tracking and re-counts solved corners from the
-                current cube — your scramble is unchanged.
+                <span className="text-slate-300">Reset middle-layer session</span>{' '}
+                clears hold tracking and re-counts solved edges from the current
+                cube.
               </li>
             </ul>
           </details>
@@ -323,9 +251,9 @@ export function LearningCornersView() {
             <button
               type="button"
               className="inline-flex w-fit rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:text-slate-100"
-              onClick={handleResetCornerSession}
+              onClick={handleResetMiddleSession}
             >
-              Reset corner session
+              Reset middle-layer session
             </button>
           }
         />
@@ -334,10 +262,10 @@ export function LearningCornersView() {
       <LessonCubeStage
         isComplete={isLessonComplete}
         cubeState={studentFrame}
-        completeCanvasKey="corners-lesson-complete-cube"
+        completeCanvasKey="middle-layer-lesson-complete-cube"
         visibleDemo={visibleDemo}
         showPreparingOverlay={showPreparingOverlay}
-        preparingSubtitle="Finding a short demo sequence for this corner."
+        preparingSubtitle="Finding a demo for this middle-layer edge."
         trailingActions={trailingActions}
       />
 
@@ -353,33 +281,28 @@ export function LearningCornersView() {
           </p>
         ) : null}
 
-        {step?.kind === 'cross-prerequisite' ? (
-          <div className="mt-4">
+        {step?.kind === 'cross-corners-prerequisite' ? (
+          <div className="mt-4 flex flex-wrap gap-3">
             <button
               type="button"
-              className="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-600"
+              className="inline-flex rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600"
               onClick={() => setActiveLesson('white-cross')}
             >
               Go to white cross lesson
             </button>
+            <button
+              type="button"
+              className="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-600"
+              onClick={() => setActiveLesson('white-corners')}
+            >
+              Go to white corners lesson
+            </button>
           </div>
-        ) : null}
-
-        {step && step.kind !== 'complete' && showAvoidBackToggle ? (
-          <LessonAvoidBackPanel
-            frontColor={lessonHold.F}
-            avoidBackMoves={avoidBackMoves}
-            onToggleAvoidBack={() => setAvoidBackMoves((v) => !v)}
-            rememberAvoidBackDefault={rememberAvoidBackDefault}
-            onRememberDefaultChange={setRememberAvoidBackDefault}
-            showRotationCallout={showRotationCallout}
-            onMarkCalloutSeen={markAvoidBackCalloutSeen}
-          />
         ) : null}
 
         {step &&
         step.kind !== 'complete' &&
-        step.kind !== 'cross-prerequisite' ? (
+        step.kind !== 'cross-corners-prerequisite' ? (
           <p className="mt-3 text-xs text-slate-500">
             Same hold as the diagram: {formatColorLabel(lessonHold.F)} on F
             (front), {formatColorLabel(lessonHold.U)} on U (top),{' '}
@@ -401,24 +324,10 @@ export function LearningCornersView() {
         ) : null}
 
         {isLessonComplete ? (
-          <>
-            <p className="mt-4 text-sm text-slate-400">
-              All four white corners are in place. Continue to middle-layer edges
-              when you are ready, or use Back to cube overview.
-            </p>
-            <div className="mt-4">
-              <button
-                type="button"
-                className="inline-flex rounded-lg bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-600"
-                onClick={() => {
-                  resetLessonSession();
-                  setActiveLesson(MIDDLE_LAYER_EDGES_LESSON_ID);
-                }}
-              >
-                Continue: Middle layer edges
-              </button>
-            </div>
-          </>
+          <p className="mt-4 text-sm text-slate-400">
+            All four middle-layer edges are in place. Use Back to cube overview
+            when you are ready.
+          </p>
         ) : null}
       </article>
     </section>

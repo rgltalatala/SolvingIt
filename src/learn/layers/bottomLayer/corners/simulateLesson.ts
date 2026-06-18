@@ -68,6 +68,7 @@ async function runWhiteCornersLessonSimulation(
         lastStepKind,
         stuckNoDemo: false,
         finalHoldIndex: currentHoldIndex,
+        finalStorageCube: storage,
       };
     }
 
@@ -81,6 +82,7 @@ async function runWhiteCornersLessonSimulation(
         lastStepKind,
         stuckNoDemo: false,
         finalHoldIndex: currentHoldIndex,
+        finalStorageCube: storage,
       };
     }
 
@@ -91,6 +93,7 @@ async function runWhiteCornersLessonSimulation(
         lastStepKind,
         stuckNoDemo: true,
         finalHoldIndex: currentHoldIndex,
+        finalStorageCube: storage,
       };
     }
 
@@ -106,6 +109,7 @@ async function runWhiteCornersLessonSimulation(
           lastStepKind,
           stuckNoDemo: true,
           finalHoldIndex: currentHoldIndex,
+          finalStorageCube: storage,
         };
       }
       storage = applyStepDemo(storage, step.demoMoves);
@@ -131,6 +135,7 @@ async function runWhiteCornersLessonSimulation(
           lastStepKind,
           stuckNoDemo: true,
           finalHoldIndex: currentHoldIndex,
+          finalStorageCube: storage,
         };
       }
       const applyMovesList = resolveLessonStorageDemo(
@@ -162,6 +167,7 @@ async function runWhiteCornersLessonSimulation(
       solvedCornerIds,
     ),
     finalHoldIndex: currentHoldIndex,
+    finalStorageCube: storage,
   };
 }
 
@@ -201,6 +207,7 @@ function runWhiteCornersLessonSimulationSync(
         lastStepKind,
         stuckNoDemo: false,
         finalHoldIndex: currentHoldIndex,
+        finalStorageCube: storage,
       };
     }
 
@@ -214,6 +221,7 @@ function runWhiteCornersLessonSimulationSync(
         lastStepKind,
         stuckNoDemo: false,
         finalHoldIndex: currentHoldIndex,
+        finalStorageCube: storage,
       };
     }
 
@@ -224,6 +232,7 @@ function runWhiteCornersLessonSimulationSync(
         lastStepKind,
         stuckNoDemo: true,
         finalHoldIndex: currentHoldIndex,
+        finalStorageCube: storage,
       };
     }
 
@@ -239,6 +248,7 @@ function runWhiteCornersLessonSimulationSync(
           lastStepKind,
           stuckNoDemo: true,
           finalHoldIndex: currentHoldIndex,
+          finalStorageCube: storage,
         };
       }
       storage = applyStepDemo(storage, step.demoMoves);
@@ -264,6 +274,7 @@ function runWhiteCornersLessonSimulationSync(
           lastStepKind,
           stuckNoDemo: true,
           finalHoldIndex: currentHoldIndex,
+          finalStorageCube: storage,
         };
       }
       const applyMovesList = resolveLessonStorageDemo(
@@ -295,6 +306,7 @@ function runWhiteCornersLessonSimulationSync(
       solvedCornerIds,
     ),
     finalHoldIndex: currentHoldIndex,
+    finalStorageCube: storage,
   };
 }
 

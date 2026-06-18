@@ -2,13 +2,21 @@ import { useCubeStore } from '../store/cubeStore';
 import { CubeView } from '../cube3d/CubeView';
 import { cubeStateToFaceletString } from '../cube/cubeStateToFacelets';
 
+import { MIDDLE_LAYER_EDGES_LESSON_ID } from '../learn/layers/middleLayer/edges';
+import { WHITE_CORNERS_LESSON_ID } from '../learn/layers/bottomLayer/corners';
+
 export function CubeEditorView() {
   const cubeState = useCubeStore((state) => state.cubeState);
   const setAppPhase = useCubeStore((state) => state.setAppPhase);
   const setActiveLesson = useCubeStore((state) => state.setActiveLesson);
   const resetLessonSession = useCubeStore((state) => state.resetLessonSession);
 
-  const startLesson = (lesson: 'white-cross' | 'white-corners') => {
+  const startLesson = (
+    lesson:
+      | 'white-cross'
+      | typeof WHITE_CORNERS_LESSON_ID
+      | typeof MIDDLE_LAYER_EDGES_LESSON_ID,
+  ) => {
     resetLessonSession();
     setActiveLesson(lesson);
     setAppPhase('learning');
@@ -46,9 +54,16 @@ export function CubeEditorView() {
         <button
           type="button"
           className="rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-500"
-          onClick={() => startLesson('white-corners')}
+          onClick={() => startLesson(WHITE_CORNERS_LESSON_ID)}
         >
           Start lesson: White corners
+        </button>
+        <button
+          type="button"
+          className="rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-500"
+          onClick={() => startLesson(MIDDLE_LAYER_EDGES_LESSON_ID)}
+        >
+          Start lesson: Middle layer edges
         </button>
       </div>
       <CubeView cubeState={cubeState} />

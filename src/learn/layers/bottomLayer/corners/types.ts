@@ -1,4 +1,4 @@
-import type { Move } from '../../../../cube/cubeState';
+import type { CubeState, Move } from '../../../../cube/cubeState';
 
 export const CORNER_ORDER = ['FRD', 'BDR', 'BLD', 'FDL'] as const;
 
@@ -55,4 +55,5 @@ export interface SimulateWhiteCornersLessonResult {
   lastStepKind?: WhiteCornersLessonStep['kind'];
   stuckNoDemo: boolean;
   finalHoldIndex?: number;
+  finalStorageCube?: CubeState;
 }

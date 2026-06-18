@@ -13,9 +13,13 @@ import {
   type StudentHold,
 } from '../learn/studentHold';
 import { clearAllLessonDemoCaches } from '../learn/lessonCore';
+import { MIDDLE_LAYER_EDGES_LESSON_ID } from '../learn/layers/middleLayer/edges';
 import { WHITE_CORNERS_LESSON_ID } from '../learn/layers/bottomLayer/corners';
 
-export type ActiveLessonId = 'white-cross' | typeof WHITE_CORNERS_LESSON_ID;
+export type ActiveLessonId =
+  | 'white-cross'
+  | typeof WHITE_CORNERS_LESSON_ID
+  | typeof MIDDLE_LAYER_EDGES_LESSON_ID;
 
 export type LessonSnapshot = {
   cubeState: CubeState;
