@@ -143,6 +143,32 @@ export function whiteStickerOnU(
   return faceForWhiteOnEdge(edgePosition, state) === 'U';
 }
 
+export function faceForColorOnEdge(
+  edgePosition: CubiePosition,
+  state: CubeState,
+  color: Color,
+): Face | null {
+  const definition = cubieDefinitions.find(
+    (cubie) =>
+      cubie.position[0] === edgePosition[0] &&
+      cubie.position[1] === edgePosition[1] &&
+      cubie.position[2] === edgePosition[2],
+  );
+  if (!definition || definition.exposedFaces.length !== 2) return null;
+  for (const face of definition.exposedFaces) {
+    if (readSticker(state, edgePosition, face) === color) return face;
+  }
+  return null;
+}
+
+export function colorStickerOnU(
+  state: CubeState,
+  edgePosition: CubiePosition,
+  color: Color,
+): boolean {
+  return faceForColorOnEdge(edgePosition, state, color) === 'U';
+}
+
 /** Non-white sticker matches that face’s center (edge connected to its center). */
 export function edgeAlignedToSideCenter(
   state: CubeState,

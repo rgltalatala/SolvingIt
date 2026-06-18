@@ -3,6 +3,7 @@ import { CubeView } from '../cube3d/CubeView';
 import { cubeStateToFaceletString } from '../cube/cubeStateToFacelets';
 
 import { MIDDLE_LAYER_EDGES_LESSON_ID } from '../learn/layers/middleLayer/edges';
+import { LAST_LAYER_LESSON_ID } from '../learn/layers/lastLayer';
 import { WHITE_CORNERS_LESSON_ID } from '../learn/layers/bottomLayer/corners';
 
 export function CubeEditorView() {
@@ -15,7 +16,8 @@ export function CubeEditorView() {
     lesson:
       | 'white-cross'
       | typeof WHITE_CORNERS_LESSON_ID
-      | typeof MIDDLE_LAYER_EDGES_LESSON_ID,
+      | typeof MIDDLE_LAYER_EDGES_LESSON_ID
+      | typeof LAST_LAYER_LESSON_ID,
   ) => {
     resetLessonSession();
     setActiveLesson(lesson);
@@ -64,6 +66,13 @@ export function CubeEditorView() {
           onClick={() => startLesson(MIDDLE_LAYER_EDGES_LESSON_ID)}
         >
           Start lesson: Middle layer edges
+        </button>
+        <button
+          type="button"
+          className="rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500"
+          onClick={() => startLesson(LAST_LAYER_LESSON_ID)}
+        >
+          Start lesson: Last layer
         </button>
       </div>
       <CubeView cubeState={cubeState} />

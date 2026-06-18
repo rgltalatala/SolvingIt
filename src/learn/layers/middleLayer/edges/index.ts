@@ -19,6 +19,8 @@ export {
   formatColor,
   isMiddleLayerEdgesComplete,
   isMiddleLayerEdgesScrambleValid,
+  isMiddleEdgeSlotOnStudentFront,
+  holdsWhereSlotIsOnFront,
   middleLayerEdgePairs,
   pickActiveUnsolvedEdge,
   pickBuriedExtractSlot,
@@ -35,6 +37,7 @@ export {
   relativeY,
   reorientMovesToFaceBack,
   targetHoldForColor,
+  targetHoldForMiddleEdgeInsert,
 } from './edgeHold';
 
 export { LEFT_INSERT, RIGHT_INSERT, algorithmForFrontSlot } from './edgeAlgorithms';

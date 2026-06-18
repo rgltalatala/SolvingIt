@@ -237,6 +237,26 @@ export function studentFrontMiddleSlots(
   return STUDENT_FRONT_MIDDLE_SLOTS[holdIndex];
 }
 
+/** Hold indices where the given world middle-edge slot is on the student's front face. */
+export function holdsWhereSlotIsOnFront(
+  slotId: MiddleEdgeSlotId,
+): CornerHoldIndex[] {
+  return (
+    Object.entries(STUDENT_FRONT_MIDDLE_SLOTS) as Array<
+      [string, [MiddleEdgeSlotId, MiddleEdgeSlotId]]
+    >
+  )
+    .filter(([, slots]) => slots.includes(slotId))
+    .map(([hold]) => Number(hold) as CornerHoldIndex);
+}
+
+export function isMiddleEdgeSlotOnStudentFront(
+  slotId: MiddleEdgeSlotId,
+  holdIndex: CornerHoldIndex,
+): boolean {
+  return studentFrontMiddleSlots(holdIndex).includes(slotId);
+}
+
 export function unsolvedStudentFrontMiddleSlots(
   state: CubeState,
   holdIndex: CornerHoldIndex = 0,
@@ -259,20 +279,6 @@ export function pickActiveUnsolvedEdge(
   const onU = unsolved.filter(({ slotId }) =>
     unsolvedEdgeCubieOnU(state, slotId, holdIndex),
   );
-
-  if (onU.length > 0 && needsExtract.length > 0) {
-    const blockedFront = studentFrontMiddleSlots(holdIndex as CornerHoldIndex).some(
-      (id) =>
-        slotNeedsExtract(state, id, holdIndex) &&
-        !unsolvedEdgeCubieOnU(state, id, holdIndex),
-    );
-    if (blockedFront) {
-      const frontExtract = needsExtract.find(({ slotId }) =>
-        studentFrontMiddleSlots(holdIndex as CornerHoldIndex).includes(slotId),
-      );
-      if (frontExtract) return frontExtract;
-    }
-  }
 
   if (onU[0]) return onU[0];
   if (needsExtract[0]) return needsExtract[0];

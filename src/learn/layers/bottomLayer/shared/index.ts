@@ -1,6 +1,8 @@
 export {
+  colorStickerOnU,
   cornerWhiteStickerOnD,
   edgeAlignedToSideCenter,
+  faceForColorOnEdge,
   faceForWhiteOnCorner,
   faceForWhiteOnEdge,
   findCornerWithColors,

@@ -3,8 +3,10 @@ import { CubeEditorView } from './CubeEditorView';
 import { LearningCrossView } from './LearningCrossView';
 import { LearningCornersView } from './LearningCornersView';
 import { LearningMiddleLayerView } from './LearningMiddleLayerView';
+import { LearningLastLayerView } from './LearningLastLayerView';
 import { RandomScrambleLessonBar } from './RandomScrambleLessonBar';
 import { MIDDLE_LAYER_EDGES_LESSON_ID } from '../learn/layers/middleLayer/edges';
+import { LAST_LAYER_LESSON_ID } from '../learn/layers/lastLayer';
 import { useCubeStore } from '../store/cubeStore';
 
 export function App() {
@@ -18,7 +20,9 @@ export function App() {
       ) : null}
 
       {appPhase === 'learning' ? (
-        activeLesson === MIDDLE_LAYER_EDGES_LESSON_ID ? (
+        activeLesson === LAST_LAYER_LESSON_ID ? (
+          <LearningLastLayerView />
+        ) : activeLesson === MIDDLE_LAYER_EDGES_LESSON_ID ? (
           <LearningMiddleLayerView />
         ) : activeLesson === 'white-corners' ? (
           <LearningCornersView />

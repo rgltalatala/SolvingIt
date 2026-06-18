@@ -14,6 +14,7 @@ import {
   pickBuriedExtractSlot,
   slotNeedsExtract,
   algSideForStudentFrontSlot,
+  isMiddleEdgeSlotOnStudentFront,
   targetFrontSlotBetweenCenters,
   unsolvedEdgeCubieOnU,
 } from './edgeSlotModel';
@@ -22,7 +23,7 @@ import {
   holdFacingOpposite,
   reorientMovesToFaceBack,
   relativeY,
-  targetHoldForColor,
+  targetHoldForMiddleEdgeInsert,
 } from './edgeHold';
 import {
   alignMovesToPartnerCenter,
@@ -78,8 +79,9 @@ function buildReorientToPartnerStep(
   partnerColor: Color,
   currentHoldIndex: CornerHoldIndex,
   edgeColors: [Color, Color],
+  targetSlotId: MiddleEdgeSlotId,
 ): MiddleLayerEdgesLessonStep {
-  const targetHold = targetHoldForColor(partnerColor);
+  const targetHold = targetHoldForMiddleEdgeInsert(targetSlotId, partnerColor);
   const demoMoves = relativeY(currentHoldIndex, targetHold);
   const faceLabel = formatColorHoldLabel(targetHold);
   return {
@@ -332,19 +334,27 @@ function computeMiddleLayerEdgeLessonStep(
         }
       }
 
-      const partnerHold = targetHoldForColor(partner);
-      const insertStep = tryInsertAtHold(
-        studentState,
-        targetSlotId,
-        edgeColors,
-        partner,
-        holdIndex,
-        solvedSlots,
-      );
-      if (insertStep) return insertStep;
+      const insertHold = targetHoldForMiddleEdgeInsert(targetSlotId, partner);
 
-      if (holdIndex !== partnerHold) {
-        return buildReorientToPartnerStep(partner, holdIndex, edgeColors);
+      if (isMiddleEdgeSlotOnStudentFront(targetSlotId, holdIndex)) {
+        const insertStep = tryInsertAtHold(
+          studentState,
+          targetSlotId,
+          edgeColors,
+          partner,
+          holdIndex,
+          solvedSlots,
+        );
+        if (insertStep) return insertStep;
+      }
+
+      if (holdIndex !== insertHold) {
+        return buildReorientToPartnerStep(
+          partner,
+          holdIndex,
+          edgeColors,
+          targetSlotId,
+        );
       }
     }
   }

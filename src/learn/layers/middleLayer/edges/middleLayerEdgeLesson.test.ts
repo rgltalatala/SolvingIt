@@ -10,8 +10,10 @@ import {
 } from '../../../../cube/cubeState';
 import {
   EDGE_SLOT_DEF,
+  pickActiveUnsolvedEdge,
   pickBuriedExtractSlot,
   slotNeedsExtract,
+  unsolvedEdgeCubieOnU,
 } from './edgeSlotModel';
 import {
   LEFT_INSERT,
@@ -31,6 +33,7 @@ import {
   simulateMiddleLayerEdgesLessonOnStorageCube,
   targetFrontSlotBetweenCenters,
   targetHoldForColor,
+  targetHoldForMiddleEdgeInsert,
   type MiddleEdgeSlotId,
 } from './index';
 import { faceStickerIndex } from '../../../../cube3d/cubeGeometry';
@@ -192,6 +195,15 @@ describe('middle layer edge lesson', () => {
     expect(targetHoldForColor('orange')).toBe(3);
   });
 
+  it('targetHoldForMiddleEdgeInsert prefers a hold where the slot is on front', () => {
+    // Green–orange lives in BL; partner green would wrongly face hold 2 alone.
+    expect(targetHoldForMiddleEdgeInsert('BL', 'green')).toBe(2);
+    // Blue–red FR slot: partner blue is hold 0, which is valid.
+    expect(targetHoldForMiddleEdgeInsert('FR', 'blue')).toBe(0);
+    // Blue–red FR with orange partner on U must not face orange (hold 3).
+    expect(targetHoldForMiddleEdgeInsert('FR', 'orange')).toBe(0);
+  });
+
   it('pickBuriedExtractSlot faces back once then targets front middle slots', () => {
     let state = solvedStudent();
     state = applyMoves(state, ['y2']);
@@ -235,6 +247,18 @@ describe('middle layer edge lesson', () => {
     expect(slotNeedsExtract(flipMiddleEdgeInSlot(solvedStudent(), 'FR'), 'FR', 0)).toBe(
       true,
     );
+  });
+
+  it('pickActiveUnsolvedEdge prefers on-U edges over buried front extract slots', () => {
+    const state = twoMiddleEdgesOnUStudent();
+    const active = pickActiveUnsolvedEdge(state, 0);
+    expect(active).not.toBeNull();
+    expect(unsolvedEdgeCubieOnU(state, active!.slotId, 0)).toBe(true);
+
+    const step = getMiddleLayerEdgeLessonStep(state);
+    if (step.kind === 'solve-edge') {
+      expect(step.action).not.toBe('extract');
+    }
   });
 
   it('simulates solving two middle edges lifted to U', () => {

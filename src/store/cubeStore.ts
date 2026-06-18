@@ -14,12 +14,14 @@ import {
 } from '../learn/studentHold';
 import { clearAllLessonDemoCaches } from '../learn/lessonCore';
 import { MIDDLE_LAYER_EDGES_LESSON_ID } from '../learn/layers/middleLayer/edges';
+import { LAST_LAYER_LESSON_ID } from '../learn/layers/lastLayer';
 import { WHITE_CORNERS_LESSON_ID } from '../learn/layers/bottomLayer/corners';
 
 export type ActiveLessonId =
   | 'white-cross'
   | typeof WHITE_CORNERS_LESSON_ID
-  | typeof MIDDLE_LAYER_EDGES_LESSON_ID;
+  | typeof MIDDLE_LAYER_EDGES_LESSON_ID
+  | typeof LAST_LAYER_LESSON_ID;
 
 export type LessonSnapshot = {
   cubeState: CubeState;
