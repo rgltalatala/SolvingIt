@@ -1,45 +1,188 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CubeState } from '../../../cube/cubeState';
+import { cubeStateToStudentFrame } from '../../../cube/cubeState';
 import {
+  countPermutedCorners,
+  countPermutedEdges,
   countYellowEdgesOnU,
   getLastLayerLessonStepAsync,
+  isCornersFullyPermuted,
+  isEdgesFullyPermuted,
+  isYellowCrossComplete,
+  type CornerHoldIndex,
+  type PermuteCornersZeroFlowStep,
 } from '../../../learn/layers/lastLayer';
 import type { LastLayerLessonStep } from '../../../learn/layers/lastLayer/types';
+import { useCubeStore } from '../../../store/cubeStore';
 import { useLessonStep } from '../useLessonStep';
+
+type LastSessionUndoEntry = { kind: 'reorient'; previousHoldIndex: CornerHoldIndex };
+
+type LastSession = {
+  currentHoldIndex: CornerHoldIndex;
+  permuteCornersZeroFlowStep?: PermuteCornersZeroFlowStep;
+};
+
+function emptyLastSession(): LastSession {
+  return { currentHoldIndex: 0 };
+}
+
+function advanceZeroFlowAfterStep(
+  step: LastLayerLessonStep,
+  permuteCornersZeroFlowStep: PermuteCornersZeroFlowStep | undefined,
+): PermuteCornersZeroFlowStep | undefined {
+  if (step.kind === 'permute-corners') {
+    if (step.permuteCase === 'zero-flow-first') return 1;
+    if (step.permuteCase === 'zero-flow-second') return undefined;
+  }
+  if (step.kind === 'reorient-hold' && step.zeroFlowStep === 1) {
+    return 2;
+  }
+  return permuteCornersZeroFlowStep;
+}
 
 export function useLastLayerLessonStep(
   studentFrame: CubeState | null,
   options?: { resetKey?: string },
 ) {
-  const getStepAsync = useCallback(
-    (frame: CubeState) => getLastLayerLessonStepAsync(frame),
-    [],
-  );
+  const [currentHoldIndex, setCurrentHoldIndex] = useState<CornerHoldIndex>(0);
+  const [permuteCornersZeroFlowStep, setPermuteCornersZeroFlowStep] = useState<
+    PermuteCornersZeroFlowStep | undefined
+  >(undefined);
+  const [sessionUndoStack, setSessionUndoStack] = useState<
+    LastSessionUndoEntry[]
+  >([]);
+  const lastResetKey = useRef<string | null>(null);
+  const sessionRef = useRef<LastSession>(emptyLastSession());
+
+  const applyLastSession = useCallback((session: LastSession) => {
+    sessionRef.current = session;
+    setCurrentHoldIndex(session.currentHoldIndex);
+    setPermuteCornersZeroFlowStep(session.permuteCornersZeroFlowStep);
+  }, []);
+
+  const resetLastSession = useCallback(() => {
+    applyLastSession(emptyLastSession());
+    setSessionUndoStack([]);
+  }, [applyLastSession]);
+
+  useEffect(() => {
+    if (!studentFrame || options?.resetKey === undefined) return;
+    if (lastResetKey.current === options.resetKey) return;
+    lastResetKey.current = options.resetKey;
+    resetLastSession();
+  }, [studentFrame, options?.resetKey, resetLastSession]);
+
+  const sessionKey = `${currentHoldIndex}:${permuteCornersZeroFlowStep ?? 'none'}`;
+
+  const getStepAsync = useCallback(async (_frame: CubeState) => {
+    const cube = useCubeStore.getState().cubeState;
+    const frame = cube ? cubeStateToStudentFrame(cube) : _frame;
+    return getLastLayerLessonStepAsync(frame, {
+      currentHoldIndex: sessionRef.current.currentHoldIndex,
+      permuteCornersZeroFlowStep: sessionRef.current.permuteCornersZeroFlowStep,
+    });
+  }, []);
 
   const isComplete = useCallback(
     (step: LastLayerLessonStep | null) => step?.kind === 'complete',
     [],
   );
 
-  const countProgress = useCallback(
-    (frame: CubeState) => countYellowEdgesOnU(frame),
-    [],
-  );
+  const countProgress = useCallback((frame: CubeState) => {
+    if (isEdgesFullyPermuted(frame) && isCornersFullyPermuted(frame)) {
+      return 4;
+    }
+    if (isEdgesFullyPermuted(frame)) {
+      return countPermutedCorners(frame);
+    }
+    if (isYellowCrossComplete(frame)) {
+      return countPermutedEdges(frame);
+    }
+    return countYellowEdgesOnU(frame);
+  }, []);
 
-  const result = useLessonStep(studentFrame, {
+  const {
+    step,
+    isStepPending,
+    showPreparingOverlay,
+    isLessonComplete,
+    solvedSlots,
+    recomputeStep,
+  } = useLessonStep(studentFrame, {
     getStepAsync,
     isComplete,
     countProgress,
-    sessionKey: options?.resetKey,
+    sessionKey,
   });
 
   const advanceAfterStep = useCallback(
-    (_appliedStep: LastLayerLessonStep, _frame: CubeState) => {},
-    [],
+    (appliedStep: LastLayerLessonStep, _frame: CubeState) => {
+      const session = sessionRef.current;
+      let nextHold = session.currentHoldIndex;
+      let nextZeroFlow = session.permuteCornersZeroFlowStep;
+
+      if (appliedStep.kind === 'reorient-hold') {
+        setSessionUndoStack((stack) => [
+          ...stack,
+          { kind: 'reorient', previousHoldIndex: session.currentHoldIndex },
+        ]);
+        nextHold = (
+          appliedStep.returnToInitialHold
+            ? 0
+            : appliedStep.targetHoldIndex !== undefined
+              ? appliedStep.targetHoldIndex
+              : session.currentHoldIndex
+        ) as CornerHoldIndex;
+      }
+
+      nextZeroFlow = advanceZeroFlowAfterStep(appliedStep, nextZeroFlow);
+
+      applyLastSession({
+        currentHoldIndex: nextHold,
+        permuteCornersZeroFlowStep: nextZeroFlow,
+      });
+    },
+    [applyLastSession],
   );
 
+  const undoLastSessionStep = useCallback((): 'reorient' | null => {
+    const last = sessionUndoStack[sessionUndoStack.length - 1];
+    if (!last) return null;
+    setSessionUndoStack((stack) => stack.slice(0, -1));
+    if (last.kind === 'reorient') {
+      applyLastSession({
+        currentHoldIndex: last.previousHoldIndex,
+        permuteCornersZeroFlowStep: sessionRef.current.permuteCornersZeroFlowStep,
+      });
+      return 'reorient';
+    }
+    return null;
+  }, [sessionUndoStack, applyLastSession]);
+
+  const isCornerPermutePhase =
+    studentFrame !== null &&
+    isYellowCrossComplete(studentFrame) &&
+    isEdgesFullyPermuted(studentFrame);
+
   return {
-    ...result,
+    step,
+    isStepPending,
+    showPreparingOverlay,
+    isLessonComplete,
+    solvedSlots,
+    recomputeStep,
+    currentHoldIndex,
+    sessionUndoStack,
     advanceAfterStep,
+    undoLastSessionStep,
+    resetLastSession,
+    isPermutePhase: studentFrame ? isYellowCrossComplete(studentFrame) : false,
+    isEdgePermutePhase:
+      studentFrame !== null &&
+      isYellowCrossComplete(studentFrame) &&
+      !isEdgesFullyPermuted(studentFrame),
+    isCornerPermutePhase,
+    isFullyPermuted: studentFrame ? isCornersFullyPermuted(studentFrame) : false,
   };
 }

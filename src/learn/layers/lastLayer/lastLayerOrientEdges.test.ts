@@ -186,8 +186,16 @@ describe('last layer lesson planner', () => {
     expect(getLastLayerLessonStep(incomplete).kind).toBe('prerequisite');
   });
 
-  it('returns complete when yellow cross is done', () => {
+  it('returns complete when fully permuted at blue hold', () => {
     expect(getLastLayerLessonStep(solvedStudent()).kind).toBe('complete');
+  });
+
+  it('returns permute steps when yellow cross done but edges not permuted', () => {
+    const yellowCrossOnly = applyMoves(solvedStudent(), ["U'"]);
+    expect(isYellowCrossComplete(yellowCrossOnly)).toBe(true);
+    const step = getLastLayerLessonStep(yellowCrossOnly);
+    expect(step.kind).not.toBe('complete');
+    expect(['align-u', 'permute-edges', 'reorient-hold']).toContain(step.kind);
   });
 
   it('returns align-u before L algorithm when misaligned', () => {
@@ -224,7 +232,7 @@ describe('last layer lesson planner', () => {
 });
 
 describe('last layer lesson simulation', () => {
-  it('reaches yellow cross from dot, L, and bar cases', () => {
+  it('reaches fully permuted edges from dot, L, and bar cases', () => {
     for (const student of [
       dotCaseStudent(),
       lShapeRotatedStudent(['UR', 'UF']),
@@ -250,5 +258,6 @@ describe('last layer lesson simulation', () => {
       before = after;
     }
     expect(isYellowCrossComplete(current)).toBe(true);
+    expect(getLastLayerLessonStep(current).kind).not.toBe('orient-edges');
   });
 });

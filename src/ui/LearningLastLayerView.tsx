@@ -4,10 +4,21 @@ import {
   cubeStateToStudentFrame,
   faceCentersFromCubeState,
   formatColorLabel,
+  isWholeCubeRotation,
   studentLessonHoldFaceCenters,
 } from '../cube/cubeState';
-import { LAST_LAYER_SUB_LESSONS } from '../learn/layers/lastLayer';
+import {
+  LAST_LAYER_SUB_LESSONS,
+  isEdgesFullyPermuted,
+  isYellowCrossComplete,
+} from '../learn/layers/lastLayer';
 import { MIDDLE_LAYER_EDGES_LESSON_ID } from '../learn/layers/middleLayer/edges';
+import {
+  getRotationText,
+  type DemoStep,
+  type Instruction,
+} from '../learn/studentHold';
+import type { YRotationStep } from '../learn/studentHold/types';
 import { useCubeStore } from '../store/cubeStore';
 import { useLastLayerLessonStep } from './lessons/lastLayer/useLastLayerLessonStep';
 import {
@@ -20,7 +31,27 @@ import { PHYSICAL_CUBE_MATCH_NOTE } from './lessons/lessonCopy';
 import { LessonUnavailable } from './lessons/LessonUnavailable';
 import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
 
-const ORIENT_EDGES_SUB_LESSON = LAST_LAYER_SUB_LESSONS[0];
+function expandHoldReorientDemo(moves: Move[]): {
+  steps: DemoStep[];
+  instructions: Instruction[];
+} {
+  const rotations = moves.filter(isWholeCubeRotation) as YRotationStep[];
+  const steps: DemoStep[] = rotations.map((rotation) => ({
+    type: 'rotation' as const,
+    rotation,
+  }));
+  const instructions: Instruction[] = rotations.map((rotation) => ({
+    type: 'rotation' as const,
+    rotation,
+    text: getRotationText(rotation),
+  }));
+  return { steps, instructions };
+}
+
+function expandReorientDemoForPipeline(moves: Move[]) {
+  const expanded = expandHoldReorientDemo(moves);
+  return { ...expanded, previewMoves: moves };
+}
 
 export function LearningLastLayerView() {
   const cubeState = useCubeStore((state) => state.cubeState);
@@ -49,6 +80,12 @@ export function LearningLastLayerView() {
     solvedSlots,
     recomputeStep,
     advanceAfterStep,
+    currentHoldIndex,
+    sessionUndoStack,
+    undoLastSessionStep,
+    resetLastSession,
+    isEdgePermutePhase,
+    isCornerPermutePhase,
   } = useLastLayerLessonStep(studentFrame, { resetKey: activeLesson });
 
   const demoMoves = useMemo((): Move[] => {
@@ -63,6 +100,8 @@ export function LearningLastLayerView() {
     return [];
   }, [step]);
 
+  const isHoldReorientStep = step?.kind === 'reorient-hold';
+
   const stepKey = useMemo(
     () => (step ? `${step.kind}:${demoMoves.join(' ')}` : 'none'),
     [step, demoMoves],
@@ -74,6 +113,8 @@ export function LearningLastLayerView() {
     isLessonComplete,
     isStepPending,
     stepKind: step?.kind,
+    snapshotKeySuffix: `-${currentHoldIndex}`,
+    expandDemo: isHoldReorientStep ? expandReorientDemoForPipeline : undefined,
   });
 
   const lessonHold = useMemo(
@@ -84,9 +125,25 @@ export function LearningLastLayerView() {
     [studentFrame],
   );
 
+  const lastSessionEntry =
+    sessionUndoStack[sessionUndoStack.length - 1] ?? null;
+  const canUndo = lastSessionEntry !== null && canUndoLesson;
+
   if (!cubeState || !studentFrame) {
     return <LessonUnavailable onBack={() => setAppPhase('ready')} />;
   }
+
+  const edgePermutePhase =
+    isEdgePermutePhase ||
+    (studentFrame &&
+      isYellowCrossComplete(studentFrame) &&
+      !isEdgesFullyPermuted(studentFrame));
+
+  const cornerPermutePhase =
+    isCornerPermutePhase ||
+    (studentFrame &&
+      isYellowCrossComplete(studentFrame) &&
+      isEdgesFullyPermuted(studentFrame));
 
   const displayStep =
     step ??
@@ -96,6 +153,7 @@ export function LearningLastLayerView() {
           title: 'Preparing lesson…',
           body: '',
           demoMoves: [] as Move[],
+          subLesson: 'orient-edges' as const,
           ollCase: 'l-shape' as const,
         }
       : {
@@ -103,9 +161,11 @@ export function LearningLastLayerView() {
           title: 'Last layer',
           body: '',
           demoMoves: [] as Move[],
+          subLesson: 'orient-edges' as const,
           ollCase: 'l-shape' as const,
         });
 
+  const isReorientStep = step?.kind === 'reorient-hold';
   const canApplyDemo =
     step !== null &&
     !isStepPending &&
@@ -115,20 +175,28 @@ export function LearningLastLayerView() {
 
   const handleRestartLessonTips = () => {
     resetLessonSession();
+    resetLastSession();
     recomputeStep();
   };
 
   const handleUndoLessonStep = () => {
-    if (!canUndoLesson || isStepPending) return;
+    if (!canUndo || isStepPending) return;
     startLessonTransition(() => {
       undoLessonStep();
+      undoLastSessionStep();
     });
   };
 
   const handleApplyDemo = () => {
     if (!step || !canApplyDemo) return;
     startLessonTransition(() => {
-      if (step.kind === 'align-u' || step.kind === 'orient-edges') {
+      if (
+        step.kind === 'reorient-hold' ||
+        step.kind === 'align-u' ||
+        step.kind === 'orient-edges' ||
+        step.kind === 'permute-edges' ||
+        step.kind === 'permute-corners'
+      ) {
         advanceAfterStep(step, studentFrame);
         applyLessonDemoMoves(step.demoMoves);
       }
@@ -137,11 +205,23 @@ export function LearningLastLayerView() {
 
   const trailingActions = canApplyDemo ? (
     <LessonApplyButton
-      buttonLabel="Apply example & continue"
+      buttonLabel={isReorientStep ? 'Continue' : 'Apply example & continue'}
       disabled={isStepPending}
       onApply={handleApplyDemo}
     />
   ) : undefined;
+
+  const subLessonLabel = cornerPermutePhase
+    ? 'Permute corners'
+    : edgePermutePhase
+      ? 'Permute edges'
+      : 'Orient edges';
+
+  const progressLabel = cornerPermutePhase
+    ? `${solvedSlots}/4 corners permuted (side colors match centers)`
+    : edgePermutePhase
+      ? `${solvedSlots}/4 edges permuted (side color matches center)`
+      : `${solvedSlots}/4 top edges oriented (yellow sticker on U)`;
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-6">
@@ -149,7 +229,7 @@ export function LearningLastLayerView() {
         <div>
           <h1 className="text-3xl font-bold">Lesson: Last layer</h1>
           <p className="mt-1 text-sm text-violet-300">
-            Sub-lesson: Orient edges
+            Sub-lesson: {subLessonLabel}
           </p>
           <p className="mt-1 text-slate-300">
             Hold your cube with{' '}
@@ -170,13 +250,12 @@ export function LearningLastLayerView() {
           step.kind !== 'complete' &&
           step.kind !== 'prerequisite' ? (
             <p className="mt-2 text-sm text-slate-400">
-              Progress: <span className="text-slate-200">{solvedSlots}/4</span>{' '}
-              top edges oriented (yellow sticker on U).
+              Progress: <span className="text-slate-200">{progressLabel}</span>
             </p>
           ) : null}
         </div>
         <LessonHeaderActions
-          canUndo={canUndoLesson}
+          canUndo={canUndo}
           isStepPending={isStepPending}
           onUndo={handleUndoLessonStep}
           onBack={() => setAppPhase('ready')}
@@ -248,8 +327,10 @@ export function LearningLastLayerView() {
 
         {isLessonComplete ? (
           <p className="mt-4 text-sm text-slate-400">
-            The yellow cross is complete ({ORIENT_EDGES_SUB_LESSON} finished).
-            Use Back to cube overview when you are ready.
+            All four top-layer corner side stickers match their centers (
+            {LAST_LAYER_SUB_LESSONS[0]}, {LAST_LAYER_SUB_LESSONS[1]}, and{' '}
+            {LAST_LAYER_SUB_LESSONS[2]} finished). Use Back to cube overview when
+            you are ready.
           </p>
         ) : null}
       </article>
