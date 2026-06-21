@@ -91,3 +91,22 @@ export function isCornersFullyPermuted(state: CubeState): boolean {
     isYellowCrossComplete(state) && countPermutedCorners(state) === 4
   );
 }
+
+export function unsolvedCornerSlots(state: CubeState): ULayerCornerId[] {
+  return U_LAYER_CORNER_SLOTS.filter((id) => !cornerSolvedAtSlot(state, id));
+}
+
+export function countSolvedCorners(state: CubeState): number {
+  return U_LAYER_CORNER_SLOTS.filter((id) => cornerSolvedAtSlot(state, id))
+    .length;
+}
+
+export function isCornersFullySolved(state: CubeState): boolean {
+  return (
+    isCornersFullyPermuted(state) && countSolvedCorners(state) === 4
+  );
+}
+
+export function isLastLayerComplete(state: CubeState): boolean {
+  return isCornersFullySolved(state);
+}

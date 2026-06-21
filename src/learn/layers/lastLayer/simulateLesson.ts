@@ -8,7 +8,7 @@ import {
   getLastLayerLessonStep,
   getLastLayerLessonStepAsync,
 } from './computeLessonStep';
-import { isCornersFullyPermuted } from './permuteCorners/uLayerCornerPermuteModel';
+import { isLastLayerComplete } from './permuteCorners/uLayerCornerPermuteModel';
 import type {
   LastLayerLessonStep,
   LastLayerLessonStepOptions,
@@ -19,7 +19,20 @@ import type {
 type SimulationSession = {
   currentHoldIndex: CornerHoldIndex;
   permuteCornersZeroFlowStep?: PermuteCornersZeroFlowStep;
+  inOrientCornersPhase?: boolean;
 };
+
+function markOrientCornersPhase(
+  step: LastLayerLessonStep,
+  session: SimulationSession,
+): void {
+  if (
+    step.kind === 'orient-corners' ||
+    (step.kind === 'align-u' && step.subLesson === 'orient-corners')
+  ) {
+    session.inOrientCornersPhase = true;
+  }
+}
 
 function advanceHoldAfterStep(
   step: LastLayerLessonStep,
@@ -52,7 +65,7 @@ function isLastLayerLessonComplete(
   student: CubeState,
   holdIndex: CornerHoldIndex,
 ): boolean {
-  return isCornersFullyPermuted(student) && holdIndex === 0;
+  return isLastLayerComplete(student) && holdIndex === 0;
 }
 
 function applyStepToSimulation(
@@ -69,6 +82,7 @@ function applyStepToSimulation(
         step,
         session.permuteCornersZeroFlowStep,
       ),
+      inOrientCornersPhase: session.inOrientCornersPhase,
     },
   };
 }
@@ -99,6 +113,7 @@ function simulateLoop(
 
     const step = getStep(student, session);
     lastStepKind = step.kind;
+    markOrientCornersPhase(step, session);
 
     if (step.kind === 'complete') {
       return {
@@ -123,7 +138,7 @@ function simulateLoop(
     if (!step.demoMoves?.length) {
       return {
         lessonStepsSimulated,
-        lastLayerComplete: isCornersFullyPermuted(student),
+        lastLayerComplete: isLastLayerComplete(student),
         lastStepKind,
         stuckNoDemo: true,
         finalHoldIndex: session.currentHoldIndex,
@@ -181,6 +196,7 @@ export async function simulateLastLayerLessonOnStorageCubeAsync(
 
     const step = await getLastLayerLessonStepAsync(student, session);
     lastStepKind = step.kind;
+    markOrientCornersPhase(step, session);
 
     if (step.kind === 'complete') {
       return {
@@ -205,7 +221,7 @@ export async function simulateLastLayerLessonOnStorageCubeAsync(
     if (!step.demoMoves?.length) {
       return {
         lessonStepsSimulated,
-        lastLayerComplete: isCornersFullyPermuted(student),
+        lastLayerComplete: isLastLayerComplete(student),
         lastStepKind,
         stuckNoDemo: true,
         finalHoldIndex: session.currentHoldIndex,

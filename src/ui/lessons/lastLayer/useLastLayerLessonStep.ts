@@ -4,10 +4,12 @@ import { cubeStateToStudentFrame } from '../../../cube/cubeState';
 import {
   countPermutedCorners,
   countPermutedEdges,
+  countSolvedCorners,
   countYellowEdgesOnU,
   getLastLayerLessonStepAsync,
   isCornersFullyPermuted,
   isEdgesFullyPermuted,
+  isLastLayerComplete,
   isYellowCrossComplete,
   type CornerHoldIndex,
   type PermuteCornersZeroFlowStep,
@@ -21,6 +23,7 @@ type LastSessionUndoEntry = { kind: 'reorient'; previousHoldIndex: CornerHoldInd
 type LastSession = {
   currentHoldIndex: CornerHoldIndex;
   permuteCornersZeroFlowStep?: PermuteCornersZeroFlowStep;
+  inOrientCornersPhase?: boolean;
 };
 
 function emptyLastSession(): LastSession {
@@ -49,6 +52,7 @@ export function useLastLayerLessonStep(
   const [permuteCornersZeroFlowStep, setPermuteCornersZeroFlowStep] = useState<
     PermuteCornersZeroFlowStep | undefined
   >(undefined);
+  const [inOrientCornersPhase, setInOrientCornersPhase] = useState(false);
   const [sessionUndoStack, setSessionUndoStack] = useState<
     LastSessionUndoEntry[]
   >([]);
@@ -59,6 +63,7 @@ export function useLastLayerLessonStep(
     sessionRef.current = session;
     setCurrentHoldIndex(session.currentHoldIndex);
     setPermuteCornersZeroFlowStep(session.permuteCornersZeroFlowStep);
+    setInOrientCornersPhase(session.inOrientCornersPhase ?? false);
   }, []);
 
   const resetLastSession = useCallback(() => {
@@ -73,7 +78,7 @@ export function useLastLayerLessonStep(
     resetLastSession();
   }, [studentFrame, options?.resetKey, resetLastSession]);
 
-  const sessionKey = `${currentHoldIndex}:${permuteCornersZeroFlowStep ?? 'none'}`;
+  const sessionKey = `${currentHoldIndex}:${permuteCornersZeroFlowStep ?? 'none'}:${inOrientCornersPhase}`;
 
   const getStepAsync = useCallback(async (_frame: CubeState) => {
     const cube = useCubeStore.getState().cubeState;
@@ -81,6 +86,7 @@ export function useLastLayerLessonStep(
     return getLastLayerLessonStepAsync(frame, {
       currentHoldIndex: sessionRef.current.currentHoldIndex,
       permuteCornersZeroFlowStep: sessionRef.current.permuteCornersZeroFlowStep,
+      inOrientCornersPhase: sessionRef.current.inOrientCornersPhase,
     });
   }, []);
 
@@ -90,8 +96,11 @@ export function useLastLayerLessonStep(
   );
 
   const countProgress = useCallback((frame: CubeState) => {
-    if (isEdgesFullyPermuted(frame) && isCornersFullyPermuted(frame)) {
+    if (isLastLayerComplete(frame)) {
       return 4;
+    }
+    if (isCornersFullyPermuted(frame)) {
+      return countSolvedCorners(frame);
     }
     if (isEdgesFullyPermuted(frame)) {
       return countPermutedCorners(frame);
@@ -138,9 +147,16 @@ export function useLastLayerLessonStep(
 
       nextZeroFlow = advanceZeroFlowAfterStep(appliedStep, nextZeroFlow);
 
+      const nextInOrient =
+        session.inOrientCornersPhase ||
+        appliedStep.kind === 'orient-corners' ||
+        (appliedStep.kind === 'align-u' &&
+          appliedStep.subLesson === 'orient-corners');
+
       applyLastSession({
         currentHoldIndex: nextHold,
         permuteCornersZeroFlowStep: nextZeroFlow,
+        inOrientCornersPhase: nextInOrient,
       });
     },
     [applyLastSession],
@@ -163,7 +179,13 @@ export function useLastLayerLessonStep(
   const isCornerPermutePhase =
     studentFrame !== null &&
     isYellowCrossComplete(studentFrame) &&
-    isEdgesFullyPermuted(studentFrame);
+    isEdgesFullyPermuted(studentFrame) &&
+    !isCornersFullyPermuted(studentFrame);
+
+  const isCornerOrientPhase =
+    studentFrame !== null &&
+    isCornersFullyPermuted(studentFrame) &&
+    !isLastLayerComplete(studentFrame);
 
   return {
     step,
@@ -183,6 +205,8 @@ export function useLastLayerLessonStep(
       isYellowCrossComplete(studentFrame) &&
       !isEdgesFullyPermuted(studentFrame),
     isCornerPermutePhase,
+    isCornerOrientPhase,
     isFullyPermuted: studentFrame ? isCornersFullyPermuted(studentFrame) : false,
+    isLastLayerComplete: studentFrame ? isLastLayerComplete(studentFrame) : false,
   };
 }

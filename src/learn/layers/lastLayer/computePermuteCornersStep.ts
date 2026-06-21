@@ -126,7 +126,9 @@ export function computePermuteCornersStep(
     if (currentHoldIndex !== 0) {
       return buildReturnToBlueStep(currentHoldIndex);
     }
-    return lastLayerCornersPermuteCompleteStep();
+    throw new Error(
+      'computePermuteCornersStep: corners permuted at blue hold should route to orient',
+    );
   }
 
   if (permuteCase.kind === 'none-permuted') {

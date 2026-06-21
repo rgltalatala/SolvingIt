@@ -9,7 +9,9 @@ import {
 } from '../cube/cubeState';
 import {
   LAST_LAYER_SUB_LESSONS,
+  isCornersFullyPermuted,
   isEdgesFullyPermuted,
+  isLastLayerComplete,
   isYellowCrossComplete,
 } from '../learn/layers/lastLayer';
 import { MIDDLE_LAYER_EDGES_LESSON_ID } from '../learn/layers/middleLayer/edges';
@@ -86,6 +88,7 @@ export function LearningLastLayerView() {
     resetLastSession,
     isEdgePermutePhase,
     isCornerPermutePhase,
+    isCornerOrientPhase,
   } = useLastLayerLessonStep(studentFrame, { resetKey: activeLesson });
 
   const demoMoves = useMemo((): Move[] => {
@@ -143,7 +146,16 @@ export function LearningLastLayerView() {
     isCornerPermutePhase ||
     (studentFrame &&
       isYellowCrossComplete(studentFrame) &&
-      isEdgesFullyPermuted(studentFrame));
+      isEdgesFullyPermuted(studentFrame) &&
+      !isCornersFullyPermuted(studentFrame));
+
+  const cornerOrientPhase =
+    isCornerOrientPhase ||
+    (studentFrame &&
+      isYellowCrossComplete(studentFrame) &&
+      isEdgesFullyPermuted(studentFrame) &&
+      isCornersFullyPermuted(studentFrame) &&
+      !isLastLayerComplete(studentFrame));
 
   const displayStep =
     step ??
@@ -195,7 +207,8 @@ export function LearningLastLayerView() {
         step.kind === 'align-u' ||
         step.kind === 'orient-edges' ||
         step.kind === 'permute-edges' ||
-        step.kind === 'permute-corners'
+        step.kind === 'permute-corners' ||
+        step.kind === 'orient-corners'
       ) {
         advanceAfterStep(step, studentFrame);
         applyLessonDemoMoves(step.demoMoves);
@@ -211,17 +224,21 @@ export function LearningLastLayerView() {
     />
   ) : undefined;
 
-  const subLessonLabel = cornerPermutePhase
-    ? 'Permute corners'
-    : edgePermutePhase
-      ? 'Permute edges'
-      : 'Orient edges';
+  const subLessonLabel = cornerOrientPhase
+    ? 'Orient corners'
+    : cornerPermutePhase
+      ? 'Permute corners'
+      : edgePermutePhase
+        ? 'Permute edges'
+        : 'Orient edges';
 
-  const progressLabel = cornerPermutePhase
-    ? `${solvedSlots}/4 corners permuted (side colors match centers)`
-    : edgePermutePhase
-      ? `${solvedSlots}/4 edges permuted (side color matches center)`
-      : `${solvedSlots}/4 top edges oriented (yellow sticker on U)`;
+  const progressLabel = cornerOrientPhase
+    ? `${solvedSlots}/4 corners oriented (yellow on U)`
+    : cornerPermutePhase
+      ? `${solvedSlots}/4 corners permuted (side colors match centers)`
+      : edgePermutePhase
+        ? `${solvedSlots}/4 edges permuted (side color matches center)`
+        : `${solvedSlots}/4 top edges oriented (yellow sticker on U)`;
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-6">
@@ -327,9 +344,8 @@ export function LearningLastLayerView() {
 
         {isLessonComplete ? (
           <p className="mt-4 text-sm text-slate-400">
-            All four top-layer corner side stickers match their centers (
-            {LAST_LAYER_SUB_LESSONS[0]}, {LAST_LAYER_SUB_LESSONS[1]}, and{' '}
-            {LAST_LAYER_SUB_LESSONS[2]} finished). Use Back to cube overview when
+            The last layer is complete — all four sub-lessons finished (
+            {LAST_LAYER_SUB_LESSONS.join(', ')}). Use Back to cube overview when
             you are ready.
           </p>
         ) : null}

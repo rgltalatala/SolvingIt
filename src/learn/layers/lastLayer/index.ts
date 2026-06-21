@@ -76,11 +76,15 @@ export { isVerifiedPermuteEdgesDemo } from './permuteEdges/preserveLessonState';
 
 export {
   countPermutedCorners,
+  countSolvedCorners,
   cornerOrientedAtSlot,
   cornerPermutedAtSlot,
   cornerSolvedAtSlot,
   isCornersFullyPermuted,
+  isCornersFullySolved,
+  isLastLayerComplete,
   permutedCornerSlots,
+  unsolvedCornerSlots,
   U_LAYER_CORNER_SLOTS,
 } from './permuteCorners/uLayerCornerPermuteModel';
 
@@ -103,6 +107,24 @@ export {
   isVerifiedPermuteCornersDemo,
   isVerifiedPermuteCornersReorientDemo,
 } from './permuteCorners/preserveLessonState';
+
+export {
+  ORIENT_CORNER_ALG,
+  repeatOrientAlg,
+} from './orientCorners/orientCornersAlgs';
+
+export {
+  orientRepsAtUrf,
+  recognizeOrientCornersCase,
+  type OrientCornersCase,
+} from './orientCorners/orientCornersCases';
+
+export { isVerifiedOrientCornersDemo } from './orientCorners/preserveLessonState';
+
+export {
+  computeOrientCornersStep,
+  lastLayerCompleteStep,
+} from './computeOrientCornersStep';
 
 export {
   computePermuteCornersStep,

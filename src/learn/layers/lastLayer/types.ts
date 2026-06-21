@@ -15,6 +15,7 @@ export const LAST_LAYER_STEP_KINDS = [
   'prerequisite',
   'align-u',
   'orient-edges',
+  'orient-corners',
   'permute-edges',
   'permute-corners',
   'reorient-hold',
@@ -37,6 +38,8 @@ export type PermuteCornersZeroFlowStep = 0 | 1 | 2;
 export interface LastLayerLessonStepOptions {
   currentHoldIndex?: CornerHoldIndex;
   permuteCornersZeroFlowStep?: PermuteCornersZeroFlowStep;
+  /** Set once orient-corners starts; F2L may be temporarily disturbed until all corners are oriented. */
+  inOrientCornersPhase?: boolean;
 }
 
 export type LastLayerLessonStep =
@@ -57,7 +60,7 @@ export type LastLayerLessonStep =
       title: string;
       body: string;
       demoMoves: Move[];
-      subLesson: 'orient-edges' | 'permute-edges';
+      subLesson: 'orient-edges' | 'permute-edges' | 'orient-corners';
       ollCase?: 'l-shape' | 'bar';
     }
   | {
@@ -80,6 +83,13 @@ export type LastLayerLessonStep =
       body: string;
       demoMoves: Move[];
       permuteCase: PermuteCornersCaseKind;
+    }
+  | {
+      kind: 'orient-corners';
+      title: string;
+      body: string;
+      demoMoves: Move[];
+      reps: 2 | 4;
     }
   | {
       kind: 'reorient-hold';
