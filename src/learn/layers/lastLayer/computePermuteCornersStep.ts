@@ -110,6 +110,9 @@ export function computePermuteCornersStep(
   const zeroFlowStep = options.permuteCornersZeroFlowStep;
 
   if (zeroFlowStep === 1) {
+    if (currentHoldIndex === ZERO_FLOW_Y2_TARGET_HOLD) {
+      return buildPermuteCornersStep('zero-flow-second');
+    }
     return buildZeroFlowY2Step(currentHoldIndex);
   }
 

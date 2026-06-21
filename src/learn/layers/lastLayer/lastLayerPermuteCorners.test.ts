@@ -130,6 +130,20 @@ describe('last layer permute corners planner', () => {
     });
   });
 
+  it('skips empty y2 when zero-flow step 1 already at green hold', () => {
+    const student = zeroPermutedCornersStudent();
+    expect(
+      getLastLayerLessonStep(student, {
+        currentHoldIndex: ZERO_FLOW_Y2_TARGET_HOLD,
+        permuteCornersZeroFlowStep: 1,
+      }),
+    ).toMatchObject({
+      kind: 'permute-corners',
+      permuteCase: 'zero-flow-second',
+      demoMoves: PERMUTE_CORNERS_ALG,
+    });
+  });
+
   it('completes zero-flow scramble through full lesson simulation', () => {
     const result = simulateLastLayerLessonOnStorageCube(
       zeroPermutedCornersStudent(),
