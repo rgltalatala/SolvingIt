@@ -11,6 +11,7 @@ import { ColorPicker } from '../correction/ColorPicker';
 import { FaceGrid } from '../correction/FaceGrid';
 import { useCubeStore } from '../store/cubeStore';
 import { CubeView } from '../cube3d/CubeView';
+import { manualFix as manualFixCopy, scanView as scanCopy, ui } from '../content/ui';
 import { ValidationIssuesList } from './ValidationIssuesList';
 
 interface ManualFixViewProps {
@@ -60,15 +61,12 @@ export function ManualFixView({ assembledFromScanned }: ManualFixViewProps) {
   return (
     <section className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-6">
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold">Fix Validation Errors</h1>
-        <p className="text-slate-300">
-          Validation failed. Adjust stickers directly, then re-run validation.
-          Centers remain locked.
-        </p>
+        <h1 className="text-3xl font-bold">{manualFixCopy.title}</h1>
+        <p className="text-slate-300">{manualFixCopy.subtitle}</p>
         <div className="rounded-lg border border-amber-400/60 bg-amber-950/40 p-3 text-sm text-amber-100">
           <ValidationIssuesList issues={validationIssues} />
           <p className="pt-2 text-xs text-slate-400">
-            Current URFDLB facelet string (what the validator uses):{' '}
+            {manualFixCopy.faceletStringLabel}{' '}
             <span className="break-all font-mono text-slate-300">
               {cubeStateToCubeJsString(workingDraft)}
             </span>
@@ -108,7 +106,7 @@ export function ManualFixView({ assembledFromScanned }: ManualFixViewProps) {
             }}
           />
           <p className="text-xs text-slate-400">
-            Center sticker is locked to {expectedCenter}.
+            {manualFixCopy.centerLocked(expectedCenter)}
           </p>
           <ColorPicker activeColor={manualColor} onSelect={setManualColor} />
 
@@ -125,7 +123,7 @@ export function ManualFixView({ assembledFromScanned }: ManualFixViewProps) {
                 setAppPhase('scanning');
               }}
             >
-              Re-scan {manualFace} face
+              {scanCopy.rescanFace(manualFace)}
             </button>
             <button
               type="button"
@@ -149,13 +147,13 @@ export function ManualFixView({ assembledFromScanned }: ManualFixViewProps) {
                 setAppPhase('ready');
               }}
             >
-              Re-validate Cube
+              {ui.revalidateCube}
             </button>
           </div>
         </div>
 
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Manual Fix Preview</h2>
+          <h2 className="text-lg font-semibold">{manualFixCopy.previewHeading}</h2>
           <CubeView cubeState={workingDraft} />
         </div>
       </div>

@@ -40,17 +40,6 @@ export const CORNER_SLOT_DEF: Record<
   },
 };
 
-const CORNER_LABELS: Record<CornerSlotId, string> = {
-  FRD: 'Front–right corner',
-  BDR: 'Back–right corner',
-  BLD: 'Back–left corner',
-  FDL: 'Front–left corner',
-};
-
-export function formatCornerLabel(id: CornerSlotId): string {
-  return CORNER_LABELS[id];
-}
-
 /** Side colors for a lesson corner slot (hold-invariant; uses blue-front reference). */
 export function expectedCornerColors(
   studentState: CubeState,

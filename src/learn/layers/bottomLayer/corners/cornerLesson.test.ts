@@ -50,6 +50,18 @@ import { CORNER_SLOT_DEF } from './cornerSlotModel';
 import { setupMovesForWrongDSlotStorage } from './wrongDLayerSteps';
 import { isWhiteCrossComplete } from '../cross/crossSlotModel';
 
+const AFTER_STRATEGY_INTRO = { hasSeenStrategyIntro: true } as const;
+
+function cornerLessonStep(
+  student: CubeState,
+  options?: Parameters<typeof getWhiteCornerLessonStep>[1],
+) {
+  return getWhiteCornerLessonStep(student, {
+    ...AFTER_STRATEGY_INTRO,
+    ...options,
+  });
+}
+
 /** Storage scramble: cross intact on student frame, corners unsolved (FRD still solved). */
 function crossIntactCornersScrambledStorage(): CubeState {
   return applyMoves(createSolvedCubeState(), ['F', 'D', "F'"]);
@@ -206,6 +218,7 @@ describe('white corners step kinds', () => {
     expect(WHITE_CORNERS_STEP_KINDS).toEqual([
       'complete',
       'cross-prerequisite',
+      'intro',
       'reorient-hold',
       'solve-corner',
     ]);
@@ -376,9 +389,19 @@ describe('white corners planner', () => {
     expect(getWhiteCornerLessonStep(student).kind).toBe('cross-prerequisite');
   });
 
-  it('returns reorient-hold before BDR when hold is blue-front', () => {
+  it('returns strategy intro before first corner solve', () => {
     const student = crossIntactCornersScrambledStudent();
     const step = getWhiteCornerLessonStep(student);
+    expect(step.kind).toBe('intro');
+    if (step.kind === 'intro') {
+      expect(step.body).toContain('FRD');
+      expect(step.body).toContain('URF');
+    }
+  });
+
+  it('returns reorient-hold before BDR when hold is blue-front', () => {
+    const student = crossIntactCornersScrambledStudent();
+    const step = cornerLessonStep(student);
     expect(step.kind).toBe('reorient-hold');
     if (step.kind === 'reorient-hold') {
       expect(step.targetCornerId).toBe('BDR');
@@ -392,7 +415,7 @@ describe('white corners planner', () => {
       1,
     );
     expect(cornerPreservedAtLessonHold(student, 'FRD', 1)).toBe(true);
-    const step = getWhiteCornerLessonStep(student, {
+    const step = cornerLessonStep(student, {
       currentHoldIndex: 1,
       solvedCornerIds: ['FRD'],
     });
@@ -410,7 +433,7 @@ describe('white corners planner', () => {
     let hold: 0 | 1 = 0;
     let solved: CornerSlotId[] = [];
 
-    let step = getWhiteCornerLessonStep(student, {
+    let step = cornerLessonStep(student, {
       currentHoldIndex: hold,
       solvedCornerIds: solved,
     });
@@ -426,7 +449,7 @@ describe('white corners planner', () => {
         ) ?? step.demoMoves!;
       student = applyMoves(student, frdApply);
       solved = ['FRD'];
-      step = getWhiteCornerLessonStep(student, {
+      step = cornerLessonStep(student, {
         currentHoldIndex: hold,
         solvedCornerIds: solved,
       });
@@ -439,7 +462,7 @@ describe('white corners planner', () => {
     student = applyMoves(student, step.demoMoves);
     hold = 1;
 
-    const bdrStep = getWhiteCornerLessonStep(student, {
+    const bdrStep = cornerLessonStep(student, {
       currentHoldIndex: hold,
       solvedCornerIds: solved.includes('FRD') ? solved : ['FRD'],
     });
@@ -459,7 +482,7 @@ describe('white corners planner', () => {
     expect(cornerSlotSolved(frdBdrSolved, 'BDR')).toBe(true);
     expect(activeCornerId(frdBdrSolved)).toBe('BLD');
 
-    const step = getWhiteCornerLessonStep(frdBdrSolved);
+    const step = cornerLessonStep(frdBdrSolved);
     expect(step.kind).toBe('reorient-hold');
     if (step.kind === 'reorient-hold') {
       expect(step.targetCornerId).toBe('BLD');
@@ -483,7 +506,7 @@ describe('white corners planner', () => {
     ({ cornerId, uPosition, whiteOnFace }) => {
       const student = cornerOnULayerAtHold(cornerId, uPosition, whiteOnFace);
       const hold = targetHoldIndex(cornerId);
-      const step = getWhiteCornerLessonStep(student, {
+      const step = cornerLessonStep(student, {
         currentHoldIndex: hold,
       });
       expect(step.kind).toBe('solve-corner');
@@ -504,7 +527,7 @@ describe('white corners planner', () => {
 
   it('returns verified BLD wrong-D demo at green hold', () => {
     const student = cornerInWrongDSlotAtHold('BLD', 'BDR', 'F');
-    const step = getWhiteCornerLessonStep(student, { currentHoldIndex: 2 });
+    const step = cornerLessonStep(student, { currentHoldIndex: 2 });
     expect(step.kind).toBe('solve-corner');
     if (step.kind !== 'solve-corner' || !step.demoMoves) return;
     expect(step.cornerId).toBe('BLD');
@@ -515,7 +538,7 @@ describe('white corners planner', () => {
 
   it('returns return-to-blue reorient when all corners solved at orange hold', () => {
     const student = applyMoves(solvedStudent(), holdIndexToY(3));
-    const step = getWhiteCornerLessonStep(student, { currentHoldIndex: 3 });
+    const step = cornerLessonStep(student, { currentHoldIndex: 3 });
     expect(step.kind).toBe('reorient-hold');
     if (step.kind === 'reorient-hold') {
       expect(step.returnToInitialHold).toBe(true);
@@ -524,7 +547,7 @@ describe('white corners planner', () => {
   });
 
   it('returns FRD demo when white is on F in the FRD slot', () => {
-    const step = getWhiteCornerLessonStep(frdWhiteOnFStudent());
+    const step = cornerLessonStep(frdWhiteOnFStudent());
     expect(step.kind).toBe('solve-corner');
     if (step.kind === 'solve-corner') {
       expect(step.cornerId).toBe('FRD');
@@ -533,7 +556,7 @@ describe('white corners planner', () => {
   });
 
   it('returns FRD demo when white is on R in the FRD slot', () => {
-    const step = getWhiteCornerLessonStep(frdWhiteOnRStudent());
+    const step = cornerLessonStep(frdWhiteOnRStudent());
     expect(step.kind).toBe('solve-corner');
     if (step.kind === 'solve-corner') {
       expect(step.cornerId).toBe('FRD');
@@ -545,7 +568,7 @@ describe('white corners planner', () => {
     'returns FRD U-layer demo for $uPosition with white on $whiteOnFace',
     ({ uPosition, whiteOnFace }) => {
       const student = frdOnULayerStudent(uPosition, whiteOnFace);
-      const step = getWhiteCornerLessonStep(student);
+      const step = cornerLessonStep(student);
       expect(step.kind).toBe('solve-corner');
       if (step.kind !== 'solve-corner' || !step.demoMoves) return;
       expect(step.cornerId).toBe('FRD');
@@ -568,7 +591,7 @@ describe('white corners planner', () => {
       const setup = setupMovesForWrongDSlotStorage(dSlot);
       expect(isWhiteCrossComplete(applyMoves(student, setup))).toBe(true);
 
-      const step = getWhiteCornerLessonStep(student);
+      const step = cornerLessonStep(student);
       expect(step.kind).toBe('solve-corner');
       if (step.kind !== 'solve-corner' || !step.demoMoves) return;
       expect(step.cornerId).toBe('FRD');
@@ -583,33 +606,33 @@ describe('white corners planner', () => {
 
   it('returns URF-only insert algs when already at URF', () => {
     expect(
-      getWhiteCornerLessonStep(frdOnULayerStudent('URF', 'U')).demoMoves,
+      cornerLessonStep(frdOnULayerStudent('URF', 'U')).demoMoves,
     ).toEqual(FRD_URF_WHITE_ON_U);
     expect(
-      getWhiteCornerLessonStep(frdOnULayerStudent('URF', 'R')).demoMoves,
+      cornerLessonStep(frdOnULayerStudent('URF', 'R')).demoMoves,
     ).toEqual(FRD_URF_WHITE_ON_R);
     expect(
-      getWhiteCornerLessonStep(frdOnULayerStudent('URF', 'F')).demoMoves,
+      cornerLessonStep(frdOnULayerStudent('URF', 'F')).demoMoves,
     ).toEqual(FRD_URF_WHITE_ON_F);
   });
 
   it('keeps explicit URF align before insert for shortcut U-layer cases', () => {
     expect(
-      getWhiteCornerLessonStep(frdOnULayerStudent('UFL', 'F')).demoMoves,
+      cornerLessonStep(frdOnULayerStudent('UFL', 'F')).demoMoves,
     ).toEqual([...alignMovesToUrf('UFL'), ...FRD_URF_WHITE_ON_F]);
     expect(
-      getWhiteCornerLessonStep(frdOnULayerStudent('ULB', 'F')).demoMoves,
+      cornerLessonStep(frdOnULayerStudent('ULB', 'F')).demoMoves,
     ).toEqual([...alignMovesToUrf('ULB'), ...FRD_URF_WHITE_ON_F]);
   });
 
   it('explains redundant U turns for pedagogical U-layer align-then-insert demos', () => {
-    const overlapStep = getWhiteCornerLessonStep(
+    const overlapStep = cornerLessonStep(
       frdOnULayerStudent('UFL', 'F'),
     );
     expect(overlapStep.body).toContain('look redundant');
-    expect(overlapStep.body).toContain('align the piece above the front-right slot');
+    expect(overlapStep.body).toContain('get the piece above URF');
 
-    const noOverlapStep = getWhiteCornerLessonStep(
+    const noOverlapStep = cornerLessonStep(
       frdOnULayerStudent('UFL', 'R'),
     );
     expect(noOverlapStep.body).not.toContain('look redundant');
@@ -617,8 +640,11 @@ describe('white corners planner', () => {
 
   it('getWhiteCornerLessonStepAsync matches sync', async () => {
     const student = crossIntactCornersScrambledStudent();
-    const sync = getWhiteCornerLessonStep(student);
-    const asyncStep = await getWhiteCornerLessonStepAsync(student);
+    const sync = cornerLessonStep(student);
+    const asyncStep = await getWhiteCornerLessonStepAsync(
+      student,
+      AFTER_STRATEGY_INTRO,
+    );
     expect(asyncStep).toEqual(sync);
   });
 });

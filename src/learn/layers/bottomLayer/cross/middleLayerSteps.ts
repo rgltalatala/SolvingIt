@@ -1,5 +1,9 @@
 import { applyMove, applyMoves } from '../../../../cube/cubeState';
 import type { CubeState, Face, Move } from '../../../../cube/cubeState';
+import {
+  whiteCrossSteps,
+  whitePartnerEdgeHeading,
+} from '../../../../content/whiteCross';
 import { demoChangesState } from '../../../lessonCore';
 import {
   crossSlotsSolvedInState,
@@ -7,7 +11,6 @@ import {
   partnerColorForSlot,
   SLOT_DEF,
   slotSolved,
-  whitePartnerEdgeHeading,
 } from './crossSlotModel';
 import {
   edgeAlignedToSideCenter,
@@ -44,9 +47,14 @@ function buildAlignToCenterStep(
   const partner = partnerColorForSlot(studentState, id);
   const label = `${formatColor(partner)} edge`;
   const turnWord = demo[0]?.endsWith("'") ? 'counterclockwise' : 'clockwise';
+  const partnerLabel = formatColor(partner);
   const body = alreadyAligned
-    ? `The white–${formatColor(partner)} edge is in the middle layer. One quarter turn on ${turnFace} (${turnWord} here) connects the ${formatColor(partner)} sticker to the ${formatColor(partner)} center before you slot white on the bottom.`
-    : `The white–${formatColor(partner)} edge is in the middle layer but not lined up with the ${formatColor(partner)} center yet. One quarter turn on ${turnFace} (${turnWord} here) connects the colored sticker to its center while keeping cross edges you already placed.`;
+    ? whiteCrossSteps.middleLayerAlign(partnerLabel, turnFace, turnWord)
+    : whiteCrossSteps.middleLayerAlignNotLinedUp(
+        partnerLabel,
+        turnFace,
+        turnWord,
+      );
 
   return {
     kind: 'align-to-center',

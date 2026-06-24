@@ -139,7 +139,7 @@ describe('expandDemoToInstructions', () => {
     expect(finalHold).toEqual(noneHold());
     expect(
       instructions[0].type === 'rotation' && instructions[0].text,
-    ).toContain('first');
+    ).toContain('First');
     expect(instructions[2].type === 'rotation' && instructions[2].text).toMatch(
       /Blue|blue/,
     );

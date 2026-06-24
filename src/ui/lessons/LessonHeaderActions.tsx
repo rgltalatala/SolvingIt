@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ui } from '../../content/ui';
 
 type LessonHeaderActionsProps = {
   canUndo: boolean;
@@ -25,21 +26,21 @@ export function LessonHeaderActions({
         onClick={onUndo}
         disabled={!canUndo || isStepPending}
       >
-        Undo last example
+        {ui.undoLastExample}
       </button>
       <button
         type="button"
         className="inline-flex w-fit rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700"
         onClick={onBack}
       >
-        Back to cube overview
+        {ui.backToCubeOverview}
       </button>
       <button
         type="button"
         className="inline-flex w-fit rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:text-slate-100"
         onClick={onResetTips}
       >
-        Reset lesson tips
+        {ui.resetLessonTips}
       </button>
       {extraActions}
     </div>

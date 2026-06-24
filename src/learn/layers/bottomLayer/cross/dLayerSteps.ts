@@ -5,13 +5,16 @@ import {
 } from '../../../../cube/cubeState';
 import type { CubeState, Face, Move } from '../../../../cube/cubeState';
 import {
+  whiteCrossSteps,
+  whitePartnerEdgeHeading,
+} from '../../../../content/whiteCross';
+import {
   crossSlotsToPreserve,
   formatColor,
   partnerColorForSlot,
   SLOT_DEF,
   slotShowsRotateBottomPattern,
   slotSolved,
-  whitePartnerEdgeHeading,
 } from './crossSlotModel';
 import { findEdgeWithColors, whiteStickerOnD } from '../shared/pieceQueries';
 import { isVerifiedSlotDemo, preservesSlotsAfterDemo } from './crossSolveBfs';
@@ -105,7 +108,10 @@ export function tryRotateBottomStepForCrossId(
     title: whitePartnerEdgeHeading(partner),
     edgeLabel: label,
     partnerColor: partner,
-    body: `The white–${formatColor(partner)} edge already has its white sticker on the bottom (D), but it isn't sitting below the ${formatColor(partner)} center yet. Turn the bottom layer with ${formatBottomSpinForLesson(bottomSpinMoves)} so the colored sticker lines up with the ${formatColor(partner)} center — then the cross edge is in place.`,
+    body: whiteCrossSteps.dLayerRotate(
+      formatColor(partner),
+      formatBottomSpinForLesson(bottomSpinMoves),
+    ),
     targetFace: slot.sideFace,
     demoMoves: bottomSpinMoves,
   };
@@ -133,7 +139,7 @@ export function tryDLayerInsertStepForCrossId(
     title: whitePartnerEdgeHeading(partner),
     edgeLabel: label,
     partnerColor: partner,
-    body: `The white–${formatColor(partner)} edge is connected to the ${formatColor(partner)} center. Slot it into the cross on the bottom (demo may spin D then use ${face}2). Setup moves may temporarily move other cross edges; undo at the end restores them.`,
+    body: whiteCrossSteps.dLayerInsert(formatColor(partner), face),
     face,
     demoMoves: insert,
   };

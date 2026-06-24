@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createSolvedCubeState } from '../cube/cubeState';
+import { ui } from '../content/ui';
+import { applyHints, PHYSICAL_CUBE_MATCH_NOTE } from '../content/tips';
 import { useCubeStore } from '../store/cubeStore';
 import { LearningCrossView } from './LearningCrossView';
 
@@ -41,7 +43,33 @@ function seedStore() {
       L: cube.L,
     },
     appPhase: 'learning',
+    activeLesson: 'white-cross',
     lessonHistory: [],
+  });
+}
+
+function mockCrossLessonStep(
+  overrides: Partial<ReturnType<typeof useWhiteCrossLessonStep>> = {},
+) {
+  mockUseWhiteCrossLessonStep.mockReturnValue({
+    step: {
+      kind: 'align-to-center',
+      title: 'Connect edge',
+      body: 'Turn the front face.',
+      edgeLabel: 'Green edge',
+      partnerColor: 'green',
+      face: 'F',
+      demoMoves: ['F'],
+    },
+    isStepPending: false,
+    showPreparingOverlay: false,
+    isLessonComplete: false,
+    solvedSlots: 0,
+    recomputeStep: vi.fn(),
+    hasSeenStrategyIntro: true,
+    advanceAfterStep: vi.fn(),
+    resetStrategyIntro: vi.fn(),
+    ...overrides,
   });
 }
 
@@ -50,34 +78,47 @@ describe('LearningCrossView', () => {
 
   beforeEach(() => {
     seedStore();
-    mockUseWhiteCrossLessonStep.mockReturnValue({
+    mockCrossLessonStep();
+  });
+
+  it('shows strategy intro with continue before edge solves', async () => {
+    const advanceAfterStep = vi.fn();
+    const recomputeStep = vi.fn();
+    mockCrossLessonStep({
       step: {
-        kind: 'align-to-center',
-        title: 'Connect edge',
-        body: 'Turn the front face.',
-        edgeLabel: 'Green edge',
-        partnerColor: 'green',
-        face: 'F',
-        demoMoves: ['F'],
+        kind: 'intro',
+        title: 'How this lesson works',
+        body: 'Look for edge pieces with a white sticker.',
       },
-      isStepPending: false,
-      showPreparingOverlay: false,
-      isLessonComplete: false,
-      solvedSlots: 0,
-      recomputeStep: vi.fn(),
+      hasSeenStrategyIntro: false,
+      advanceAfterStep,
+      recomputeStep,
     });
+
+    render(<LearningCrossView />);
+    expect(screen.getByText(/white sticker/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: ui.continue })).toBeEnabled();
+    expect(
+      screen.queryByRole('button', { name: ui.applyExampleContinue }),
+    ).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: ui.continue }));
+    expect(advanceAfterStep).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'intro' }),
+    );
+    expect(recomputeStep).toHaveBeenCalled();
   });
 
   it('shows apply when the step has a demo', () => {
     render(<LearningCrossView />);
     expect(
-      screen.getByRole('button', { name: 'Apply example & continue' }),
+      screen.getByRole('button', { name: ui.applyExampleContinue }),
     ).toBeEnabled();
     expect(screen.getByTestId('move-sequence-demo')).toHaveTextContent('F');
   });
 
   it('hides demo preview when step has no demo moves', () => {
-    mockUseWhiteCrossLessonStep.mockReturnValue({
+    mockCrossLessonStep({
       step: {
         kind: 'solve-edge',
         title: 'Stuck edge',
@@ -85,11 +126,7 @@ describe('LearningCrossView', () => {
         edgeLabel: 'Red edge',
         partnerColor: 'red',
       },
-      isStepPending: false,
-      showPreparingOverlay: false,
-      isLessonComplete: false,
       solvedSlots: 1,
-      recomputeStep: vi.fn(),
     });
 
     render(<LearningCrossView />);
@@ -97,7 +134,7 @@ describe('LearningCrossView', () => {
       'no-moves',
     );
     expect(
-      screen.queryByRole('button', { name: 'Apply example & continue' }),
+      screen.queryByRole('button', { name: ui.applyExampleContinue }),
     ).not.toBeInTheDocument();
   });
 
@@ -119,11 +156,7 @@ describe('LearningCrossView', () => {
 
   it('shows physical cube confirmation copy in header and apply panel', () => {
     render(<LearningCrossView />);
-    expect(
-      screen.getByText(/Confirm your physical cube matches the virtual cube/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/When your physical cube matches the diagram/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(PHYSICAL_CUBE_MATCH_NOTE)).toBeInTheDocument();
+    expect(screen.getByText(applyHints.default)).toBeInTheDocument();
   });
 });

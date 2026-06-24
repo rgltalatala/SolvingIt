@@ -16,14 +16,14 @@ import type {
   LastLayerLessonStep,
   LastLayerLessonStepOptions,
 } from './types';
+import { lastLayerSteps } from '../../../content/lastLayer';
 
-const PREREQUISITE_BODY =
-  'Finish the white cross, all four white corners, and all four middle-layer edges first. The bottom two layers must be complete before orienting the last-layer edges.';
+const PREREQUISITE_BODY = lastLayerSteps.prerequisite.body;
 
 function prerequisiteStep(): LastLayerLessonStep {
   return {
     kind: 'prerequisite',
-    title: 'Complete the first two layers first',
+    title: lastLayerSteps.prerequisite.title,
     body: PREREQUISITE_BODY,
   };
 }

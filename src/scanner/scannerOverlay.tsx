@@ -1,4 +1,5 @@
 import { SCAN_GRID_FRACTION } from './scannerConstants';
+import { scannerOverlay as scannerCopy, ui } from '../content/ui';
 
 interface ScannerOverlayProps {
   videoRef: (node: HTMLVideoElement | null) => void;
@@ -39,13 +40,12 @@ export function ScannerOverlay({
       </div>
 
       <p className="text-center text-xs text-slate-300">
-        For best results, scan in bright, even lighting away from direct
-        sunlight.
+        {scannerCopy.lightingTip}
       </p>
 
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}
       {!error && !isReady ? (
-        <p className="text-sm text-slate-300">Starting camera...</p>
+        <p className="text-sm text-slate-300">{scannerCopy.startingCamera}</p>
       ) : null}
 
       <button
@@ -54,7 +54,7 @@ export function ScannerOverlay({
         disabled={!isReady || Boolean(error)}
         onClick={onCapture}
       >
-        Capture
+        {ui.capture}
       </button>
     </div>
   );

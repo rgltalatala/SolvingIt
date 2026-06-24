@@ -1,5 +1,6 @@
-import type { CubeState, Move } from '../../../cube/cubeState';
+import type { CubeState } from '../../../cube/cubeState';
 import { faceCentersFromCubeState } from '../../../cube/cubeState';
+import { lastLayerSteps } from '../../../content/lastLayer';
 import {
   formatHoldFaceLabel,
   returnToBlueY,
@@ -15,14 +16,11 @@ import {
 import { permutedEdgeSlots } from './permuteEdges/uLayerEdgePermuteModel';
 import type { LastLayerLessonStep, LastLayerLessonStepOptions } from './types';
 
-const COMPLETE_BODY =
-  'All four top-layer edge side stickers match their adjacent centers (F, R, B, L). Hold the cube with the blue face toward you (white on bottom, yellow on top) and confirm it matches the diagram below.';
-
 function completeStep(): LastLayerLessonStep {
   return {
     kind: 'complete',
-    title: 'Last-layer edges complete',
-    body: COMPLETE_BODY,
+    title: lastLayerSteps.lastLayerEdgesComplete.title,
+    body: lastLayerSteps.lastLayerEdgesComplete.body,
   };
 }
 
@@ -31,8 +29,8 @@ function buildReturnToBlueStep(
 ): LastLayerLessonStep {
   return {
     kind: 'reorient-hold',
-    title: 'Face the blue side',
-    body: 'All four top edges are permuted. Turn the cube so the blue face is toward you again (white on bottom, yellow on top).',
+    title: lastLayerSteps.faceBlueEdges.title,
+    body: lastLayerSteps.faceBlueEdges.body,
     demoMoves: returnToBlueY(currentHoldIndex),
     targetHoldIndex: 0,
     returnToInitialHold: true,
@@ -46,8 +44,8 @@ function buildReorientForPermuteStep(
   const faceLabel = formatHoldFaceLabel(targetHoldIndex);
   return {
     kind: 'reorient-hold',
-    title: `Face the ${faceLabel} side`,
-    body: `Two top edges already match their side centers. Turn the whole cube so the ${faceLabel} face is toward you and those edges sit at the back and right on U — then run the permutation algorithm on the next step.`,
+    title: lastLayerSteps.faceSideTitle(faceLabel),
+    body: lastLayerSteps.reorientEdges(faceLabel),
     demoMoves: reorientMovesForPermuteSetup(currentHoldIndex, targetHoldIndex),
     targetHoldIndex,
   };
@@ -58,12 +56,12 @@ function buildPermuteEdgesStep(
 ): LastLayerLessonStep {
   const caseNote =
     permuteCase === 'adjacent'
-      ? 'The two correct edges are at back and right on U.'
-      : 'Two opposite edges match their centers; one algorithm pass usually sets up the adjacent case.';
+      ? lastLayerSteps.permuteEdgesAdjacentNote
+      : lastLayerSteps.permuteEdgesOppositeNote;
   return {
     kind: 'permute-edges',
-    title: 'Permute top edges',
-    body: `${caseNote} Run R U R' U R U2 R' U to cycle the top-layer edges. Side stickers should line up with their centers when done.`,
+    title: lastLayerSteps.permuteTopEdges.title,
+    body: lastLayerSteps.permuteTopEdges.body(caseNote),
     demoMoves: PERMUTE_EDGES_ALG,
     permuteCase,
   };
@@ -93,8 +91,8 @@ export function computePermuteEdgesStep(
     return {
       kind: 'align-u',
       subLesson: 'permute-edges',
-      title: 'Align the top layer',
-      body: 'All four top edges can be permuted with a single U turn. Rotate U so each edge side sticker lines up with its center.',
+      title: lastLayerSteps.alignTopLayer.title,
+      body: lastLayerSteps.alignTopLayer.body,
       demoMoves: permuteCase.alignMoves,
     };
   }
@@ -105,8 +103,8 @@ export function computePermuteEdgesStep(
       return {
         kind: 'align-u',
         subLesson: 'permute-edges',
-        title: 'Inspect the top layer',
-        body: 'Rotate U to check which top edges already match their side centers — you should see two correct edges for the next step.',
+        title: lastLayerSteps.inspectTopLayer.title,
+        body: lastLayerSteps.inspectTopLayer.body,
         demoMoves: permuteCase.inspectPrefix,
       };
     }

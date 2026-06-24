@@ -16,6 +16,7 @@ import { clearAllLessonDemoCaches } from '../learn/lessonCore';
 import { MIDDLE_LAYER_EDGES_LESSON_ID } from '../learn/layers/middleLayer/edges';
 import { LAST_LAYER_LESSON_ID } from '../learn/layers/lastLayer';
 import { WHITE_CORNERS_LESSON_ID } from '../learn/layers/bottomLayer/corners';
+import { initialAppPhase } from '../learn/notationPreferences';
 
 export type ActiveLessonId =
   | 'white-cross'
@@ -47,7 +48,7 @@ export interface CubeStore {
   ) => void;
   clearValidationResult: () => void;
 
-  appPhase: 'scanning' | 'correcting' | 'ready' | 'learning';
+  appPhase: 'notation' | 'scanning' | 'correcting' | 'ready' | 'learning';
   setAppPhase: (phase: CubeStore['appPhase']) => void;
 
   /** Which bottom-layer lesson is active while `appPhase === 'learning'`. */
@@ -160,7 +161,7 @@ export const useCubeStore = create<CubeStore>((set) => ({
   clearValidationResult: () =>
     set({ validationIssues: [], validationSuggestedFace: null }),
 
-  appPhase: 'scanning',
+  appPhase: initialAppPhase(),
   activeLesson: 'white-cross',
   lessonHistory: [],
   ...lessonSessionReset(),

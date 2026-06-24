@@ -1,5 +1,6 @@
 import type { Face } from '../cube/cubeState';
 import type { CubeValidationIssue } from '../cube/cubeValidator';
+import { scanView as scanCopy } from '../content/ui';
 
 interface ValidationIssuesListProps {
   issues: CubeValidationIssue[];
@@ -29,7 +30,7 @@ export function ValidationIssuesList({
           className={rescanButtonClassName}
           onClick={() => onRescanSuggested(suggestedFace)}
         >
-          Re-scan {suggestedFace} face
+          {scanCopy.rescanFace(suggestedFace)}
         </button>
       ) : null}
     </>

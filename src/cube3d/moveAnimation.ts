@@ -54,7 +54,7 @@ export function getMoveAnimationSpec(move: Move): MoveAnimationSpec {
         ? "'"
         : '';
     const quarters = visualQuarterTurns(modifier);
-    const sign = axis === 'y' ? -1 : axis === 'x' ? 1 : -1;
+    const sign = axis === 'y' ? -1 : -1;
     return { kind: 'whole', axis, angle: sign * quarters * HALF_PI };
   }
 

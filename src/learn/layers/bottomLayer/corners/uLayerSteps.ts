@@ -6,9 +6,9 @@ import type { CubeState, Face, Move } from '../../../../cube/cubeState';
 import type { CubiePosition } from '../../../../cube3d/cubeGeometry';
 import { parseFaceTurnAlgToMoves } from '../../../../cube/parseFaceTurnAlg';
 import { faceForWhiteOnCorner } from '../shared/pieceQueries';
+import { whiteCornersSteps, formatCornerLabel } from '../../../../content/whiteCorners';
 import { recognizeCornerCaseInFrdView, type ULayerCornerId } from './cornerCases';
 import { studentHoldView, verifiedFrdDemoAtHold } from './frdViewDemoBuild';
-import { formatCornerLabel } from './cornerSlotModel';
 import type { CornerSlotId } from './types';
 
 export const FRD_URF_POS: CubiePosition = [1, 1, 1];
@@ -60,16 +60,15 @@ export function uLayerDemoHasAlignInsertUOverlap(
   );
 }
 
-const U_LAYER_ALIGN_INSERT_NOTE =
-  " Some U turns may look redundant—for example U then U'—but that is intentional: always align the piece above the front-right slot (URF), recognize which case it is from how white is facing, then run the matching insert.";
-
 export function uLayerInsertStepBody(
   cornerId: CornerSlotId,
   demo: readonly Move[],
 ): string {
-  const base = `The ${formatCornerLabel(cornerId).toLowerCase()} piece is on the top layer. The demo lines it up above the front-right slot (URF), then inserts it with white on the bottom. Your white cross and any corners you already solved stay intact.`;
+  const base = whiteCornersSteps.uLayerBase(
+    formatCornerLabel(cornerId).toLowerCase(),
+  );
   return uLayerDemoHasAlignInsertUOverlap(demo)
-    ? `${base}${U_LAYER_ALIGN_INSERT_NOTE}`
+    ? `${base}${whiteCornersSteps.uLayerAlignInsertNote}`
     : base;
 }
 

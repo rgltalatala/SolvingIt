@@ -1,4 +1,5 @@
 import type { Instruction } from '../learn/studentHold';
+import { moveSequenceDemo } from '../content/tips';
 
 export interface LessonInstructionDemoProps {
   instructions: Instruction[];
@@ -21,7 +22,7 @@ export function LessonInstructionDemo({
   return (
     <div className="rounded-lg border border-slate-700 bg-slate-950/50 p-3">
       <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-        Step-by-step instructions
+        {moveSequenceDemo.stepByStepHeading}
       </h4>
       <p className="mt-2 text-sm leading-relaxed text-slate-100">
         {current.text}

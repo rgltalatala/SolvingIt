@@ -7,6 +7,7 @@ export type CrossEdgeId = 'DF' | 'DR' | 'DB' | 'DL';
 /** All lesson step kinds in planner priority order (first = highest priority when planning). */
 export const WHITE_CROSS_STEP_KINDS = [
   'complete',
+  'intro',
   'solve-edge',
   'rotate-bottom',
   'align-to-center',
@@ -21,6 +22,11 @@ export type WhiteCrossLessonStep =
       title: string;
       body: string;
       demoMoves?: Move[];
+    }
+  | {
+      kind: 'intro';
+      title: string;
+      body: string;
     }
   | {
       kind: 'solve-edge';
@@ -57,6 +63,11 @@ export type WhiteCrossLessonStep =
       face: Face;
       demoMoves?: Move[];
     };
+
+export interface WhiteCrossLessonStepOptions {
+  /** Strategy intro shown once per lesson session before the first edge solve. */
+  hasSeenStrategyIntro?: boolean;
+}
 
 export interface SimulateWhiteCrossLessonResult {
   lessonStepsSimulated: number;

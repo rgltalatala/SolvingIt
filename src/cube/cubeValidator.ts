@@ -1,4 +1,5 @@
 import Cube from 'cubejs/lib/cube';
+import { validation as validationCopy } from '../content/ui';
 import {
   COLOR_TO_FACE,
   COLORS,
@@ -29,25 +30,14 @@ export interface CubeValidationIssue {
 }
 
 const messages = {
-  duplicateCorners: 'Corner pieces do not line up with a real cube.',
-  duplicateEdges:
-    'Edge pieces do not line up with a real cube (duplicate or missing edge). Adjust stickers on the two faces that share that edge.',
-  cornerTwist:
-    'Corner twist total is invalid for a solvable cube. Re-check corner stickers where three faces meet.',
-  edgeFlip:
-    'Edge flip total is invalid for a solvable cube. Re-check edge stickers shared by two faces.',
-  parity:
-    'Corner and edge permutation parity do not match (common after fixing only one face). Adjust at least one pair of stickers on connected faces.',
-  parseError: 'Could not interpret the cube layout for the solver.',
+  duplicateCorners: validationCopy.duplicateCorners,
+  duplicateEdges: validationCopy.duplicateEdges,
+  cornerTwist: validationCopy.cornerTwist,
+  edgeFlip: validationCopy.edgeFlip,
+  parity: validationCopy.parity,
+  parseError: validationCopy.parseError,
 } as const;
-const colorNames: Record<Color, string> = {
-  white: 'White',
-  yellow: 'Yellow',
-  green: 'Green',
-  blue: 'Blue',
-  red: 'Red',
-  orange: 'Orange',
-};
+const colorNames = validationCopy.colorNames;
 
 /** Inversion-count parity of a permutation (0..n-1); matches cubejs cornerParity/edgeParity when solve.js is loaded. */
 function permutationParity(perm: number[]): number {
@@ -98,7 +88,7 @@ export function validateCubeStateBasic(state: CubeState): CubeValidationResult {
         kind: 'color-count',
         color,
         count,
-        message: `${colorNames[color]} appears ${count} times - please re-check your ${color} face.`,
+        message: validationCopy.colorCount(colorNames[color], count),
       });
     }
   }
@@ -107,8 +97,7 @@ export function validateCubeStateBasic(state: CubeState): CubeValidationResult {
   if (centers.size !== 6) {
     issues.push({
       kind: 'duplicate-centers',
-      message:
-        'Face centers must all be unique colors. Please rescan the face with the wrong center color.',
+      message: validationCopy.duplicateCenters,
     });
   }
 
@@ -120,7 +109,11 @@ export function validateCubeStateBasic(state: CubeState): CubeValidationResult {
         kind: 'center-mismatch',
         face,
         color: actualCenter,
-        message: `${face} center is ${actualCenter}, expected ${expectedCenter}. Please re-scan that face.`,
+        message: validationCopy.centerMismatch(
+          face,
+          actualCenter,
+          expectedCenter,
+        ),
       });
     }
   }
@@ -185,7 +178,7 @@ function validateCubeStateSolvable(state: CubeState): CubeValidationIssue[] {
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     return [
-      { kind: 'unsolvable', message: `${messages.parseError} (${detail})` },
+      { kind: 'unsolvable', message: validationCopy.parseErrorWithDetail(detail) },
     ];
   }
 }

@@ -6,6 +6,7 @@ import {
 } from './cubeState';
 import type { Color, CubeState, Face, FaceState, Move } from './cubeState';
 import { FACELET_ORDER } from './cubeStateToFacelets';
+import { validation as validationCopy } from '../content/ui';
 import { validateCubeState } from './cubeValidator';
 
 function cubeJsFaceletsToState(facelets: string): CubeState {
@@ -90,6 +91,6 @@ describe('validateCubeState', () => {
     expect(result.valid).toBe(false);
     const msg =
       result.issues.find((i) => i.kind === 'unsolvable')?.message ?? '';
-    expect(msg).toBe('Corner pieces do not line up with a real cube.');
+    expect(msg).toBe(validationCopy.duplicateCorners);
   });
 });

@@ -4,6 +4,10 @@ import {
   faceDoubleTurn,
 } from '../../../../cube/cubeState';
 import type { CubeState, Face, Move } from '../../../../cube/cubeState';
+import {
+  whiteCrossSteps,
+  whitePartnerEdgeHeading,
+} from '../../../../content/whiteCross';
 import { demoChangesState } from '../../../lessonCore';
 import {
   crossSlotsSolvedInState,
@@ -11,7 +15,6 @@ import {
   partnerColorForSlot,
   SLOT_DEF,
   slotSolved,
-  whitePartnerEdgeHeading,
 } from './crossSlotModel';
 import {
   edgeAlignedToSideCenter,
@@ -126,7 +129,11 @@ export function tryULayerAlignStepForCrossId(
     title: whitePartnerEdgeHeading(partner),
     edgeLabel: label,
     partnerColor: partner,
-    body: `The white–${formatColor(partner)} edge is on the top layer. Connect its ${formatColor(partner)} sticker to the ${formatColor(partner)} center (${lastFace} ${turnWord} here, or a U turn to position it) before slotting white on the bottom.`,
+    body: whiteCrossSteps.uLayerConnect(
+      formatColor(partner),
+      turnWord,
+      lastFace,
+    ),
     face: best.turnFace,
     demoMoves: best.demo,
   };
@@ -166,7 +173,7 @@ export function tryULayerInsertStepForCrossId(
     title: whitePartnerEdgeHeading(partner),
     edgeLabel: label,
     partnerColor: partner,
-    body: `The white–${formatColor(partner)} edge is connected to the ${formatColor(partner)} center on the top layer. Slot it into the cross with ${face}2 (demo may include U setup). Setup and undo keep other cross edges you already solved in place.`,
+    body: whiteCrossSteps.uLayerSlot(formatColor(partner), face),
     face,
     demoMoves: best,
   };

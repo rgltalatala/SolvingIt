@@ -6,13 +6,21 @@ import {
   formatColorLabel,
   studentLessonHoldFaceCenters,
 } from '../cube/cubeState';
+import { whiteCrossLesson } from '../content/whiteCross';
+import {
+  applyHints,
+  lessonAvoidBack,
+  PHYSICAL_CUBE_MATCH_NOTE,
+  preparing,
+  SAME_HOLD_NOTE,
+} from '../content/tips';
+import { ui } from '../content/ui';
 import { useCubeStore } from '../store/cubeStore';
 import { useWhiteCrossLessonStep } from './lessons/bottomLayer/useWhiteCrossLessonStep';
 import { LessonApplyButton, LessonApplyPanel } from './lessons/LessonApplyPanel';
 import { LessonAvoidBackPanel } from './lessons/LessonAvoidBackPanel';
 import { LessonCubeStage } from './lessons/LessonCubeStage';
 import { LessonHeaderActions } from './lessons/LessonHeaderActions';
-import { PHYSICAL_CUBE_MATCH_NOTE } from './lessons/lessonCopy';
 import { LessonUnavailable } from './lessons/LessonUnavailable';
 import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
 
@@ -20,6 +28,7 @@ export function LearningCrossView() {
   const cubeState = useCubeStore((state) => state.cubeState);
   const setAppPhase = useCubeStore((state) => state.setAppPhase);
   const setActiveLesson = useCubeStore((state) => state.setActiveLesson);
+  const activeLesson = useCubeStore((state) => state.activeLesson);
   const applyLessonDemoMoves = useCubeStore(
     (state) => state.applyLessonDemoMoves,
   );
@@ -48,7 +57,9 @@ export function LearningCrossView() {
     isLessonComplete,
     solvedSlots,
     recomputeStep,
-  } = useWhiteCrossLessonStep(studentFrame);
+    advanceAfterStep,
+    resetStrategyIntro,
+  } = useWhiteCrossLessonStep(studentFrame, { resetKey: activeLesson });
 
   const demoMoves = useMemo((): Move[] => {
     if (
@@ -101,14 +112,14 @@ export function LearningCrossView() {
     (showPreparingOverlay
       ? {
           kind: 'solve-edge' as const,
-          title: 'Preparing lesson…',
+          title: preparing.lesson,
           body: '',
           edgeLabel: '',
           partnerColor: 'white' as const,
         }
       : {
           kind: 'solve-edge' as const,
-          title: 'White cross',
+          title: whiteCrossLesson.defaultStepTitle,
           body: '',
           edgeLabel: '',
           partnerColor: 'white' as const,
@@ -117,7 +128,8 @@ export function LearningCrossView() {
     step !== null &&
     !isStepPending &&
     demoMoves.length > 0 &&
-    step.kind !== 'complete';
+    step.kind !== 'complete' &&
+    step.kind !== 'intro';
   const showRotationCallout =
     canApplyDemo &&
     avoidBackMoves &&
@@ -127,8 +139,17 @@ export function LearningCrossView() {
 
   const handleRestartLessonTips = () => {
     resetLessonSession();
+    resetStrategyIntro();
     setAvoidBackMoves(false);
     recomputeStep();
+  };
+
+  const handleContinueIntro = () => {
+    if (step?.kind !== 'intro') return;
+    startLessonTransition(() => {
+      advanceAfterStep(step);
+      recomputeStep();
+    });
   };
 
   const handleUndoLessonStep = () => {
@@ -141,7 +162,7 @@ export function LearningCrossView() {
 
   const trailingActions = canApplyDemo ? (
     <LessonApplyButton
-      buttonLabel="Apply example & continue"
+      buttonLabel={ui.applyExampleContinue}
       disabled={isStepPending}
       onApply={() => {
         startLessonTransition(() => {
@@ -161,7 +182,7 @@ export function LearningCrossView() {
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-6">
       <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Lesson: White cross</h1>
+          <h1 className="text-3xl font-bold">{whiteCrossLesson.title}</h1>
           <p className="mt-1 text-slate-300">
             Hold your cube with{' '}
             <span className="text-slate-100">white on the bottom</span> and{' '}
@@ -169,7 +190,7 @@ export function LearningCrossView() {
             <span className="text-slate-100">
               {formatColorLabel(lessonHold.F)} toward you
             </span>{' '}
-            — that is the <span className="text-slate-100">front (F)</span> face
+            . That is the <span className="text-slate-100">front (F)</span> face
             in the diagram below (the virtual cube shows{' '}
             {formatColorLabel(lessonHold.F)} on F). Notation: U ={' '}
             {formatColorLabel(lessonHold.U)}, D ={' '}
@@ -181,45 +202,28 @@ export function LearningCrossView() {
               {PHYSICAL_CUBE_MATCH_NOTE}
             </p>
           ) : null}
-          {step && step.kind !== 'complete' && (
+          {step && step.kind !== 'complete' && step.kind !== 'intro' && (
             <p className="mt-2 text-sm text-slate-400">
-              Progress: <span className="text-slate-200">{solvedSlots}/4</span>{' '}
-              cross edges solved (white on the bottom, side sticker matches its
-              center).
+              {whiteCrossLesson.progress(solvedSlots)}
             </p>
           )}
           <details className="mt-3 text-sm text-slate-400">
             <summary className="cursor-pointer text-slate-300 hover:text-slate-100">
-              Lesson session & reset
+              {whiteCrossLesson.sessionNotesSummary}
             </summary>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-relaxed">
-              <li>
-                <span className="text-slate-300">Undo last example</span>{' '}
-                restores the virtual cube to before your most recent Apply. The
-                next step title may differ (for example a permute vs a slotting
-                step) even though the cube matches an earlier point in the
-                lesson.
-              </li>
-              <li>
-                <span className="text-slate-300">Apply example</span> updates
-                your virtual cube and advances the lesson. Orientation from y2
-                bookends is stored on the cube; the internal hold flag resets
-                each apply.
-              </li>
-              <li>
-                <span className="text-slate-300">Reset lesson tips</span> clears
-                the one-time rotation tip and hold flag only — your cube
-                scramble is unchanged.
-              </li>
-              <li>
-                <span className="text-slate-300">Start lesson</span> from the
-                cube overview runs the same session reset before opening this
-                view.
-              </li>
-              <li>
-                Re-opening the lesson without starting fresh does not reset your
-                cube or progress on it.
-              </li>
+              {whiteCrossLesson.sessionNotes.map((note) => (
+                <li key={note.text}>
+                  {note.label ? (
+                    <>
+                      <span className="text-slate-300">{note.label}</span>{' '}
+                      {note.text}
+                    </>
+                  ) : (
+                    note.text
+                  )}
+                </li>
+              ))}
             </ul>
           </details>
         </div>
@@ -252,7 +256,19 @@ export function LearningCrossView() {
             {displayStep.body}
           </p>
         ) : null}
-        {step && step.kind !== 'complete' && showAvoidBackToggle ? (
+        {step?.kind === 'intro' ? (
+          <div className="mt-4">
+            <button
+              type="button"
+              className="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-600"
+              onClick={handleContinueIntro}
+              disabled={isStepPending}
+            >
+              {ui.continue}
+            </button>
+          </div>
+        ) : null}
+        {step && step.kind !== 'complete' && step.kind !== 'intro' && showAvoidBackToggle ? (
           <LessonAvoidBackPanel
             frontColor={lessonHold.F}
             avoidBackMoves={avoidBackMoves}
@@ -261,21 +277,24 @@ export function LearningCrossView() {
             onRememberDefaultChange={setRememberAvoidBackDefault}
             showRotationCallout={showRotationCallout}
             onMarkCalloutSeen={markAvoidBackCalloutSeen}
-            holdNote=" (usual lesson hold)"
+            holdNote={lessonAvoidBack.usualLessonHold}
           />
         ) : null}
-        {step && step.kind !== 'complete' && (
+        {step &&
+        step.kind !== 'complete' &&
+        step.kind !== 'intro' && (
           <p className="mt-3 text-xs text-slate-500">
-            Same hold as the diagram: {formatColorLabel(lessonHold.F)} on F
-            (front), {formatColorLabel(lessonHold.U)} on U (top),{' '}
-            {formatColorLabel(lessonHold.D)} on D (bottom).
+            {SAME_HOLD_NOTE(
+              formatColorLabel(lessonHold.F),
+              formatColorLabel(lessonHold.U),
+              formatColorLabel(lessonHold.D),
+            )}
           </p>
         )}
         {isLessonComplete ? (
           <>
             <p className="mt-4 text-sm text-slate-400">
-              All four cross edges are in place. Continue to white corners when
-              you are ready, or use Back to cube overview.
+              {whiteCrossLesson.completeBody}
             </p>
             <div className="mt-4">
               <button
@@ -286,13 +305,13 @@ export function LearningCrossView() {
                   setActiveLesson('white-corners');
                 }}
               >
-                Continue: White corners
+                {whiteCrossLesson.continueWhiteCorners}
               </button>
             </div>
           </>
         ) : null}
         {canApplyDemo ? (
-          <LessonApplyPanel hint="When your physical cube matches the diagram and you have stepped through the example (or reproduced it on your cube), apply here to update the virtual cube and continue the lesson." />
+          <LessonApplyPanel hint={applyHints.default} />
         ) : null}
       </article>
     </section>

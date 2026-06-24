@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createSolvedCubeState, applyMoves } from '../cube/cubeState';
+import { ui } from '../content/ui';
 import { useCubeStore } from '../store/cubeStore';
 import { LearningCornersView } from './LearningCornersView';
 
@@ -46,37 +47,73 @@ function seedStore() {
   });
 }
 
+function mockCornerLessonStep(
+  overrides: Partial<ReturnType<typeof useWhiteCornerLessonStep>> = {},
+) {
+  mockUseWhiteCornerLessonStep.mockReturnValue({
+    step: {
+      kind: 'solve-corner',
+      title: 'Front–right corner',
+      body: 'Insert the corner.',
+      cornerId: 'FRD',
+      demoMoves: ['R', 'U', "R'"],
+    },
+    isStepPending: false,
+    showPreparingOverlay: false,
+    isLessonComplete: false,
+    solvedSlots: 0,
+    recomputeStep: vi.fn(),
+    currentHoldIndex: 0,
+    solvedCornerIds: [],
+    hasSeenStrategyIntro: true,
+    sessionUndoStack: [],
+    advanceAfterStep: vi.fn(),
+    undoCornerSessionStep: vi.fn(),
+    resetCornerSession: vi.fn(),
+    ...overrides,
+  });
+}
+
 describe('LearningCornersView', () => {
   afterEach(() => cleanup());
 
   beforeEach(() => {
     seedStore();
-    mockUseWhiteCornerLessonStep.mockReturnValue({
+    mockCornerLessonStep();
+  });
+
+  it('shows strategy intro with continue before corner solves', async () => {
+    const advanceAfterStep = vi.fn();
+    const recomputeStep = vi.fn();
+    mockCornerLessonStep({
       step: {
-        kind: 'solve-corner',
-        title: 'Front–right corner',
-        body: 'Insert the corner.',
-        cornerId: 'FRD',
-        demoMoves: ['R', 'U', "R'"],
+        kind: 'intro',
+        title: 'How this lesson works',
+        body: 'We solve every corner into the front-right-bottom slot (FRD).',
       },
-      isStepPending: false,
-      showPreparingOverlay: false,
-      isLessonComplete: false,
-      solvedSlots: 0,
-      recomputeStep: vi.fn(),
-      currentHoldIndex: 0,
-      solvedCornerIds: [],
-      sessionUndoStack: [],
-      advanceAfterStep: vi.fn(),
-      undoCornerSessionStep: vi.fn(),
-      resetCornerSession: vi.fn(),
+      hasSeenStrategyIntro: false,
+      advanceAfterStep,
+      recomputeStep,
     });
+
+    render(<LearningCornersView />);
+    expect(screen.getByText(/front-right-bottom slot \(FRD\)/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: ui.continue })).toBeEnabled();
+    expect(
+      screen.queryByRole('button', { name: ui.applyExampleContinue }),
+    ).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: ui.continue }));
+    expect(advanceAfterStep).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'intro' }),
+    );
+    expect(recomputeStep).toHaveBeenCalled();
   });
 
   it('shows apply when the step has a demo', () => {
     render(<LearningCornersView />);
     expect(
-      screen.getByRole('button', { name: 'Apply example & continue' }),
+      screen.getByRole('button', { name: ui.applyExampleContinue }),
     ).toBeEnabled();
     expect(screen.getByTestId('move-sequence-demo')).toHaveTextContent(
       "R U R'",
@@ -84,7 +121,7 @@ describe('LearningCornersView', () => {
   });
 
   it('shows continue for reorient-hold steps', () => {
-    mockUseWhiteCornerLessonStep.mockReturnValue({
+    mockCornerLessonStep({
       step: {
         kind: 'reorient-hold',
         title: 'Face the red side',
@@ -92,17 +129,8 @@ describe('LearningCornersView', () => {
         demoMoves: ['y'],
         targetCornerId: 'BDR',
       },
-      isStepPending: false,
-      showPreparingOverlay: false,
-      isLessonComplete: false,
       solvedSlots: 1,
-      recomputeStep: vi.fn(),
-      currentHoldIndex: 0,
       solvedCornerIds: ['FRD'],
-      sessionUndoStack: [],
-      advanceAfterStep: vi.fn(),
-      undoCornerSessionStep: vi.fn(),
-      resetCornerSession: vi.fn(),
     });
 
     render(<LearningCornersView />);
@@ -110,7 +138,7 @@ describe('LearningCornersView', () => {
   });
 
   it('renders wrong-D demos with embedded y rotations without crashing', () => {
-    mockUseWhiteCornerLessonStep.mockReturnValue({
+    mockCornerLessonStep({
       step: {
         kind: 'solve-corner',
         title: 'Front–right corner',
@@ -118,22 +146,11 @@ describe('LearningCornersView', () => {
         cornerId: 'FRD',
         demoMoves: ['R', 'U', "R'", "U'", 'U', 'R', 'U', "R'"],
       },
-      isStepPending: false,
-      showPreparingOverlay: false,
-      isLessonComplete: false,
-      solvedSlots: 0,
-      recomputeStep: vi.fn(),
-      currentHoldIndex: 0,
-      solvedCornerIds: [],
-      sessionUndoStack: [],
-      advanceAfterStep: vi.fn(),
-      undoCornerSessionStep: vi.fn(),
-      resetCornerSession: vi.fn(),
     });
 
     render(<LearningCornersView />);
     expect(
-      screen.getByRole('button', { name: 'Apply example & continue' }),
+      screen.getByRole('button', { name: ui.applyExampleContinue }),
     ).toBeEnabled();
     expect(screen.getByTestId('move-sequence-demo')).toBeInTheDocument();
   });
@@ -154,7 +171,7 @@ describe('LearningCornersView', () => {
       activeLesson: 'white-corners',
       lessonHistory: [],
     });
-    mockUseWhiteCornerLessonStep.mockReturnValue({
+    mockCornerLessonStep({
       step: {
         kind: 'solve-corner',
         title: 'Back–right corner',
@@ -162,17 +179,9 @@ describe('LearningCornersView', () => {
         cornerId: 'BDR',
         demoMoves: ['U', 'R', "U'", "R'"],
       },
-      isStepPending: false,
-      showPreparingOverlay: false,
-      isLessonComplete: false,
       solvedSlots: 1,
-      recomputeStep: vi.fn(),
       currentHoldIndex: 1,
       solvedCornerIds: ['FRD'],
-      sessionUndoStack: [],
-      advanceAfterStep: vi.fn(),
-      undoCornerSessionStep: vi.fn(),
-      resetCornerSession: vi.fn(),
     });
 
     render(<LearningCornersView />);
@@ -182,26 +191,16 @@ describe('LearningCornersView', () => {
   });
 
   it('links to white cross lesson on cross-prerequisite', async () => {
-    mockUseWhiteCornerLessonStep.mockReturnValue({
+    mockCornerLessonStep({
       step: {
         kind: 'cross-prerequisite',
         title: 'Complete the white cross first',
         body: 'Finish the cross.',
       },
-      isStepPending: false,
-      showPreparingOverlay: false,
-      isLessonComplete: false,
-      solvedSlots: 0,
-      recomputeStep: vi.fn(),
-      currentHoldIndex: 0,
-      solvedCornerIds: [],
-      sessionUndoStack: [],
-      advanceAfterStep: vi.fn(),
-      undoCornerSessionStep: vi.fn(),
-      resetCornerSession: vi.fn(),
     });
 
     render(<LearningCornersView />);
+    expect(screen.queryByText(/front-right-bottom slot \(FRD\)/)).not.toBeInTheDocument();
     await userEvent.click(
       screen.getByRole('button', { name: 'Go to white cross lesson' }),
     );

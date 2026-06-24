@@ -21,6 +21,8 @@ export type CubeMoveAnimation = {
   onComplete: () => void;
   /** After a whole-cube turn, snap orbit to lesson hold (not relative to user drag). */
   cameraAfter?: LessonCameraView;
+  /** Override default {@link MOVE_ANIMATION_MS} (e.g. slower notation demos). */
+  durationMs?: number;
 };
 
 type AnimatedCubeMeshProps = {
@@ -114,7 +116,9 @@ export function AnimatedCubeMesh({
 
     progressRef.current = Math.min(
       1,
-      progressRef.current + delta / (MOVE_ANIMATION_MS / 1000),
+      progressRef.current +
+        delta /
+          ((animation.durationMs ?? MOVE_ANIMATION_MS) / 1000),
     );
     const t = easeInOutCubic(progressRef.current);
     const forward = (animation.direction ?? 'forward') === 'forward';
@@ -129,7 +133,7 @@ export function AnimatedCubeMesh({
     if (progressRef.current >= 1 && !completedRef.current) {
       completedRef.current = true;
       const isForward = (animation.direction ?? 'forward') === 'forward';
-      if (!isForward) {
+      if (!isForward && turnRef.current) {
         turnRef.current.rotation.set(0, 0, 0);
       }
       animation.onComplete();

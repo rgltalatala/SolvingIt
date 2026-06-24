@@ -8,7 +8,6 @@ import {
   studentLessonHoldFaceCenters,
 } from '../cube/cubeState';
 import {
-  LAST_LAYER_SUB_LESSONS,
   isCornersFullyPermuted,
   isEdgesFullyPermuted,
   isLastLayerComplete,
@@ -21,6 +20,17 @@ import {
   type Instruction,
 } from '../learn/studentHold';
 import type { YRotationStep } from '../learn/studentHold/types';
+import {
+  LAST_LAYER_SUB_LESSON_LABELS,
+  lastLayerLesson,
+} from '../content/lastLayer';
+import {
+  applyHints,
+  PHYSICAL_CUBE_MATCH_NOTE,
+  preparing,
+  SAME_HOLD_NOTE,
+} from '../content/tips';
+import { ui } from '../content/ui';
 import { useCubeStore } from '../store/cubeStore';
 import { useLastLayerLessonStep } from './lessons/lastLayer/useLastLayerLessonStep';
 import {
@@ -29,7 +39,6 @@ import {
 } from './lessons/LessonApplyPanel';
 import { LessonCubeStage } from './lessons/LessonCubeStage';
 import { LessonHeaderActions } from './lessons/LessonHeaderActions';
-import { PHYSICAL_CUBE_MATCH_NOTE } from './lessons/lessonCopy';
 import { LessonUnavailable } from './lessons/LessonUnavailable';
 import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
 
@@ -162,7 +171,7 @@ export function LearningLastLayerView() {
     (showPreparingOverlay
       ? {
           kind: 'align-u' as const,
-          title: 'Preparing lesson…',
+          title: preparing.lesson,
           body: '',
           demoMoves: [] as Move[],
           subLesson: 'orient-edges' as const,
@@ -170,7 +179,7 @@ export function LearningLastLayerView() {
         }
       : {
           kind: 'align-u' as const,
-          title: 'Last layer',
+          title: lastLayerLesson.defaultStepTitle,
           body: '',
           demoMoves: [] as Move[],
           subLesson: 'orient-edges' as const,
@@ -218,35 +227,35 @@ export function LearningLastLayerView() {
 
   const trailingActions = canApplyDemo ? (
     <LessonApplyButton
-      buttonLabel={isReorientStep ? 'Continue' : 'Apply example & continue'}
+      buttonLabel={isReorientStep ? ui.continue : ui.applyExampleContinue}
       disabled={isStepPending}
       onApply={handleApplyDemo}
     />
   ) : undefined;
 
   const subLessonLabel = cornerOrientPhase
-    ? 'Orient corners'
+    ? LAST_LAYER_SUB_LESSON_LABELS.orientCorners
     : cornerPermutePhase
-      ? 'Permute corners'
+      ? LAST_LAYER_SUB_LESSON_LABELS.permuteCorners
       : edgePermutePhase
-        ? 'Permute edges'
-        : 'Orient edges';
+        ? LAST_LAYER_SUB_LESSON_LABELS.permuteEdges
+        : LAST_LAYER_SUB_LESSON_LABELS.orientEdges;
 
   const progressLabel = cornerOrientPhase
-    ? `${solvedSlots}/4 corners oriented (yellow on U)`
+    ? lastLayerLesson.progress.orientCorners(solvedSlots)
     : cornerPermutePhase
-      ? `${solvedSlots}/4 corners permuted (side colors match centers)`
+      ? lastLayerLesson.progress.permuteCorners(solvedSlots)
       : edgePermutePhase
-        ? `${solvedSlots}/4 edges permuted (side color matches center)`
-        : `${solvedSlots}/4 top edges oriented (yellow sticker on U)`;
+        ? lastLayerLesson.progress.permuteEdges(solvedSlots)
+        : lastLayerLesson.progress.orientEdges(solvedSlots);
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-6">
       <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Lesson: Last layer</h1>
+          <h1 className="text-3xl font-bold">{lastLayerLesson.title}</h1>
           <p className="mt-1 text-sm text-violet-300">
-            Sub-lesson: {subLessonLabel}
+            {lastLayerLesson.subLessonPrefix} {subLessonLabel}
           </p>
           <p className="mt-1 text-slate-300">
             Hold your cube with{' '}
@@ -255,7 +264,7 @@ export function LearningLastLayerView() {
             <span className="text-slate-100">
               {formatColorLabel(lessonHold.F)} toward you
             </span>{' '}
-            — that is the <span className="text-slate-100">front (F)</span> face
+            . That is the <span className="text-slate-100">front (F)</span> face
             in the diagram below.
           </p>
           {!isLessonComplete ? (
@@ -267,7 +276,8 @@ export function LearningLastLayerView() {
           step.kind !== 'complete' &&
           step.kind !== 'prerequisite' ? (
             <p className="mt-2 text-sm text-slate-400">
-              Progress: <span className="text-slate-200">{progressLabel}</span>
+              {lastLayerLesson.progressPrefix}{' '}
+              <span className="text-slate-200">{progressLabel}</span>
             </p>
           ) : null}
         </div>
@@ -286,7 +296,7 @@ export function LearningLastLayerView() {
         completeCanvasKey="last-layer-lesson-complete-cube"
         visibleDemo={visibleDemo}
         showPreparingOverlay={showPreparingOverlay}
-        preparingSubtitle="Finding a demo for this last-layer step."
+        preparingSubtitle={lastLayerLesson.preparingSubtitle}
         trailingActions={trailingActions}
       />
 
@@ -309,21 +319,21 @@ export function LearningLastLayerView() {
               className="inline-flex rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600"
               onClick={() => setActiveLesson('white-cross')}
             >
-              Go to white cross lesson
+              {lastLayerLesson.goToWhiteCross}
             </button>
             <button
               type="button"
               className="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-600"
               onClick={() => setActiveLesson('white-corners')}
             >
-              Go to white corners lesson
+              {lastLayerLesson.goToWhiteCorners}
             </button>
             <button
               type="button"
               className="inline-flex rounded-lg bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-600"
               onClick={() => setActiveLesson(MIDDLE_LAYER_EDGES_LESSON_ID)}
             >
-              Go to middle layer edges lesson
+              {lastLayerLesson.goToMiddleLayer}
             </button>
           </div>
         ) : null}
@@ -332,21 +342,21 @@ export function LearningLastLayerView() {
         step.kind !== 'complete' &&
         step.kind !== 'prerequisite' ? (
           <p className="mt-3 text-xs text-slate-500">
-            Same hold as the diagram: {formatColorLabel(lessonHold.F)} on F
-            (front), {formatColorLabel(lessonHold.U)} on U (top),{' '}
-            {formatColorLabel(lessonHold.D)} on D (bottom).
+            {SAME_HOLD_NOTE(
+              formatColorLabel(lessonHold.F),
+              formatColorLabel(lessonHold.U),
+              formatColorLabel(lessonHold.D),
+            )}
           </p>
         ) : null}
 
         {canApplyDemo ? (
-          <LessonApplyPanel hint="When your physical cube matches the diagram and you have stepped through the example, apply here to update the virtual cube and continue." />
+          <LessonApplyPanel hint={applyHints.solve} />
         ) : null}
 
         {isLessonComplete ? (
           <p className="mt-4 text-sm text-slate-400">
-            The last layer is complete — all four sub-lessons finished (
-            {LAST_LAYER_SUB_LESSONS.join(', ')}). Use Back to cube overview when
-            you are ready.
+            {lastLayerLesson.completeBody}
           </p>
         ) : null}
       </article>

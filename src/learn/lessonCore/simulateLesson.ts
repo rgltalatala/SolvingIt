@@ -21,6 +21,8 @@ export type SimulateLessonOnStorageCubeOptions<
 > = {
   getStep: (student: CubeState) => TStep;
   isComplete: (student: CubeState) => boolean;
+  /** When a step has no demo moves, return continue to skip it or stuck to end simulation. */
+  onStepWithoutDemo?: (step: TStep) => 'continue' | 'stuck';
   /** When true, expand steps that use B with y2 + translated face turns. */
   avoidBackMoves?: boolean;
   /** When true with avoidBackMoves, only expand steps whose demoMoves include B. */
@@ -78,6 +80,9 @@ export function simulateLessonOnStorageCube<TStep extends SimulateLessonStep>(
     const demoMoves =
       'demoMoves' in step && step.demoMoves?.length ? step.demoMoves : null;
     if (!demoMoves) {
+      if (options.onStepWithoutDemo?.(step) === 'continue') {
+        continue;
+      }
       return {
         lessonStepsSimulated,
         complete: options.isComplete(student),

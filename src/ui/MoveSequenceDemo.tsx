@@ -23,6 +23,7 @@ import {
 import { MOVE_ANIMATION_PAUSE_MS } from '../cube3d/moveAnimation';
 import type { CubeMoveAnimation } from '../cube3d/CubeView';
 import { CubeView } from '../cube3d/CubeView';
+import { moveSequenceDemo } from '../content/tips';
 import { LessonInstructionDemo } from './LessonInstructionDemo';
 
 export type MoveAnimDirection = 'forward' | 'reverse';
@@ -166,16 +167,16 @@ export function MoveSequenceDemo({
     : null;
 
   const summary = !hasMoves
-    ? 'Step through moves when this lesson step includes an example algorithm.'
+    ? moveSequenceDemo.noMovesSummary
     : animating
       ? reverseAnimating
-        ? `Undoing: ${moves[applied - 1]}`
-        : `Animating: ${moves[applied]}`
+        ? moveSequenceDemo.undoing(moves[applied - 1])
+        : moveSequenceDemo.animating(moves[applied])
       : applied === 0
-        ? 'Start position'
+        ? moveSequenceDemo.startPosition
         : applied >= moves.length
-          ? `Complete: ${moves.join(' ')}`
-          : `Applied: ${moves.slice(0, applied).join(' ')}`;
+          ? moveSequenceDemo.complete(moves.join(' '))
+          : moveSequenceDemo.applied(moves.slice(0, applied).join(' '));
 
   const defaultHold = studentLessonHoldFaceCenters();
   const holdForCopy = hasMoves ? displayHold : defaultHold;
@@ -188,7 +189,9 @@ export function MoveSequenceDemo({
     <div className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <h3 className="text-sm font-semibold text-slate-200">
-          {hasMoves ? 'Example move sequence' : 'Interactive preview'}
+          {hasMoves
+            ? moveSequenceDemo.exampleHeading
+            : moveSequenceDemo.interactiveHeading}
         </h3>
         <p className="max-w-[min(100%,28rem)] font-mono text-xs leading-snug text-slate-400">
           {summary}
@@ -211,7 +214,7 @@ export function MoveSequenceDemo({
             className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-700"
             onClick={handleReset}
           >
-            Reset
+            {moveSequenceDemo.reset}
           </button>
           <button
             type="button"
@@ -219,7 +222,7 @@ export function MoveSequenceDemo({
             onClick={handlePrev}
             disabled={!hasMoves || animating || applied <= 0}
           >
-            Previous move
+            {moveSequenceDemo.previousMove}
           </button>
           <button
             type="button"
@@ -227,7 +230,7 @@ export function MoveSequenceDemo({
             onClick={handleNext}
             disabled={!hasMoves || animating || applied >= moves.length}
           >
-            Next move
+            {moveSequenceDemo.nextMove}
           </button>
           <button
             type="button"
@@ -235,7 +238,7 @@ export function MoveSequenceDemo({
             onClick={handlePlayAll}
             disabled={!hasMoves || animating}
           >
-            {playing ? 'Playing…' : 'Play all'}
+            {playing ? moveSequenceDemo.playing : moveSequenceDemo.playAll}
           </button>
         </div>
         {trailingActions ? (
@@ -261,7 +264,9 @@ export function MoveSequenceDemo({
             return (
               <span
                 key={`${m}-${i}`}
-                title={isRotation ? 'Whole-cube rotation' : undefined}
+                title={
+                  isRotation ? moveSequenceDemo.wholeCubeRotationTitle : undefined
+                }
                 className={`rounded px-2 py-0.5 font-mono text-xs ${
                   isRotation
                     ? done
@@ -287,30 +292,27 @@ export function MoveSequenceDemo({
         {hasMoves ? (
           applied === 0 && !animating ? (
             <>
-              The diagram matches your cube before this example. Face letters
-              follow this hold: F = {formatColorLabel(holdForCopy.F)} (front), U
-              = {formatColorLabel(holdForCopy.U)}, D ={' '}
-              {formatColorLabel(holdForCopy.D)}. Layer turns animate on Next /
-              Play all; Previous animates the undo.
+              {moveSequenceDemo.holdBeforeExample(
+                formatColorLabel(holdForCopy.F),
+                formatColorLabel(holdForCopy.U),
+                formatColorLabel(holdForCopy.D),
+              )}
             </>
           ) : (
             <>
-              Hold labels match the diagram{' '}
-              <span className="text-slate-400">
-                {animating
-                  ? 'during the current turn'
-                  : 'after the moves applied so far'}
-              </span>
-              : F = {formatColorLabel(holdForCopy.F)} (front), U ={' '}
-              {formatColorLabel(holdForCopy.U)}, D ={' '}
-              {formatColorLabel(holdForCopy.D)}.
+              {moveSequenceDemo.holdDuringOrAfter(
+                animating
+                  ? moveSequenceDemo.holdTimingAnimating
+                  : moveSequenceDemo.holdTimingAfter,
+                formatColorLabel(holdForCopy.F),
+                formatColorLabel(holdForCopy.U),
+                formatColorLabel(holdForCopy.D),
+              )}
             </>
           )
         ) : (
           <>
-            This lesson step has no example algorithm yet. The preview matches
-            your current cube; Reset / Next / Play all appear on steps that
-            include an example.
+            {moveSequenceDemo.noAlgorithmYet}
           </>
         )}
       </p>

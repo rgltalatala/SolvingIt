@@ -271,8 +271,8 @@ describe('middle layer edge lesson', () => {
     expect(step.kind).not.toBe('align-u');
     if (step.kind === 'solve-edge') {
       expect(step.edgeColors).toEqual(active!.colors);
-      expect(step.body).toContain('top layer');
-      expect(step.body).toContain('already aligned');
+      expect(step.body).toContain('on top');
+      expect(step.body).toContain('lined up');
     }
   });
 

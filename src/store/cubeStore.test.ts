@@ -178,4 +178,9 @@ describe('cubeStore lesson session', () => {
     useCubeStore.getState().loadScrambledCubeIntoLesson(['R']);
     expect(useCubeStore.getState().lessonHistory).toEqual([]);
   });
+
+  it('accepts notation app phase', () => {
+    useCubeStore.getState().setAppPhase('notation');
+    expect(useCubeStore.getState().appPhase).toBe('notation');
+  });
 });

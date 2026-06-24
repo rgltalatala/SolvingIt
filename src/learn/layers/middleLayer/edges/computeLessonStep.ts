@@ -40,17 +40,16 @@ import type {
   MiddleLayerEdgeLessonStepOptions,
   MiddleLayerEdgesLessonStep,
 } from './types';
+import { middleLayerSteps } from '../../../../content/middleLayer';
 
-const COMPLETE_BODY =
-  'All four middle-layer edges match their side centers (no yellow or white on these pieces). Hold the cube with the blue face toward you (white on bottom, yellow on top) and confirm it matches the diagram below.';
+const COMPLETE_BODY = middleLayerSteps.complete.body;
 
-const PREREQUISITE_BODY =
-  'Finish the white cross and all four white corners first—the bottom layer must be complete before solving middle-layer edges.';
+const PREREQUISITE_BODY = middleLayerSteps.prerequisite.body;
 
 function completeStep(): MiddleLayerEdgesLessonStep {
   return {
     kind: 'complete',
-    title: 'Middle layer edges complete',
+    title: middleLayerSteps.complete.title,
     body: COMPLETE_BODY,
   };
 }
@@ -58,7 +57,7 @@ function completeStep(): MiddleLayerEdgesLessonStep {
 function prerequisiteStep(): MiddleLayerEdgesLessonStep {
   return {
     kind: 'cross-corners-prerequisite',
-    title: 'Complete the bottom layer first',
+    title: middleLayerSteps.prerequisite.title,
     body: PREREQUISITE_BODY,
   };
 }
@@ -68,8 +67,8 @@ function buildReturnToBlueStep(
 ): MiddleLayerEdgesLessonStep {
   return {
     kind: 'reorient-hold',
-    title: 'Face the blue side',
-    body: 'All four middle-layer edges are done. Turn the cube so the blue face is toward you again (white on bottom, yellow on top).',
+    title: middleLayerSteps.faceBlue.title,
+    body: middleLayerSteps.faceBlue.body,
     demoMoves: returnToBlueY(currentHoldIndex),
     returnToInitialHold: true,
   };
@@ -86,11 +85,19 @@ function buildReorientToPartnerStep(
   const demoMoves = relativeY(currentHoldIndex, targetHold);
   const faceLabel = formatColorHoldLabel(targetHold);
   const body = onUAligned
-    ? `The ${formatColor(edgeColors[0])}–${formatColor(edgeColors[1])} edge is on the top layer and already aligned with its center colors. Turn the whole cube so the ${faceLabel} face is toward you, then insert it into the middle layer between its centers.`
-    : `Turn the whole cube so the ${faceLabel} face is toward you. You will insert the ${formatColor(edgeColors[0])}–${formatColor(edgeColors[1])} edge into the middle layer between its centers.`;
+    ? middleLayerSteps.reorientAligned(
+        faceLabel,
+        formatColor(edgeColors[0]),
+        formatColor(edgeColors[1]),
+      )
+    : middleLayerSteps.reorient(
+        faceLabel,
+        formatColor(edgeColors[0]),
+        formatColor(edgeColors[1]),
+      );
   return {
     kind: 'reorient-hold',
-    title: `Face the ${formatColor(partnerColor)} side`,
+    title: middleLayerSteps.faceSideTitle(formatColor(partnerColor)),
     body,
     demoMoves,
     targetHoldIndex: targetHold,
@@ -102,8 +109,8 @@ function buildReorientToBackStep(
 ): MiddleLayerEdgesLessonStep {
   return {
     kind: 'reorient-hold',
-    title: 'Face the back side',
-    body: 'The front middle-layer edges are already correct, but the back edges still need work. Turn the cube so the back face is toward you (white stays on bottom, yellow on top).',
+    title: middleLayerSteps.faceBack.title,
+    body: middleLayerSteps.faceBack.body,
     demoMoves: reorientMovesToFaceBack(currentHoldIndex),
     targetHoldIndex: holdFacingOpposite(currentHoldIndex),
   };
@@ -116,8 +123,12 @@ function buildAlignUStep(
 ): MiddleLayerEdgesLessonStep {
   return {
     kind: 'align-u',
-    title: `Align ${formatColor(partnerColor)} to its center`,
-    body: `The ${formatColor(edgeColors[0])}–${formatColor(edgeColors[1])} edge is on the top layer. Rotate U so the ${formatColor(partnerColor)} sticker lines up with the ${formatColor(partnerColor)} center before you turn the cube.`,
+    title: middleLayerSteps.alignPartnerTitle(formatColor(partnerColor)),
+    body: middleLayerSteps.alignU(
+      formatColor(edgeColors[0]),
+      formatColor(edgeColors[1]),
+      formatColor(partnerColor),
+    ),
     demoMoves,
     edgeColors,
   };
@@ -134,18 +145,28 @@ function buildSolveEdgeStep(
   const slotLabel = slot === 'FL' ? 'front-left' : 'front-right';
   const body =
     action === 'extract'
-      ? `The edge in the ${slotLabel} middle slot needs to come out. Use the ${algName} algorithm to lift it to the top layer while keeping your bottom layer intact.`
+      ? middleLayerSteps.extract(slotLabel, algName)
       : onUAligned
-        ? `The ${formatColor(edgeColors[0])}–${formatColor(edgeColors[1])} edge is on the top layer and already aligned with its center colors. Rotate U if needed, then insert it into the ${slotLabel} middle slot using the ${algName} algorithm. Your white cross, white corners, and any middle edges you already placed stay intact.`
-        : `Insert the ${formatColor(edgeColors[0])}–${formatColor(edgeColors[1])} edge into the ${slotLabel} middle slot using the ${algName} algorithm. Your white cross, white corners, and any middle edges you already placed stay intact.`;
+        ? middleLayerSteps.insertAligned(
+            formatColor(edgeColors[0]),
+            formatColor(edgeColors[1]),
+            slotLabel,
+            algName,
+          )
+        : middleLayerSteps.insert(
+            formatColor(edgeColors[0]),
+            formatColor(edgeColors[1]),
+            slotLabel,
+            algName,
+          );
   return {
     kind: 'solve-edge',
     title:
       action === 'extract'
-        ? 'Extract edge'
+        ? middleLayerSteps.extractEdge
         : onUAligned
-          ? 'Insert aligned top-layer edge'
-          : 'Insert edge',
+          ? middleLayerSteps.insertAligned
+          : middleLayerSteps.insertEdge,
     body,
     demoMoves,
     edgeColors,

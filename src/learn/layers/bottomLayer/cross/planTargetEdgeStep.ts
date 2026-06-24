@@ -1,10 +1,13 @@
 import type { CubeState, Move } from '../../../../cube/cubeState';
 import {
+  whiteCrossSteps,
+  whitePartnerEdgeHeading,
+} from '../../../../content/whiteCross';
+import {
   firstUnsolvedCrossId,
   formatColor,
   partnerColorForSlot,
   SLOT_DEF,
-  whitePartnerEdgeHeading,
 } from './crossSlotModel';
 import {
   tryDLayerInsertStepForCrossId,
@@ -45,7 +48,7 @@ function buildAlignFromBfs(
     title: whitePartnerEdgeHeading(partner),
     edgeLabel: label,
     partnerColor: partner,
-    body: `Connect the ${formatColor(partner)} sticker on the white–${formatColor(partner)} edge to the ${formatColor(partner)} center before slotting white on the bottom. The demo is the shortest alignment sequence we found while keeping other cross edges you already solved in place.`,
+    body: whiteCrossSteps.alignBfs(formatColor(partner)),
     face: slot.sideFace,
     demoMoves: demo,
   };
@@ -63,7 +66,7 @@ function buildSolveEdgeStep(
   return {
     kind: 'solve-edge',
     title: whitePartnerEdgeHeading(partner),
-    body: `Work the white–${formatColor(partner)} edge: connect its colored sticker to the ${formatColor(partner)} center, then slot white on the bottom.${note} This demo combines setup, alignment, slotting, and undo so other cross edges you already solved stay correct.`,
+    body: whiteCrossSteps.solveEdge(formatColor(partner), note),
     edgeLabel: label,
     partnerColor: partner,
     demoMoves: demo,
@@ -90,7 +93,7 @@ function buildSolveEdgeFromVerifiedDemo(
     id,
     verifiedDemo,
     topLayerWhiteOnSide
-      ? 'This piece is on the top layer with white on a side—we still connect it to the center and slot it rather than only parking white on U.'
+      ? whiteCrossSteps.solveEdgeBfsTopLayerNote
       : undefined,
   );
 }
@@ -222,7 +225,7 @@ export function stuckPartnerStep(studentState: CubeState): WhiteCrossLessonStep 
   return {
     kind: 'solve-edge',
     title: whitePartnerEdgeHeading(stuckPartner),
-    body: `We could not find a short automated demo for the white–${formatColor(stuckPartner)} edge from this position while keeping your other cross edges. Connect its colored sticker to the ${formatColor(stuckPartner)} center on your own, then slot white on the bottom—or reset the scramble and try again.`,
+    body: whiteCrossSteps.stuck(formatColor(stuckPartner)),
     edgeLabel: `${formatColor(stuckPartner)} edge`,
     partnerColor: stuckPartner,
   };

@@ -1,14 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-
-const CAMERA_ERROR_MAP: Record<string, string> = {
-  NotAllowedError:
-    'Camera access was denied. Please allow camera permission and try again.',
-  NotFoundError: 'No camera device was found on this device.',
-  NotReadableError:
-    'Camera is unavailable because it is being used by another app.',
-  OverconstrainedError:
-    'The selected camera constraints are not supported on this device.',
-};
+import { cameraErrors } from '../content/ui';
 
 export interface UseCameraResult {
   videoRef: (node: HTMLVideoElement | null) => void;
@@ -42,7 +33,10 @@ export function useCamera(): UseCameraResult {
         }
       } catch (rawError) {
         const err = rawError as DOMException;
-        setError(CAMERA_ERROR_MAP[err.name] ?? 'Failed to access camera.');
+        setError(
+          cameraErrors[err.name as keyof typeof cameraErrors] ??
+            cameraErrors.fallback,
+        );
       }
     }
 

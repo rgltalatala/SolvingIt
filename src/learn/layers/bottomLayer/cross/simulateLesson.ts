@@ -21,12 +21,22 @@ export function simulateWhiteCrossLessonOnStorageCube(
   maxLessonSteps = 120,
   options: SimulateWhiteCrossLessonOptions = {},
 ): SimulateWhiteCrossLessonResult {
+  let hasSeenStrategyIntro = false;
+
   const result = simulateLessonOnStorageCube<WhiteCrossLessonStep>(
     storageCube,
     maxLessonSteps,
     {
-      getStep: getWhiteCrossLessonStep,
+      getStep: (student) =>
+        getWhiteCrossLessonStep(student, { hasSeenStrategyIntro }),
       isComplete: isWhiteCrossComplete,
+      onStepWithoutDemo: (step) => {
+        if (step.kind === 'intro') {
+          hasSeenStrategyIntro = true;
+          return 'continue';
+        }
+        return 'stuck';
+      },
       avoidBackMoves: options.avoidBackMoves,
       avoidBackOnlyOnBSteps: options.avoidBackOnlyOnBSteps,
       initialHold: options.initialHold,

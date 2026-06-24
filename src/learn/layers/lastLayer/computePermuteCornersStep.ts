@@ -1,4 +1,5 @@
 import type { CubeState, Move } from '../../../cube/cubeState';
+import { lastLayerSteps } from '../../../content/lastLayer';
 import {
   formatHoldFaceLabel,
   relativeY,
@@ -19,14 +20,11 @@ import type {
   PermuteCornersCaseKind,
 } from './types';
 
-const COMPLETE_BODY =
-  'All four top-layer corner side stickers match their adjacent centers (F, R, B, L). Hold the cube with the blue face toward you (white on bottom, yellow on top) and confirm it matches the diagram below.';
-
 export function lastLayerCornersPermuteCompleteStep(): LastLayerLessonStep {
   return {
     kind: 'complete',
-    title: 'Last-layer corners permuted',
-    body: COMPLETE_BODY,
+    title: lastLayerSteps.lastLayerCornersPermuted.title,
+    body: lastLayerSteps.lastLayerCornersPermuted.body,
   };
 }
 
@@ -35,8 +33,8 @@ function buildReturnToBlueStep(
 ): LastLayerLessonStep {
   return {
     kind: 'reorient-hold',
-    title: 'Face the blue side',
-    body: 'All four top corners are permuted. Turn the cube so the blue face is toward you again (white on bottom, yellow on top).',
+    title: lastLayerSteps.faceBlueCorners.title,
+    body: lastLayerSteps.faceBlueCorners.body,
     demoMoves: returnToBlueY(currentHoldIndex),
     targetHoldIndex: 0,
     returnToInitialHold: true,
@@ -50,8 +48,8 @@ function buildReorientForCornerStep(
   const faceLabel = formatHoldFaceLabel(targetHoldIndex);
   return {
     kind: 'reorient-hold',
-    title: `Face the ${faceLabel} side`,
-    body: `One top corner already has its side colors matching the centers. Turn the whole cube so the ${faceLabel} face is toward you and that corner sits at front-right on U — then run the permutation algorithm on the next step.`,
+    title: lastLayerSteps.faceSideTitle(faceLabel),
+    body: lastLayerSteps.reorientCorners(faceLabel),
     demoMoves,
     targetHoldIndex,
   };
@@ -62,8 +60,8 @@ function buildZeroFlowY2Step(
 ): LastLayerLessonStep {
   return {
     kind: 'reorient-hold',
-    title: 'Turn the cube over in your hands',
-    body: 'Rotate the whole cube with y2 (a half turn) so the green face is toward you, then run the same corner permutation algorithm again on the next step.',
+    title: lastLayerSteps.turnCubeOver.title,
+    body: lastLayerSteps.turnCubeOver.body,
     demoMoves: relativeY(currentHoldIndex, ZERO_FLOW_Y2_TARGET_HOLD),
     targetHoldIndex: ZERO_FLOW_Y2_TARGET_HOLD,
     zeroFlowStep: 1,
@@ -76,8 +74,8 @@ function buildPermuteCornersStep(
   if (permuteCase === 'zero-flow-first') {
     return {
       kind: 'permute-corners',
-      title: 'Permute top corners',
-      body: "No top corners have their side colors in place yet. Run U R U' L' U R' U' L, then turn the cube with y2, then run the same algorithm again — all four corners will be permuted.",
+      title: lastLayerSteps.permuteCornersZeroFlowFirst.title,
+      body: lastLayerSteps.permuteCornersZeroFlowFirst.body,
       demoMoves: PERMUTE_CORNERS_ALG,
       permuteCase,
     };
@@ -86,8 +84,8 @@ function buildPermuteCornersStep(
   if (permuteCase === 'zero-flow-second') {
     return {
       kind: 'permute-corners',
-      title: 'Permute top corners again',
-      body: "Run U R U' L' U R' U' L one more time. All four top corner side stickers should now match their adjacent centers.",
+      title: lastLayerSteps.permuteCornersZeroFlowSecond.title,
+      body: lastLayerSteps.permuteCornersZeroFlowSecond.body,
       demoMoves: PERMUTE_CORNERS_ALG,
       permuteCase,
     };
@@ -95,8 +93,8 @@ function buildPermuteCornersStep(
 
   return {
     kind: 'permute-corners',
-    title: 'Permute top corners',
-    body: "The correct corner is at front-right on U. Run U R U' L' U R' U' L to cycle the top-layer corners. If not all four side colors match their centers afterward, run the same algorithm again.",
+    title: lastLayerSteps.permuteCornersOne.title,
+    body: lastLayerSteps.permuteCornersOne.body,
     demoMoves: PERMUTE_CORNERS_ALG,
     permuteCase,
   };

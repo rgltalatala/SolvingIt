@@ -1,4 +1,5 @@
 import type { CubeState, Move } from '../../../cube/cubeState';
+import { lastLayerSteps } from '../../../content/lastLayer';
 import {
   alignMovesForBar,
   alignMovesForLShape,
@@ -24,8 +25,8 @@ function buildAlignUStep(
   return {
     kind: 'align-u',
     subLesson: 'orient-edges',
-    title: `Align the ${patternLabel}`,
-    body: `Two top edges show yellow on U in a ${patternLabel} pattern. Turn the top layer (U) so those edges sit at the ${targetLabel} positions, then you can run the matching algorithm on the next step.`,
+    title: lastLayerSteps.alignPatternTitle(patternLabel),
+    body: lastLayerSteps.alignPattern(patternLabel, targetLabel),
     demoMoves: alignMoves,
     ollCase,
   };
@@ -38,8 +39,8 @@ function buildOrientEdgesStep(
   if (ollCase === 'dot') {
     return {
       kind: 'orient-edges',
-      title: 'Make the yellow cross (dot case)',
-      body: 'No top edges show yellow on U yet. Run this full sequence: first the L-shape algorithm, a U turn, then the bar algorithm. Your bottom and middle layers stay intact.',
+      title: lastLayerSteps.yellowCrossDot.title,
+      body: lastLayerSteps.yellowCrossDot.body,
       demoMoves: algMoves,
       ollCase,
     };
@@ -48,8 +49,8 @@ function buildOrientEdgesStep(
   if (ollCase === 'l-shape') {
     return {
       kind: 'orient-edges',
-      title: 'Orient edges — L shape',
-      body: "The yellow-on-U edges are aligned at UB and UL. Run F U R U' R' F' to flip the remaining edges and complete the yellow cross.",
+      title: lastLayerSteps.orientEdgesL.title,
+      body: lastLayerSteps.orientEdgesL.body,
       demoMoves: algMoves,
       ollCase,
     };
@@ -57,8 +58,8 @@ function buildOrientEdgesStep(
 
   return {
     kind: 'orient-edges',
-    title: 'Orient edges — bar',
-    body: "The yellow-on-U edges are aligned at UL and UR. Run F R U R' U' F' to complete the yellow cross.",
+    title: lastLayerSteps.orientEdgesBar.title,
+    body: lastLayerSteps.orientEdgesBar.body,
     demoMoves: algMoves,
     ollCase,
   };

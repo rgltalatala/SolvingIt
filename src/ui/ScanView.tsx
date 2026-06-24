@@ -4,9 +4,10 @@ import { cubeStateFromScannedFaces } from '../cube/cubeState';
 import { detectFaceColorsFromImageData } from '../scanner/colorDetector';
 import { detectorFaceToCubeJsFaceOrder } from '../scanner/detectorFaceLayout';
 import { ScannerOverlay } from '../scanner/scannerOverlay';
-import { faceInstructions, useScannerFlow } from '../scanner/useScannerFlow';
+import { useScannerFlow } from '../scanner/useScannerFlow';
 import { useCamera } from '../scanner/useCamera';
 import { CorrectionPanel } from '../correction/CorrectionPanel';
+import { scanView as scanCopy } from '../content/ui';
 import { useCubeStore } from '../store/cubeStore';
 import { CubeView } from '../cube3d/CubeView';
 import { partialScansToDisplayCubeState } from '../cube3d/displayCubeState';
@@ -15,7 +16,8 @@ import { ValidationIssuesList } from './ValidationIssuesList';
 
 export function ScanView() {
   const { videoRef, isReady, error, captureFrame } = useCamera();
-  const { currentFace, scannedFaces, submitFace } = useScannerFlow();
+  const { currentFace, faceInstruction, scannedFaces, submitFace } =
+    useScannerFlow();
   const [detectedFace, setDetectedFace] = useState<FaceState | null>(null);
   const [isCorrecting, setIsCorrecting] = useState(false);
   const validationIssues = useCubeStore((state) => state.validationIssues);
@@ -80,11 +82,11 @@ export function ScanView() {
   return (
     <section className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold">Rubik&apos;s Cube Scanner</h1>
-        <p className="text-slate-300">{faceInstructions[currentFace]}</p>
+        <h1 className="text-3xl font-bold">{scanCopy.title}</h1>
+        <p className="text-slate-300">{faceInstruction}</p>
         {validationIssues.length > 0 ? (
           <div className="rounded-lg border border-rose-400/60 bg-rose-950/40 p-3 text-sm text-rose-100">
-            <p className="font-semibold">Scan validation failed.</p>
+            <p className="font-semibold">{scanCopy.validationFailed}</p>
             <ValidationIssuesList
               issues={validationIssues}
               listClassName="mt-2 list-disc space-y-1 pl-5"
@@ -125,11 +127,8 @@ export function ScanView() {
         </div>
 
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Live Virtual Cube Preview</h2>
-          <p className="text-sm text-slate-400">
-            Gray stickers are not scanned yet. Confirm each face to populate
-            this cube in real time.
-          </p>
+          <h2 className="text-lg font-semibold">{scanCopy.livePreviewHeading}</h2>
+          <p className="text-sm text-slate-400">{scanCopy.livePreviewNote}</p>
           <CubeView cubeState={liveCubeState} />
         </div>
       </div>

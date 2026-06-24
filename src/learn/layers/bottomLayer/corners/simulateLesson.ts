@@ -51,10 +51,12 @@ async function runWhiteCornersLessonSimulation(
   );
   let lessonStepsSimulated = 0;
   let lastStepKind: WhiteCornersLessonStep['kind'] | undefined;
+  let hasSeenStrategyIntro = false;
 
   const lessonOptions = (): WhiteCornerLessonStepOptions => ({
     currentHoldIndex,
     solvedCornerIds,
+    hasSeenStrategyIntro,
   });
 
   for (let i = 0; i < maxLessonSteps; i += 1) {
@@ -95,6 +97,11 @@ async function runWhiteCornersLessonSimulation(
         finalHoldIndex: currentHoldIndex,
         finalStorageCube: storage,
       };
+    }
+
+    if (step.kind === 'intro') {
+      hasSeenStrategyIntro = true;
+      continue;
     }
 
     if (step.kind === 'reorient-hold') {
@@ -190,10 +197,12 @@ function runWhiteCornersLessonSimulationSync(
   );
   let lessonStepsSimulated = 0;
   let lastStepKind: WhiteCornersLessonStep['kind'] | undefined;
+  let hasSeenStrategyIntro = false;
 
   const lessonOptions = (): WhiteCornerLessonStepOptions => ({
     currentHoldIndex,
     solvedCornerIds,
+    hasSeenStrategyIntro,
   });
 
   for (let i = 0; i < maxLessonSteps; i += 1) {
@@ -234,6 +243,11 @@ function runWhiteCornersLessonSimulationSync(
         finalHoldIndex: currentHoldIndex,
         finalStorageCube: storage,
       };
+    }
+
+    if (step.kind === 'intro') {
+      hasSeenStrategyIntro = true;
+      continue;
     }
 
     if (step.kind === 'reorient-hold') {

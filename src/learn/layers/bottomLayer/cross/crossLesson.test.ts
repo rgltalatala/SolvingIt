@@ -32,6 +32,18 @@ import {
 } from '../../../studentHold';
 import { simulateWhiteCrossLessonOnStorageCube } from './simulateLesson';
 
+const AFTER_STRATEGY_INTRO = { hasSeenStrategyIntro: true } as const;
+
+function crossLessonStep(
+  student: CubeState,
+  options?: Parameters<typeof getWhiteCrossLessonStep>[1],
+) {
+  return getWhiteCrossLessonStep(student, {
+    ...AFTER_STRATEGY_INTRO,
+    ...options,
+  });
+}
+
 /** Deterministic storage cube: `F` from solved — common lesson fixture. */
 function practiceFixtureCubeSingleF(): CubeState {
   return applyMoves(createSolvedCubeState(), ['F']);
@@ -66,6 +78,7 @@ describe('white cross step kinds', () => {
   it('lists active step kinds for the edge-at-a-time planner', () => {
     expect(WHITE_CROSS_STEP_KINDS).toEqual([
       'complete',
+      'intro',
       'solve-edge',
       'rotate-bottom',
       'align-to-center',
@@ -79,6 +92,16 @@ describe('white cross lesson', () => {
     const student = cubeStateToStudentFrame(createSolvedCubeState());
     expect(isWhiteCrossComplete(student)).toBe(true);
     expect(getWhiteCrossLessonStep(student).kind).toBe('complete');
+  });
+
+  it('returns strategy intro before first edge solve', () => {
+    const student = cubeStateToStudentFrame(practiceFixtureCubeSingleF());
+    const step = getWhiteCrossLessonStep(student);
+    expect(step.kind).toBe('intro');
+    if (step.kind === 'intro') {
+      expect(step.body).toContain('white sticker');
+      expect(step.body).toContain('solved cross edge');
+    }
   });
 
   it('getWhiteCrossLessonStepAsync matches sync on representative student frames', async () => {
@@ -95,7 +118,7 @@ describe('white cross lesson', () => {
     let walk = cubeStateToStudentFrame(practiceFixtureCubeSingleF());
     for (let guard = 0; guard < 8; guard += 1) {
       frames.push(walk);
-      const step = getWhiteCrossLessonStep(walk);
+      const step = crossLessonStep(walk);
       if (step.kind === 'complete') break;
       if ('demoMoves' in step && step.demoMoves?.length) {
         walk = applyMoves(walk, step.demoMoves);
@@ -105,8 +128,11 @@ describe('white cross lesson', () => {
     }
 
     for (const student of frames) {
-      const sync = getWhiteCrossLessonStep(student);
-      const asyncStep = await getWhiteCrossLessonStepAsync(student);
+      const sync = crossLessonStep(student);
+      const asyncStep = await getWhiteCrossLessonStepAsync(
+        student,
+        AFTER_STRATEGY_INTRO,
+      );
       expect(asyncStep.kind).toBe(sync.kind);
       expect(asyncStep.title).toBe(sync.title);
       if ('demoMoves' in sync && sync.demoMoves?.length) {
@@ -122,7 +148,7 @@ describe('white cross lesson', () => {
       ['D', 'R', 'R'],
     );
     expect(firstUnsolvedCrossId(student)).toBe('DF');
-    expect(getWhiteCrossLessonStep(student).kind).toBe('align-to-center');
+    expect(crossLessonStep(student).kind).toBe('align-to-center');
   });
 
   it('rotate-bottom demo uses D2 when two quarter D turns align the active slot', () => {
@@ -130,7 +156,7 @@ describe('white cross lesson', () => {
       cubeStateToStudentFrame(createSolvedCubeState()),
       ['D', 'D'],
     );
-    const step = getWhiteCrossLessonStep(student);
+    const step = crossLessonStep(student);
     expect(step.kind).toBe('rotate-bottom');
     if (step.kind === 'rotate-bottom') {
       expect(step.demoMoves).toEqual(['D2']);
@@ -145,7 +171,7 @@ describe('white cross lesson', () => {
       cubeStateToStudentFrame(createSolvedCubeState()),
       ['F', 'L'],
     );
-    const step = getWhiteCrossLessonStep(student);
+    const step = crossLessonStep(student);
     expect(step.kind).toBe('align-to-center');
     if (step.kind === 'align-to-center') {
       expect(step.demoMoves).toEqual(["L'"]);
@@ -160,7 +186,7 @@ describe('white cross lesson', () => {
     );
     expect(firstUnsolvedCrossId(student)).toBe('DR');
 
-    const alignStep = getWhiteCrossLessonStep(student);
+    const alignStep = crossLessonStep(student);
     expect(alignStep.kind).toBe('align-to-center');
     if (alignStep.kind !== 'align-to-center' || !alignStep.demoMoves?.length) {
       throw new Error('expected align demo');
@@ -170,7 +196,7 @@ describe('white cross lesson', () => {
     const afterAlign = applyMoves(student, alignStep.demoMoves);
     expect(isTargetAligned(afterAlign, 'DR')).toBe(true);
 
-    const insertStep = getWhiteCrossLessonStep(afterAlign);
+    const insertStep = crossLessonStep(afterAlign);
     expect(insertStep.kind).toBe('insert-double');
     if (insertStep.kind === 'insert-double') {
       expect(insertStep.demoMoves).toEqual(['R2']);
@@ -209,7 +235,7 @@ describe('white cross lesson', () => {
       broken,
       'at least one single move should break the white cross',
     ).toBeDefined();
-    const step = getWhiteCrossLessonStep(broken!);
+    const step = crossLessonStep(broken!);
     expect(ACTIVE_STEP_KINDS).toContain(step.kind);
   });
 
@@ -218,7 +244,7 @@ describe('white cross lesson', () => {
       cubeStateToStudentFrame(createSolvedCubeState()),
       ['F', 'L'],
     );
-    const step = getWhiteCrossLessonStep(student);
+    const step = crossLessonStep(student);
     expect(step.kind).toBe('align-to-center');
     if (step.kind === 'align-to-center') {
       expect(step.body.toLowerCase()).toMatch(/center/);
@@ -227,7 +253,7 @@ describe('white cross lesson', () => {
 
   it('insert-double step includes playable demo moves when returned', () => {
     const student = cubeStateToStudentFrame(practiceFixtureCubeSingleF());
-    const step = getWhiteCrossLessonStep(student);
+    const step = crossLessonStep(student);
     expect(step.kind).toBe('insert-double');
     if (step.kind === 'insert-double') {
       expect(step.demoMoves?.length).toBeGreaterThan(0);
@@ -252,7 +278,7 @@ describe('white cross lesson', () => {
     const candidates: Move[] = ['F', 'R', 'U', 'D', 'L', 'B', 'F2', 'R2'];
     for (const m of candidates) {
       const broken = applyMove(student, m);
-      const step = getWhiteCrossLessonStep(broken);
+      const step = crossLessonStep(broken);
       if (!step.demoMoves?.length) continue;
       if (step.kind !== 'insert-double' && step.kind !== 'rotate-bottom') {
         continue;
@@ -271,20 +297,20 @@ describe('white cross lesson', () => {
     );
     const withDfActive = applyMove(withDrReady, 'F');
     expect(firstUnsolvedCrossId(withDfActive)).toBe('DF');
-    const step = getWhiteCrossLessonStep(withDfActive);
+    const step = crossLessonStep(withDfActive);
     expect(step.kind).toBe('insert-double');
   });
 
   it('fixture (F from solved): opening step is insert-double; applying its demo advances the lesson', () => {
     let storage = practiceFixtureCubeSingleF();
     let student = cubeStateToStudentFrame(storage);
-    const step1 = getWhiteCrossLessonStep(student);
+    const step1 = crossLessonStep(student);
     expect(step1.kind).toBe('insert-double');
     if (step1.kind !== 'insert-double' || !step1.demoMoves?.length) return;
 
     storage = applyMovesInStudentHold(storage, step1.demoMoves);
     student = cubeStateToStudentFrame(storage);
-    const step2 = getWhiteCrossLessonStep(student);
+    const step2 = crossLessonStep(student);
     expect(step2.kind).not.toBe('insert-double');
     expect(['align-to-center', 'rotate-bottom', 'complete', 'solve-edge']).toContain(
       step2.kind,
@@ -296,7 +322,7 @@ describe('white cross lesson', () => {
     let student = cubeStateToStudentFrame(storage);
     for (let guard = 0; guard < 80; guard += 1) {
       if (isWhiteCrossComplete(student)) break;
-      const step = getWhiteCrossLessonStep(student);
+      const step = crossLessonStep(student);
       const beforeSlots = countSolvedCrossSlots(student);
       if (!('demoMoves' in step) || !step.demoMoves?.length) break;
       storage = applyMovesInStudentHold(storage, step.demoMoves);
@@ -311,7 +337,7 @@ describe('white cross lesson', () => {
 
   it('fixture (F from solved): playable lesson steps through the cross walk', () => {
     const student = cubeStateToStudentFrame(practiceFixtureCubeSingleF());
-    const step = getWhiteCrossLessonStep(student);
+    const step = crossLessonStep(student);
     expect(ACTIVE_STEP_KINDS).toContain(step.kind);
     if ('demoMoves' in step && step.demoMoves?.length) {
       expect(step.demoMoves.length).toBeGreaterThan(0);
@@ -332,7 +358,7 @@ describe('white cross lesson', () => {
     let steps = 0;
     let student = cubeStateToStudentFrame(storage);
     while (steps < 80 && !isWhiteCrossComplete(student)) {
-      const step = getWhiteCrossLessonStep(student);
+      const step = crossLessonStep(student);
       if (!('demoMoves' in step) || !step.demoMoves?.length) break;
       const useAvoid = step.demoMoves.some(isBackFaceMove);
       const { moves } = getLessonExecutionMoves(
@@ -351,7 +377,7 @@ describe('white cross lesson', () => {
   it('lesson demoMoves stay canonical while walking fixture (F from solved)', () => {
     let student = cubeStateToStudentFrame(practiceFixtureCubeSingleF());
     for (let guard = 0; guard < 50; guard += 1) {
-      const step = getWhiteCrossLessonStep(student);
+      const step = crossLessonStep(student);
       if ('demoMoves' in step && step.demoMoves?.length) {
         expect(compressConsecutiveFaceQuarterTurns(step.demoMoves)).toEqual(
           step.demoMoves,
@@ -373,7 +399,7 @@ describe('white cross lesson', () => {
     );
     const targetId = firstUnsolvedCrossId(student);
     expect(targetId).toBe('DF');
-    const step = getWhiteCrossLessonStep(student);
+    const step = crossLessonStep(student);
     expect(step.kind).toBe('align-to-center');
     if (step.kind !== 'align-to-center' || !step.demoMoves?.length) return;
 

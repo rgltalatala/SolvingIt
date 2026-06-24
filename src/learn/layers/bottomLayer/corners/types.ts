@@ -7,6 +7,7 @@ export type CornerSlotId = (typeof CORNER_ORDER)[number];
 export const WHITE_CORNERS_STEP_KINDS = [
   'complete',
   'cross-prerequisite',
+  'intro',
   'reorient-hold',
   'solve-corner',
 ] as const;
@@ -25,6 +26,11 @@ export type WhiteCornersLessonStep =
       title: string;
       body: string;
       demoMoves?: Move[];
+    }
+  | {
+      kind: 'intro';
+      title: string;
+      body: string;
     }
   | {
       kind: 'reorient-hold';
@@ -47,6 +53,8 @@ export interface WhiteCornerLessonStepOptions {
   currentHoldIndex?: number;
   /** Lesson-order corners already solved this session (hold is view-only; cube is not rotated on reorient). */
   solvedCornerIds?: readonly CornerSlotId[];
+  /** Strategy intro shown once per corner session before the first solve step. */
+  hasSeenStrategyIntro?: boolean;
 }
 
 export interface SimulateWhiteCornersLessonResult {

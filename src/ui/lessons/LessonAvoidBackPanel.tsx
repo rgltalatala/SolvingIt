@@ -1,4 +1,5 @@
 import { formatColorLabel, type Color } from '../../cube/cubeState';
+import { lessonAvoidBack } from '../../content/tips';
 
 type LessonAvoidBackPanelProps = {
   frontColor: Color;
@@ -26,14 +27,13 @@ export function LessonAvoidBackPanel({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-slate-100">
-            Avoid back face for this example
+            {lessonAvoidBack.heading}
           </p>
           <p className="text-xs text-slate-400">
-            This step’s example uses a <span className="font-mono">B</span>{' '}
-            move. Toggle on to <span className="text-slate-300">y2</span> at the
-            start, do the example without turning B, then{' '}
-            <span className="text-slate-300">y2</span> again so{' '}
-            {formatColorLabel(frontColor)} is on front{holdNote}.
+            {lessonAvoidBack.description(
+              formatColorLabel(frontColor),
+              holdNote ?? '',
+            )}
           </p>
         </div>
         <button
@@ -45,7 +45,7 @@ export function LessonAvoidBackPanel({
           }`}
           onClick={onToggleAvoidBack}
         >
-          {avoidBackMoves ? 'Avoid back moves: On' : 'Avoid back moves: Off'}
+          {avoidBackMoves ? lessonAvoidBack.on : lessonAvoidBack.off}
         </button>
       </div>
       <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-400">
@@ -55,15 +55,12 @@ export function LessonAvoidBackPanel({
           checked={rememberAvoidBackDefault}
           onChange={(e) => onRememberDefaultChange(e.target.checked)}
         />
-        Default avoid-back on when an example uses B (saved in this browser)
+        {lessonAvoidBack.rememberDefault}
       </label>
       {showRotationCallout ? (
         <div className="flex flex-col gap-2 rounded-md border border-amber-700/40 bg-amber-950/30 p-2 text-amber-100">
           <p className="text-xs">
-            Tip: the preview starts and ends with{' '}
-            <span className="font-mono">y2</span> so you return to the same hold
-            ({formatColorLabel(frontColor)} on front). Step through the full
-            sequence on your cube.
+            {lessonAvoidBack.rotationTip(formatColorLabel(frontColor))}
           </p>
           <div>
             <button
@@ -71,7 +68,7 @@ export function LessonAvoidBackPanel({
               className="text-xs font-semibold text-amber-100 underline hover:text-amber-50"
               onClick={onMarkCalloutSeen}
             >
-              Got it
+              {lessonAvoidBack.gotIt}
             </button>
           </div>
         </div>

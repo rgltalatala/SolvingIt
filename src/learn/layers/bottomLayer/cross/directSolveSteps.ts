@@ -1,11 +1,14 @@
 import type { CubeState, Face, Move } from '../../../../cube/cubeState';
+import {
+  whiteCrossSteps,
+  whitePartnerEdgeHeading,
+} from '../../../../content/whiteCross';
 import { demoChangesState } from '../../../lessonCore';
 import {
   formatColor,
   partnerColorForSlot,
   SLOT_DEF,
   slotSolved,
-  whitePartnerEdgeHeading,
 } from './crossSlotModel';
 import {
   findVerifiedSlotDemoForCrossId,
@@ -34,7 +37,7 @@ function buildInsertDoubleStep(
     title: whitePartnerEdgeHeading(partner),
     edgeLabel: label,
     partnerColor: partner,
-    body: `The white–${formatColor(partner)} edge is connected to the ${formatColor(partner)} center. Slot it into the cross on the bottom. Setup moves may temporarily move other cross edges; undo at the end restores them.`,
+    body: whiteCrossSteps.directSolve(formatColor(partner)),
     face,
     demoMoves: demo,
   };

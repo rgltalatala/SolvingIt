@@ -1,6 +1,7 @@
+import type { CubeState } from '../../../../cube/cubeState';
+import { whiteCornersSteps, formatCornerLabel } from '../../../../content/whiteCorners';
 import { normalizeLessonDemoMovesInStep } from '../../../lessonCore';
 import { isWhiteCrossComplete } from '../cross/crossSlotModel';
-import type { CubeState } from '../../../../cube/cubeState';
 import {
   formatHoldFaceLabel,
   relativeY,
@@ -12,7 +13,6 @@ import {
   activeCornerId,
   expectedCornerColors,
   formatColor,
-  formatCornerLabel,
   isWhiteCornersComplete,
 } from './cornerSlotModel';
 import {
@@ -27,16 +27,14 @@ import type {
   WhiteCornersLessonStep,
 } from './types';
 
-const WHITE_CORNERS_COMPLETE_BODY =
-  'All four white corners are in place on the bottom layer (white on D, side colors matching centers). Hold the cube with the blue face toward you (white on bottom, yellow on top) and confirm it matches the diagram below.';
+const WHITE_CORNERS_COMPLETE_BODY = whiteCornersSteps.complete.body;
 
-const CROSS_PREREQUISITE_BODY =
-  'Finish the white cross first—all four white edges must be on the bottom with their colored stickers matching the side centers. Return to the white cross lesson, then come back here.';
+const CROSS_PREREQUISITE_BODY = whiteCornersSteps.prerequisite.body;
 
 function whiteCornersCompleteStep(): WhiteCornersLessonStep {
   return {
     kind: 'complete',
-    title: 'White corners complete',
+    title: whiteCornersSteps.complete.title,
     body: WHITE_CORNERS_COMPLETE_BODY,
   };
 }
@@ -44,8 +42,16 @@ function whiteCornersCompleteStep(): WhiteCornersLessonStep {
 function crossPrerequisiteStep(): WhiteCornersLessonStep {
   return {
     kind: 'cross-prerequisite',
-    title: 'Complete the white cross first',
+    title: whiteCornersSteps.prerequisite.title,
     body: CROSS_PREREQUISITE_BODY,
+  };
+}
+
+function strategyIntroStep(): WhiteCornersLessonStep {
+  return {
+    kind: 'intro',
+    title: whiteCornersSteps.intro.title,
+    body: whiteCornersSteps.intro.body,
   };
 }
 
@@ -55,8 +61,8 @@ function buildReturnToBlueStep(
   const demoMoves = returnToBlueY(currentHoldIndex);
   return {
     kind: 'reorient-hold',
-    title: 'Face the blue side',
-    body: 'All four corners are done. Turn the cube so the blue face is toward you again—the same hold you started with (white on bottom, yellow on top).',
+    title: whiteCornersSteps.faceBlue.title,
+    body: whiteCornersSteps.faceBlue.body,
     demoMoves,
     returnToInitialHold: true,
   };
@@ -73,15 +79,19 @@ function buildReorientHoldStep(
   const delta = (((targetHold - currentHoldIndex) % 4) + 4) % 4;
   const skipNote =
     delta === 2
-      ? ' The next corner to solve is two steps ahead, so turn halfway around in one move.'
+      ? whiteCornersSteps.reorientSkipTwoSteps
       : delta === 3
-        ? ' The next corner to solve is three steps ahead—use a single counter-clockwise turn.'
+        ? whiteCornersSteps.reorientSkipThreeSteps
         : '';
 
   return {
     kind: 'reorient-hold',
-    title: `Face the ${faceLabel.toLowerCase()} side`,
-    body: `Turn the whole cube so the ${faceLabel} face is toward you (white stays on bottom, yellow on top). You will slot the ${formatCornerLabel(targetCornerId).toLowerCase()} into the front-right position.${skipNote}`,
+    title: whiteCornersSteps.faceSideTitle(faceLabel),
+    body: whiteCornersSteps.reorient(
+      faceLabel,
+      formatCornerLabel(targetCornerId).toLowerCase(),
+      skipNote,
+    ),
     demoMoves,
     targetCornerId,
   };
@@ -101,7 +111,10 @@ function buildSolveCornerPlaceholderStep(
     kind: 'solve-corner',
     cornerId,
     title: formatCornerLabel(cornerId),
-    body: `Slot the White–${formatColor(colorA)}–${formatColor(colorB)} corner: white on the bottom (D), ${formatColor(colorA)} and ${formatColor(colorB)} matching their centers. Align the piece with its centers on your own, or reset the scramble and try again.`,
+    body: whiteCornersSteps.placeholder(
+      formatColor(colorA),
+      formatColor(colorB),
+    ),
   };
 }
 
@@ -167,6 +180,10 @@ function computeWhiteCornerLessonStepSync(
     return whiteCornersCompleteStep();
   }
 
+  if (!options?.hasSeenStrategyIntro) {
+    return strategyIntroStep();
+  }
+
   const cornerId = activeCornerId(
     studentState,
     currentHoldIndex,
@@ -225,6 +242,10 @@ export async function getWhiteCornerLessonStepAsync(
       return buildReturnToBlueStep(currentHoldIndex);
     }
     return whiteCornersCompleteStep();
+  }
+
+  if (!options?.hasSeenStrategyIntro) {
+    return strategyIntroStep();
   }
 
   const cornerId = activeCornerId(

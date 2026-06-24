@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { CubeState } from '../../cube/cubeState';
 import { CubeView } from '../../cube3d/CubeView';
+import { preparing } from '../../content/tips';
 import { MoveSequenceDemo } from '../MoveSequenceDemo';
 import type { DemoSnapshot } from './lessonDemo';
 
@@ -48,11 +49,10 @@ export function LessonCubeStage({
       {showPreparingOverlay ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-xl bg-slate-950/75 px-4 text-center">
           <p className="text-sm font-semibold text-slate-100">
-            Preparing next example…
+            {preparing.nextExample}
           </p>
           <p className="text-xs text-slate-400">
-            {preparingSubtitle ??
-              'Finding a short demo sequence for this cube.'}
+            {preparingSubtitle ?? preparing.defaultSubtitle}
           </p>
         </div>
       ) : null}

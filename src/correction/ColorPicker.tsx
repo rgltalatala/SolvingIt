@@ -1,5 +1,6 @@
 import type { Color } from '../cube/cubeState';
 import { colorHexMap } from '../cube/cubeColors';
+import { correction as correctionCopy } from '../content/ui';
 
 interface ColorPickerProps {
   activeColor: Color | null;
@@ -20,7 +21,7 @@ export function ColorPicker({ activeColor, onSelect }: ColorPickerProps) {
             onClick={() => onSelect(color)}
             className={`h-10 w-10 rounded-md border-2 ${isActive ? 'border-cyan-300' : 'border-slate-400'}`}
             style={{ backgroundColor: colorHexMap[color] }}
-            aria-label={`Select ${color}`}
+            aria-label={correctionCopy.selectColor(color)}
           />
         );
       })}

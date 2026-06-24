@@ -22,6 +22,7 @@ type CornerSessionUndoEntry =
 type CornerSession = {
   currentHoldIndex: CornerHoldIndex;
   solvedCornerIds: CornerSlotId[];
+  hasSeenStrategyIntro: boolean;
 };
 
 function initialSolvedCornerIds(studentFrame: CubeState): CornerSlotId[] {
@@ -30,7 +31,11 @@ function initialSolvedCornerIds(studentFrame: CubeState): CornerSlotId[] {
 }
 
 function emptyCornerSession(): CornerSession {
-  return { currentHoldIndex: 0, solvedCornerIds: [] };
+  return {
+    currentHoldIndex: 0,
+    solvedCornerIds: [],
+    hasSeenStrategyIntro: false,
+  };
 }
 
 export function useWhiteCornerLessonStep(
@@ -39,6 +44,7 @@ export function useWhiteCornerLessonStep(
 ) {
   const [currentHoldIndex, setCurrentHoldIndex] = useState<CornerHoldIndex>(0);
   const [solvedCornerIds, setSolvedCornerIds] = useState<CornerSlotId[]>([]);
+  const [hasSeenStrategyIntro, setHasSeenStrategyIntro] = useState(false);
   const [sessionUndoStack, setSessionUndoStack] = useState<
     CornerSessionUndoEntry[]
   >([]);
@@ -51,12 +57,17 @@ export function useWhiteCornerLessonStep(
     sessionRef.current = session;
     setCurrentHoldIndex(session.currentHoldIndex);
     setSolvedCornerIds(session.solvedCornerIds);
+    setHasSeenStrategyIntro(session.hasSeenStrategyIntro);
   }, []);
 
   const resetCornerSession = useCallback(
     (frame: CubeState) => {
       const initial = initialSolvedCornerIds(frame);
-      applyCornerSession({ currentHoldIndex: 0, solvedCornerIds: initial });
+      applyCornerSession({
+        currentHoldIndex: 0,
+        solvedCornerIds: initial,
+        hasSeenStrategyIntro: false,
+      });
       setSessionUndoStack([]);
     },
     [applyCornerSession],
@@ -69,7 +80,7 @@ export function useWhiteCornerLessonStep(
     resetCornerSession(studentFrame);
   }, [studentFrame, options?.resetKey, resetCornerSession]);
 
-  const sessionKey = `${currentHoldIndex}:${solvedCornerIds.join(',')}`;
+  const sessionKey = `${currentHoldIndex}:${solvedCornerIds.join(',')}:${hasSeenStrategyIntro}`;
 
   const getStepAsync = useCallback(async (_frame: CubeState) => {
     const cube = useCubeStore.getState().cubeState;
@@ -112,6 +123,14 @@ export function useWhiteCornerLessonStep(
   const advanceAfterStep = useCallback(
     (appliedStep: WhiteCornersLessonStep) => {
       const session = sessionRef.current;
+      if (appliedStep.kind === 'intro') {
+        applyCornerSession({
+          ...session,
+          hasSeenStrategyIntro: true,
+        });
+        return;
+      }
+
       if (appliedStep.kind === 'reorient-hold') {
         setSessionUndoStack((stack) => [
           ...stack,
@@ -125,8 +144,8 @@ export function useWhiteCornerLessonStep(
               : session.currentHoldIndex
         ) as CornerHoldIndex;
         applyCornerSession({
+          ...session,
           currentHoldIndex: nextHold,
-          solvedCornerIds: session.solvedCornerIds,
         });
         return;
       }
@@ -142,6 +161,7 @@ export function useWhiteCornerLessonStep(
         applyCornerSession({
           currentHoldIndex: session.currentHoldIndex,
           solvedCornerIds: nextIds,
+          hasSeenStrategyIntro: session.hasSeenStrategyIntro,
         });
       }
     },
@@ -175,6 +195,7 @@ export function useWhiteCornerLessonStep(
     recomputeStep,
     currentHoldIndex,
     solvedCornerIds,
+    hasSeenStrategyIntro,
     sessionUndoStack,
     advanceAfterStep,
     undoCornerSessionStep,

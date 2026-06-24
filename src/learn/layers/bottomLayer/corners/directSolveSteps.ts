@@ -1,9 +1,10 @@
 import type { CubeState, Face, Move } from '../../../../cube/cubeState';
+import { whiteCornersSteps, formatCornerLabel } from '../../../../content/whiteCorners';
 import { parseFaceTurnAlgToMoves } from '../../../../cube/parseFaceTurnAlg';
 import { recognizeCornerCaseInFrdView } from './cornerCases';
 import { demoChangesState } from '../../../lessonCore';
 import { verifiedFrdDemoAtHold, studentHoldView } from './frdViewDemoBuild';
-import { formatColor, formatCornerLabel } from './cornerSlotModel';
+import { formatColor } from './cornerSlotModel';
 import type { CornerSlotId, WhiteCornersLessonStep } from './types';
 import { buildFrdULayerDemo, uLayerInsertStepBody } from './uLayerSteps';
 import { buildFrdWrongDLayerDemo } from './wrongDLayerSteps';
@@ -92,7 +93,11 @@ function buildTwistedInSlotStep(
     kind: 'solve-corner',
     cornerId,
     title: formatCornerLabel(cornerId),
-    body: `The ${formatCornerLabel(cornerId).toLowerCase()} is in the front-right slot but twisted—white is on the ${formatColor(studentState[whiteOnFace][4])} (${whiteOnFace}) face instead of the bottom. Use the demo to orient white onto D while keeping your white cross and any corners you already solved intact.`,
+    body: whiteCornersSteps.twisted(
+      formatCornerLabel(cornerId),
+      formatColor(studentState[whiteOnFace][4]),
+      whiteOnFace,
+    ),
     demoMoves: demo,
   };
 }
@@ -118,7 +123,7 @@ function buildWrongDLayerStep(
     kind: 'solve-corner',
     cornerId,
     title: formatCornerLabel(cornerId),
-    body: `The ${formatCornerLabel(cornerId).toLowerCase()} piece is in the wrong bottom corner slot. The demo extracts it to the top (URF), then inserts it with white on the bottom. Your white cross and any corners you already solved stay intact.`,
+    body: whiteCornersSteps.wrongDSlot(formatCornerLabel(cornerId)),
     demoMoves: demo,
   };
 }
@@ -131,7 +136,7 @@ function buildGenericSolveStep(
     kind: 'solve-corner',
     cornerId,
     title: formatCornerLabel(cornerId),
-    body: `Slot the ${formatCornerLabel(cornerId).toLowerCase()} using the demo while keeping your white cross and any corners you already solved intact.`,
+    body: whiteCornersSteps.directSolve(formatCornerLabel(cornerId)),
     demoMoves: demo,
   };
 }

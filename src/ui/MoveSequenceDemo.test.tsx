@@ -7,6 +7,7 @@ import {
 } from '../cube/cubeState';
 import type { CubeMoveAnimation } from '../cube3d/CubeView';
 import { MoveSequenceDemo } from './MoveSequenceDemo';
+import { ui } from '../content/ui';
 
 vi.mock('../cube3d/CubeView', () => ({
   CubeView: ({
@@ -84,13 +85,13 @@ describe('MoveSequenceDemo', () => {
         baseCubeState={baseCubeState}
         moves={['F']}
         trailingActions={
-          <button type="button">Apply example &amp; continue</button>
+          <button type="button">{ui.applyExampleContinue}</button>
         }
       />,
     );
 
     expect(
-      screen.getByRole('button', { name: 'Apply example & continue' }),
+      screen.getByRole('button', { name: ui.applyExampleContinue }),
     ).toBeInTheDocument();
   });
 });

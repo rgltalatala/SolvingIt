@@ -1,7 +1,6 @@
 import type { Color, CubeState, Face, Move } from '../../../../cube/cubeState';
 import type { CubiePosition } from '../../../../cube3d/cubeGeometry';
 export { formatColor } from '../shared';
-import { formatColor } from '../shared';
 import { findEdgeWithColors, whiteStickerOnD } from '../shared/pieceQueries';
 import type { CrossEdgeId } from './types';
 
@@ -38,10 +37,6 @@ export function partnerColorForSlot(
   id: CrossEdgeId,
 ): Color {
   return studentState[SLOT_DEF[id].sideFace][4];
-}
-
-export function whitePartnerEdgeHeading(partner: Color): string {
-  return `White–${formatColor(partner)} edge`;
 }
 
 export function slotSolved(state: CubeState, id: CrossEdgeId): boolean {

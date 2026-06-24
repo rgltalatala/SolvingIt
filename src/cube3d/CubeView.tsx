@@ -26,6 +26,10 @@ export interface CubeViewProps {
   moveAnimation?: CubeMoveAnimation | null;
   /** When this changes, the canonical lesson camera baseline is re-captured on next controls update. */
   cameraBaselineKey?: string;
+  /** Snap orbit to lesson hold when a whole-cube rotation animates (off for notation guide). */
+  snapCameraOnWholeCubeRotation?: boolean;
+  /** Allow drag-to-orbit (off for notation guide so face letters stay aligned with the view). */
+  enableOrbitControls?: boolean;
 }
 
 export function CubeView({
@@ -35,6 +39,8 @@ export function CubeView({
   canvasKey = 'cube-canvas',
   moveAnimation = null,
   cameraBaselineKey = 'default',
+  snapCameraOnWholeCubeRotation = true,
+  enableOrbitControls = true,
 }: CubeViewProps) {
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const lessonCameraRef = useRef<LessonCameraSnapshot | null>(null);
@@ -54,12 +60,17 @@ export function CubeView({
   }, [cameraBaselineKey]);
 
   useEffect(() => {
-    if (!moveAnimation || !isWholeCubeRotation(moveAnimation.move)) return;
+    if (
+      !snapCameraOnWholeCubeRotation ||
+      !moveAnimation ||
+      !isWholeCubeRotation(moveAnimation.move)
+    )
+      return;
     const controls = controlsRef.current;
     const baseline = lessonCameraRef.current;
     if (!controls || !baseline) return;
     snapLessonCamera(controls, baseline, 'lessonHold');
-  }, [moveAnimation]);
+  }, [moveAnimation, snapCameraOnWholeCubeRotation]);
 
   const handleAnimationComplete = () => {
     const controls = controlsRef.current;
@@ -95,6 +106,7 @@ export function CubeView({
               lessonCameraRef.current = captureLessonCamera(node);
             }
           }}
+          enabled={enableOrbitControls}
           enablePan={false}
           minDistance={5}
           maxDistance={11}

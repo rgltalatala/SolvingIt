@@ -14,6 +14,15 @@ import {
   type Instruction,
 } from '../learn/studentHold';
 import type { YRotationStep } from '../learn/studentHold/types';
+import { middleLayerLesson } from '../content/middleLayer';
+import {
+  applyHints,
+  PHYSICAL_CUBE_MATCH_NOTE,
+  preparing,
+  REORIENT_HOLD_NOTE,
+  SAME_HOLD_NOTE,
+} from '../content/tips';
+import { ui } from '../content/ui';
 import { useCubeStore } from '../store/cubeStore';
 import { LAST_LAYER_LESSON_ID } from '../learn/layers/lastLayer';
 import { useMiddleLayerLessonStep } from './lessons/middleLayer/useMiddleLayerLessonStep';
@@ -23,7 +32,6 @@ import {
 } from './lessons/LessonApplyPanel';
 import { LessonCubeStage } from './lessons/LessonCubeStage';
 import { LessonHeaderActions } from './lessons/LessonHeaderActions';
-import { PHYSICAL_CUBE_MATCH_NOTE } from './lessons/lessonCopy';
 import { LessonUnavailable } from './lessons/LessonUnavailable';
 import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
 
@@ -132,14 +140,14 @@ export function LearningMiddleLayerView() {
     (showPreparingOverlay
       ? {
           kind: 'align-u' as const,
-          title: 'Preparing lesson…',
+          title: preparing.lesson,
           body: '',
           demoMoves: [] as Move[],
           edgeColors: ['green', 'red'] as [Color, Color],
         }
       : {
           kind: 'align-u' as const,
-          title: 'Middle layer edges',
+          title: middleLayerLesson.defaultStepTitle,
           body: '',
           demoMoves: [] as Move[],
           edgeColors: ['green', 'red'] as [Color, Color],
@@ -187,7 +195,7 @@ export function LearningMiddleLayerView() {
 
   const trailingActions = canApplyDemo ? (
     <LessonApplyButton
-      buttonLabel={isReorientStep ? 'Continue' : 'Apply example & continue'}
+      buttonLabel={isReorientStep ? ui.continue : ui.applyExampleContinue}
       disabled={isStepPending}
       onApply={handleApplyDemo}
     />
@@ -197,7 +205,7 @@ export function LearningMiddleLayerView() {
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-6">
       <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Lesson: Middle layer edges</h1>
+          <h1 className="text-3xl font-bold">{middleLayerLesson.title}</h1>
           <p className="mt-1 text-slate-300">
             Hold your cube with{' '}
             <span className="text-slate-100">white on the bottom</span> and{' '}
@@ -205,7 +213,7 @@ export function LearningMiddleLayerView() {
             <span className="text-slate-100">
               {formatColorLabel(lessonHold.F)} toward you
             </span>{' '}
-            — that is the <span className="text-slate-100">front (F)</span> face
+            . That is the <span className="text-slate-100">front (F)</span> face
             in the diagram below.
           </p>
           {!isLessonComplete ? (
@@ -217,28 +225,19 @@ export function LearningMiddleLayerView() {
           step.kind !== 'complete' &&
           step.kind !== 'cross-corners-prerequisite' ? (
             <p className="mt-2 text-sm text-slate-400">
-              Progress: <span className="text-slate-200">{solvedSlots}/4</span>{' '}
-              middle-layer edges solved (side stickers match their centers).
+              {middleLayerLesson.progress(solvedSlots)}
             </p>
           ) : null}
           <details className="mt-3 text-sm text-slate-400">
             <summary className="cursor-pointer text-slate-300 hover:text-slate-100">
-              Lesson session & reset
+              {middleLayerLesson.sessionNotesSummary}
             </summary>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-relaxed">
-              <li>
-                <span className="text-slate-300">Reorient steps</span> rotate
-                the virtual cube so the correct face is toward you.
-              </li>
-              <li>
-                <span className="text-slate-300">Undo last example</span>{' '}
-                restores the virtual cube before the last apply.
-              </li>
-              <li>
-                <span className="text-slate-300">Reset middle-layer session</span>{' '}
-                clears hold tracking and re-counts solved edges from the current
-                cube.
-              </li>
+              {middleLayerLesson.sessionNotes.map((note) => (
+                <li key={note.text}>
+                  <span className="text-slate-300">{note.label}</span> {note.text}
+                </li>
+              ))}
             </ul>
           </details>
         </div>
@@ -254,7 +253,7 @@ export function LearningMiddleLayerView() {
               className="inline-flex w-fit rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:text-slate-100"
               onClick={handleResetMiddleSession}
             >
-              Reset middle-layer session
+              {middleLayerLesson.resetMiddleSession}
             </button>
           }
         />
@@ -266,7 +265,7 @@ export function LearningMiddleLayerView() {
         completeCanvasKey="middle-layer-lesson-complete-cube"
         visibleDemo={visibleDemo}
         showPreparingOverlay={showPreparingOverlay}
-        preparingSubtitle="Finding a demo for this middle-layer edge."
+        preparingSubtitle={middleLayerLesson.preparingSubtitle}
         trailingActions={trailingActions}
       />
 
@@ -289,14 +288,14 @@ export function LearningMiddleLayerView() {
               className="inline-flex rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600"
               onClick={() => setActiveLesson('white-cross')}
             >
-              Go to white cross lesson
+              {middleLayerLesson.goToWhiteCross}
             </button>
             <button
               type="button"
               className="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-600"
               onClick={() => setActiveLesson('white-corners')}
             >
-              Go to white corners lesson
+              {middleLayerLesson.goToWhiteCorners}
             </button>
           </div>
         ) : null}
@@ -305,21 +304,19 @@ export function LearningMiddleLayerView() {
         step.kind !== 'complete' &&
         step.kind !== 'cross-corners-prerequisite' ? (
           <p className="mt-3 text-xs text-slate-500">
-            Same hold as the diagram: {formatColorLabel(lessonHold.F)} on F
-            (front), {formatColorLabel(lessonHold.U)} on U (top),{' '}
-            {formatColorLabel(lessonHold.D)} on D (bottom).
-            {isReorientStep
-              ? ' After you turn the cube in your hands to match, continue — the virtual scramble stays the same.'
-              : null}
+            {SAME_HOLD_NOTE(
+              formatColorLabel(lessonHold.F),
+              formatColorLabel(lessonHold.U),
+              formatColorLabel(lessonHold.D),
+            )}
+            {isReorientStep ? REORIENT_HOLD_NOTE : null}
           </p>
         ) : null}
 
         {canApplyDemo ? (
           <LessonApplyPanel
             hint={
-              isReorientStep
-                ? 'When your physical cube matches the hold shown, continue to the next step.'
-                : 'When your physical cube matches the diagram and you have stepped through the example, apply here to update the virtual cube and continue.'
+              isReorientStep ? applyHints.reorient : applyHints.solve
             }
           />
         ) : null}
@@ -327,8 +324,7 @@ export function LearningMiddleLayerView() {
         {isLessonComplete ? (
           <>
             <p className="mt-4 text-sm text-slate-400">
-              All four middle-layer edges are in place. Continue to the last
-              layer when you are ready, or use Back to cube overview.
+              {middleLayerLesson.completeBody}
             </p>
             <div className="mt-4">
               <button
@@ -339,7 +335,7 @@ export function LearningMiddleLayerView() {
                   setActiveLesson(LAST_LAYER_LESSON_ID);
                 }}
               >
-                Continue: Last layer
+                {middleLayerLesson.continueLastLayer}
               </button>
             </div>
           </>

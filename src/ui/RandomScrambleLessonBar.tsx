@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { randomScrambleForEvent } from 'cubing/scramble';
 import { parseFaceTurnAlgToMoves } from '../cube/parseFaceTurnAlg';
+import { practiceBar as practiceBarCopy } from '../content/ui';
 import { useCubeStore } from '../store/cubeStore';
+import { randomScrambleForEvent } from 'cubing/scramble';
 
 /**
  * Skip scanning: fetch a WCA random 3×3 scramble and jump straight into the white-cross lesson (practice).
@@ -39,15 +40,15 @@ export function RandomScrambleLessonBar() {
           disabled={busy}
           onClick={() => run()}
         >
-          {busy ? 'Generating scramble…' : 'Practice: random scramble → lesson'}
+          {busy ? practiceBarCopy.generating : practiceBarCopy.button}
         </button>
       </div>
       {lastAlg ? (
         <p
           className="text-center font-mono text-xs text-slate-400 break-all"
-          title="Last scramble applied (storage orientation, face-turn only)"
+          title={practiceBarCopy.lastScrambleTitle}
         >
-          Last scramble: {lastAlg}
+          {practiceBarCopy.lastScramble(lastAlg)}
         </p>
       ) : null}
       {error ? (

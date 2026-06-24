@@ -16,10 +16,11 @@ export {
   countSolvedCornerSlots,
   expectedCornerColors,
   formatColor,
-  formatCornerLabel,
   isWhiteCornersComplete,
   mustPreserveCornerIds,
 } from './cornerSlotModel';
+
+export { formatCornerLabel } from '../../../../content/whiteCorners';
 
 export type {
   CornerCase,
