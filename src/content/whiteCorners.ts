@@ -42,9 +42,11 @@ export const whiteCornersLesson = {
 export const whiteCornersSteps = {
   intro: {
     title: 'How this lesson works',
-    body: `We solve every corner into the front-right-bottom slot (FRD). When one is in place, we turn the whole cube so the next target corner ends up in that same FRD spot.
+    body: `For every white corner, we'll use the same target position: the front-right-bottom corner (FRD). Keeping the target in one place means you only need to learn one set of cases.
 
-If the corner isn't already correct in FRD, and isn't only twisted in that slot, we'll move the piece to URF on the top layer first. From URF, the demo runs the insert for your case and slots white into FRD.`,
+If the corner isn't already ready to insert, we'll first move it to the top layer at the front-right position (URF). From there, you'll use the algorithm that matches your case to insert it into FRD.
+
+Once a corner is solved, simply rotate the entire cube so the next unsolved corner becomes your new target. You'll repeat the same process until the whole white face is complete.`,
   },
   complete: {
     title: 'White corners complete',

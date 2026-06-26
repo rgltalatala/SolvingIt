@@ -5,6 +5,49 @@ export const LAST_LAYER_SUB_LESSON_LABELS = {
   orientCorners: 'Orient corners',
 } as const;
 
+export const lastLayerIntros = {
+  overview: {
+    title: 'How the last layer works',
+    body: `With the first two layers complete, everything left happens on the yellow face.
+
+We'll solve the last layer in four stages: orient the edges, permute the edges, permute the corners, and finally orient the corners.
+
+These steps rely more on algorithms than the earlier lessons. Don't worry if the cube looks like it's falling apart while an algorithm is running as that's expected. As long as you finish the sequence without interruption, everything will return to its proper place.`,
+  },
+  orientEdges: {
+    title: 'Orient Edges',
+    body: `The goal of this step is to build a yellow cross on the top face, just like the white cross you made at the beginning of the solve.
+
+You'll see one of three patterns: a dot, an L shape, or a horizontal bar. Each pattern has a specific algorithm that flips the remaining edges until the yellow cross is complete.
+
+Once the cross is finished, we'll start moving those edges into their correct positions.`,
+  },
+  permuteEdges: {
+    title: 'Permute Edges',
+    body: `Now that the yellow cross is complete, it's time to move those edges where they belong.
+
+Your goal is to match each edge's side color with the center beneath it. Often you'll notice that two edges are already correct. Depending on whether they're next to each other or across from each other, you'll use the same algorithm with a slightly different setup.
+
+By the end of this step, all four top-layer edges will be in the correct positions.`,
+  },
+  permuteCorners: {
+    title: 'Permute Corners',
+    body: `Next we'll move each yellow corner into its correct location.
+
+At this stage, don't worry about which way the yellow sticker is facing. A corner can be in the right position and still be twisted. Right now, we're only concerned with putting every corner into the correct slot.
+
+You'll use one algorithm throughout this lesson. Depending on the case, you may need to repeat it several times before every corner is in the right place.`,
+  },
+  orientCorners: {
+    title: 'Orient Corners',
+    body: `This is the final step. Every piece is already in the correct position; we just need to twist the remaining corners so yellow faces upward.
+
+Bring an unsolved corner to the front-right position on the top layer (URF), then repeat the orientation algorithm until that corner is solved. Turn only the top layer to bring the next unsolved corner into the same position, and repeat.
+
+The cube will look scrambled while you're doing this, especially after the first corner. That's expected. Resist the urge to "fix" anything. Trust the process, keep following the algorithm, and once the final corner is oriented, the entire cube will come together.`,
+  },
+} as const;
+
 export const lastLayerLesson = {
   title: 'Lesson: Last layer',
   defaultStepTitle: 'Last layer',

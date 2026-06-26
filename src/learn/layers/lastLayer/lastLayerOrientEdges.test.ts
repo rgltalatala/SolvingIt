@@ -8,6 +8,7 @@ import {
   type Move,
 } from '../../../cube/cubeState';
 import {
+  ALL_LAST_LAYER_INTROS_SEEN,
   BAR_ALG,
   DOT_ALG,
   L_SHAPE_ALG,
@@ -25,6 +26,8 @@ import {
   yellowEdgeSlotsOnU,
   type ULayerEdgeId,
 } from './index';
+
+const AFTER_ALL_INTROS = { seenIntros: ALL_LAST_LAYER_INTROS_SEEN } as const;
 
 function invertMoves(moves: Move[]): Move[] {
   const inverted: Move[] = [];
@@ -148,7 +151,7 @@ describe('last layer orient edges algorithms', () => {
       barAtTargetStudent(),
     ];
     for (const student of cases) {
-      const step = getLastLayerLessonStep(student);
+      const step = getLastLayerLessonStep(student, AFTER_ALL_INTROS);
       expect(step.demoMoves?.length).toBeGreaterThan(0);
       expect(isLastLayerLessonStateValid(student)).toBe(true);
       if (step.demoMoves) {
@@ -180,6 +183,24 @@ describe('last layer orient edges algorithms', () => {
 });
 
 describe('last layer lesson planner', () => {
+  it('returns strategy intro before orient edges', () => {
+    const step = getLastLayerLessonStep(dotCaseStudent());
+    expect(step.kind).toBe('intro');
+    if (step.kind === 'intro') {
+      expect(step.introId).toBe('overview');
+    }
+  });
+
+  it('returns orient-edges intro after overview', () => {
+    const step = getLastLayerLessonStep(dotCaseStudent(), {
+      seenIntros: { overview: true },
+    });
+    expect(step.kind).toBe('intro');
+    if (step.kind === 'intro') {
+      expect(step.introId).toBe('orient-edges');
+    }
+  });
+
   it('returns prerequisite when bottom or middle incomplete', () => {
     const incomplete = cloneCubeState(solvedStudent());
     incomplete.D[1] = 'red';
@@ -193,14 +214,14 @@ describe('last layer lesson planner', () => {
   it('returns permute steps when yellow cross done but edges not permuted', () => {
     const yellowCrossOnly = applyMoves(solvedStudent(), ["U'"]);
     expect(isYellowCrossComplete(yellowCrossOnly)).toBe(true);
-    const step = getLastLayerLessonStep(yellowCrossOnly);
+    const step = getLastLayerLessonStep(yellowCrossOnly, AFTER_ALL_INTROS);
     expect(step.kind).not.toBe('complete');
     expect(['align-u', 'permute-edges', 'reorient-hold']).toContain(step.kind);
   });
 
   it('returns align-u before L algorithm when misaligned', () => {
     const student = lShapeRotatedStudent(['UB', 'UR']);
-    expect(getLastLayerLessonStep(student)).toMatchObject({
+    expect(getLastLayerLessonStep(student, AFTER_ALL_INTROS)).toMatchObject({
       kind: 'align-u',
       ollCase: 'l-shape',
     });
@@ -208,7 +229,7 @@ describe('last layer lesson planner', () => {
 
   it('returns orient-edges when L is aligned', () => {
     const student = lShapeAtTargetStudent();
-    expect(getLastLayerLessonStep(student)).toMatchObject({
+    expect(getLastLayerLessonStep(student, AFTER_ALL_INTROS)).toMatchObject({
       kind: 'orient-edges',
       ollCase: 'l-shape',
     });
@@ -216,7 +237,7 @@ describe('last layer lesson planner', () => {
 
   it('returns align-u before bar algorithm when misaligned', () => {
     const student = barRotatedStudent(['UB', 'UF']);
-    expect(getLastLayerLessonStep(student)).toMatchObject({
+    expect(getLastLayerLessonStep(student, AFTER_ALL_INTROS)).toMatchObject({
       kind: 'align-u',
       ollCase: 'bar',
     });
@@ -224,7 +245,7 @@ describe('last layer lesson planner', () => {
 
   it('returns dot orient-edges in one step', () => {
     const student = dotCaseStudent();
-    expect(getLastLayerLessonStep(student)).toMatchObject({
+    expect(getLastLayerLessonStep(student, AFTER_ALL_INTROS)).toMatchObject({
       kind: 'orient-edges',
       ollCase: 'dot',
     });
@@ -248,9 +269,11 @@ describe('last layer lesson simulation', () => {
     const student = lShapeRotatedStudent(['UB', 'UR']);
     let current = cloneCubeState(student);
     let before = countYellowEdgesOnU(current);
+    let session = { ...AFTER_ALL_INTROS };
     for (let i = 0; i < 4; i += 1) {
-      const step = getLastLayerLessonStep(current);
+      const step = getLastLayerLessonStep(current, session);
       if (step.kind === 'complete') break;
+      if (step.kind === 'intro') continue;
       expect(step.demoMoves?.length).toBeGreaterThan(0);
       current = applyMoves(current, step.demoMoves!);
       const after = countYellowEdgesOnU(current);
@@ -258,6 +281,6 @@ describe('last layer lesson simulation', () => {
       before = after;
     }
     expect(isYellowCrossComplete(current)).toBe(true);
-    expect(getLastLayerLessonStep(current).kind).not.toBe('orient-edges');
+    expect(getLastLayerLessonStep(current, AFTER_ALL_INTROS).kind).not.toBe('orient-edges');
   });
 });

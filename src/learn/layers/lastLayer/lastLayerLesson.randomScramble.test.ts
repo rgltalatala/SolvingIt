@@ -34,12 +34,15 @@ import {
   isYellowCrossComplete,
   type LastLayerLessonStep,
   type LastLayerSubLesson,
+  type SeenLastLayerIntros,
 } from './index';
+import { markLastLayerIntroSeen } from './introSteps';
 
 type SimulationSession = {
   currentHoldIndex: CornerHoldIndex;
   permuteCornersZeroFlowStep?: 0 | 1 | 2;
   inOrientCornersPhase?: boolean;
+  seenIntros: SeenLastLayerIntros;
 };
 
 type PhaseMilestones = Record<LastLayerSubLesson, boolean>;
@@ -100,6 +103,7 @@ function advanceSessionAfterStep(
     currentHoldIndex: hold,
     permuteCornersZeroFlowStep: zeroFlow,
     inOrientCornersPhase: session.inOrientCornersPhase,
+    seenIntros: session.seenIntros,
   };
 }
 
@@ -164,7 +168,7 @@ function simulateLastLayerLesson(
   studentFrame: CubeState,
   maxSteps = 96,
 ): LastLayerSimResult {
-  let session: SimulationSession = { currentHoldIndex: 0 };
+  let session: SimulationSession = { currentHoldIndex: 0, seenIntros: {} };
   let student = cloneCubeState(studentFrame);
   const milestones = emptyMilestones();
   let stepsSimulated = 0;
@@ -212,6 +216,14 @@ function simulateLastLayerLesson(
       };
     }
 
+    if (step.kind === 'intro') {
+      session = {
+        ...session,
+        seenIntros: markLastLayerIntroSeen(session.seenIntros, step.introId),
+      };
+      continue;
+    }
+
     if (!step.demoMoves?.length) {
       return {
         stuckNoDemo: true,
@@ -249,6 +261,7 @@ function middleLayerCompleteStudent(
   maxSteps = 250,
 ): CubeState {
   let currentHoldIndex: CornerHoldIndex = 0;
+  let hasSeenStrategyIntro = false;
   let student = cloneCubeState(studentFrame);
   const normalized = normalizeHoldToBlue(student, 0);
   const solvedMiddleEdgeSlots: MiddleEdgeSlotId[] = MIDDLE_EDGE_SLOTS.filter(
@@ -266,8 +279,13 @@ function middleLayerCompleteStudent(
     const step = getMiddleLayerEdgeLessonStep(student, {
       currentHoldIndex,
       solvedMiddleEdgeSlots,
+      hasSeenStrategyIntro,
     });
     if (step.kind === 'complete') return student;
+    if (step.kind === 'intro') {
+      hasSeenStrategyIntro = true;
+      continue;
+    }
     if (step.kind === 'cross-corners-prerequisite' || !step.demoMoves?.length) {
       return student;
     }

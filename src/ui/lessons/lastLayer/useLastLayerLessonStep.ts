@@ -14,7 +14,11 @@ import {
   type CornerHoldIndex,
   type PermuteCornersZeroFlowStep,
 } from '../../../learn/layers/lastLayer';
-import type { LastLayerLessonStep } from '../../../learn/layers/lastLayer/types';
+import type {
+  LastLayerLessonStep,
+  SeenLastLayerIntros,
+} from '../../../learn/layers/lastLayer/types';
+import { markLastLayerIntroSeen } from '../../../learn/layers/lastLayer/introSteps';
 import { useCubeStore } from '../../../store/cubeStore';
 import { useLessonStep } from '../useLessonStep';
 
@@ -24,10 +28,11 @@ type LastSession = {
   currentHoldIndex: CornerHoldIndex;
   permuteCornersZeroFlowStep?: PermuteCornersZeroFlowStep;
   inOrientCornersPhase?: boolean;
+  seenIntros: SeenLastLayerIntros;
 };
 
 function emptyLastSession(): LastSession {
-  return { currentHoldIndex: 0 };
+  return { currentHoldIndex: 0, seenIntros: {} };
 }
 
 function advanceZeroFlowAfterStep(
@@ -53,6 +58,7 @@ export function useLastLayerLessonStep(
     PermuteCornersZeroFlowStep | undefined
   >(undefined);
   const [inOrientCornersPhase, setInOrientCornersPhase] = useState(false);
+  const [seenIntros, setSeenIntros] = useState<SeenLastLayerIntros>({});
   const [sessionUndoStack, setSessionUndoStack] = useState<
     LastSessionUndoEntry[]
   >([]);
@@ -64,6 +70,7 @@ export function useLastLayerLessonStep(
     setCurrentHoldIndex(session.currentHoldIndex);
     setPermuteCornersZeroFlowStep(session.permuteCornersZeroFlowStep);
     setInOrientCornersPhase(session.inOrientCornersPhase ?? false);
+    setSeenIntros(session.seenIntros);
   }, []);
 
   const resetLastSession = useCallback(() => {
@@ -78,7 +85,7 @@ export function useLastLayerLessonStep(
     resetLastSession();
   }, [studentFrame, options?.resetKey, resetLastSession]);
 
-  const sessionKey = `${currentHoldIndex}:${permuteCornersZeroFlowStep ?? 'none'}:${inOrientCornersPhase}`;
+  const sessionKey = `${currentHoldIndex}:${permuteCornersZeroFlowStep ?? 'none'}:${inOrientCornersPhase}:${JSON.stringify(seenIntros)}`;
 
   const getStepAsync = useCallback(async (_frame: CubeState) => {
     const cube = useCubeStore.getState().cubeState;
@@ -87,6 +94,7 @@ export function useLastLayerLessonStep(
       currentHoldIndex: sessionRef.current.currentHoldIndex,
       permuteCornersZeroFlowStep: sessionRef.current.permuteCornersZeroFlowStep,
       inOrientCornersPhase: sessionRef.current.inOrientCornersPhase,
+      seenIntros: sessionRef.current.seenIntros,
     });
   }, []);
 
@@ -128,6 +136,18 @@ export function useLastLayerLessonStep(
   const advanceAfterStep = useCallback(
     (appliedStep: LastLayerLessonStep, _frame: CubeState) => {
       const session = sessionRef.current;
+
+      if (appliedStep.kind === 'intro') {
+        applyLastSession({
+          ...session,
+          seenIntros: markLastLayerIntroSeen(
+            session.seenIntros,
+            appliedStep.introId,
+          ),
+        });
+        return;
+      }
+
       let nextHold = session.currentHoldIndex;
       let nextZeroFlow = session.permuteCornersZeroFlowStep;
 
@@ -154,6 +174,7 @@ export function useLastLayerLessonStep(
           appliedStep.subLesson === 'orient-corners');
 
       applyLastSession({
+        ...session,
         currentHoldIndex: nextHold,
         permuteCornersZeroFlowStep: nextZeroFlow,
         inOrientCornersPhase: nextInOrient,
@@ -168,8 +189,8 @@ export function useLastLayerLessonStep(
     setSessionUndoStack((stack) => stack.slice(0, -1));
     if (last.kind === 'reorient') {
       applyLastSession({
+        ...sessionRef.current,
         currentHoldIndex: last.previousHoldIndex,
-        permuteCornersZeroFlowStep: sessionRef.current.permuteCornersZeroFlowStep,
       });
       return 'reorient';
     }

@@ -1,6 +1,7 @@
 export const LAST_LAYER_LESSON_ID = 'last-layer' as const;
 
 export type {
+  LastLayerIntroId,
   LastLayerLessonStep,
   LastLayerLessonStepOptions,
   LastLayerStepKind,
@@ -9,10 +10,13 @@ export type {
   PermuteCornersCaseKind,
   PermuteCornersZeroFlowStep,
   PermuteEdgesCaseKind,
+  SeenLastLayerIntros,
   SimulateLastLayerLessonResult,
 } from './types';
 
 export {
+  ALL_LAST_LAYER_INTROS_SEEN,
+  LAST_LAYER_INTRO_IDS,
   LAST_LAYER_STEP_KINDS,
   LAST_LAYER_SUB_LESSONS,
 } from './types';

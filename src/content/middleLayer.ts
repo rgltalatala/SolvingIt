@@ -30,15 +30,15 @@ export const middleLayerLesson = {
 export const middleLayerSteps = {
   intro: {
     title: 'How this lesson works',
-    body: `Middle-layer edges are the four side edges between the top and bottom layers. An easy way to spot them: no yellow sticker. If an edge has yellow, it belongs on the top layer. We'll handle that when we solve the last layer.
+    body: `Now we'll solve the four edges in the middle layer. The easiest way to recognize these pieces is that they don't have a yellow sticker. Any edge with yellow belongs in the last layer, so we'll leave those alone for now.
 
-Once you've picked a middle-layer edge, line up the sticker that's not on U with its matching center. Then turn the whole cube so that center faces you.
+Choose a middle-layer edge from the top layer and line up its front sticker with the matching center. Then rotate the entire cube so that center is facing you.
 
-From there, decide whether the edge goes in the front-left slot or the front-right slot, and run the matching insert algorithm.
+From there, decide whether the edge belongs on the front-left or front-right side. Each direction has its own insertion algorithm, and we'll show you exactly which one to use.
 
-Sometimes an edge is already in its slot but flipped. Extract it with the same algorithm, line it up with its center on top, then insert it again.
+Sometimes you'll find an incorrect edge already sitting in the middle layer. That's perfectly normal. We'll use the same algorithm to bring it back to the top, then insert it correctly.
 
-If every unsolved middle-layer edge is on the top layer, extract one that's stuck in the middle layer first, then insert it where it belongs.`,
+If all of your unsolved middle-layer edges are trapped in the middle, simply remove one first. That creates room to place every edge where it belongs.`,
   },
   complete: {
     title: 'Middle layer edges complete',
@@ -59,7 +59,7 @@ If every unsolved middle-layer edge is on the top layer, extract one that's stuc
   faceSideTitle: (color: string) => `Face the ${color} side`,
   alignPartnerTitle: (color: string) => `Line up ${color} with its center`,
   extractEdge: 'Lift the edge out',
-  insertAligned: 'Insert the aligned top-layer edge',
+  insertAlignedEdge: 'Insert the aligned top-layer edge',
   insertEdge: 'Insert the edge',
   alignU: (colorA: string, colorB: string, partner: string) =>
     `The ${colorA}–${colorB} edge is on the top layer. Turn U until the ${partner} sticker lines up with the ${partner} center. Then you can turn the whole cube.`,

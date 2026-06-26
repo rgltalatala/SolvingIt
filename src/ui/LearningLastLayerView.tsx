@@ -192,7 +192,8 @@ export function LearningLastLayerView() {
     !isStepPending &&
     demoMoves.length > 0 &&
     step.kind !== 'complete' &&
-    step.kind !== 'prerequisite';
+    step.kind !== 'prerequisite' &&
+    step.kind !== 'intro';
 
   const handleRestartLessonTips = () => {
     resetLessonSession();
@@ -205,6 +206,14 @@ export function LearningLastLayerView() {
     startLessonTransition(() => {
       undoLessonStep();
       undoLastSessionStep();
+    });
+  };
+
+  const handleContinueIntro = () => {
+    if (step?.kind !== 'intro') return;
+    startLessonTransition(() => {
+      advanceAfterStep(step, studentFrame);
+      recomputeStep();
     });
   };
 
@@ -233,13 +242,23 @@ export function LearningLastLayerView() {
     />
   ) : undefined;
 
-  const subLessonLabel = cornerOrientPhase
-    ? LAST_LAYER_SUB_LESSON_LABELS.orientCorners
-    : cornerPermutePhase
-      ? LAST_LAYER_SUB_LESSON_LABELS.permuteCorners
-      : edgePermutePhase
-        ? LAST_LAYER_SUB_LESSON_LABELS.permuteEdges
-        : LAST_LAYER_SUB_LESSON_LABELS.orientEdges;
+  const subLessonLabel =
+    step?.kind === 'intro' && step.introId === 'overview'
+      ? lastLayerLesson.defaultStepTitle
+      : step?.kind === 'intro' && step.introId !== 'overview'
+        ? {
+            'orient-edges': LAST_LAYER_SUB_LESSON_LABELS.orientEdges,
+            'permute-edges': LAST_LAYER_SUB_LESSON_LABELS.permuteEdges,
+            'permute-corners': LAST_LAYER_SUB_LESSON_LABELS.permuteCorners,
+            'orient-corners': LAST_LAYER_SUB_LESSON_LABELS.orientCorners,
+          }[step.introId]
+        : cornerOrientPhase
+          ? LAST_LAYER_SUB_LESSON_LABELS.orientCorners
+          : cornerPermutePhase
+            ? LAST_LAYER_SUB_LESSON_LABELS.permuteCorners
+            : edgePermutePhase
+              ? LAST_LAYER_SUB_LESSON_LABELS.permuteEdges
+              : LAST_LAYER_SUB_LESSON_LABELS.orientEdges;
 
   const progressLabel = cornerOrientPhase
     ? lastLayerLesson.progress.orientCorners(solvedSlots)
@@ -274,7 +293,8 @@ export function LearningLastLayerView() {
           ) : null}
           {step &&
           step.kind !== 'complete' &&
-          step.kind !== 'prerequisite' ? (
+          step.kind !== 'prerequisite' &&
+          step.kind !== 'intro' ? (
             <p className="mt-2 text-sm text-slate-400">
               {lastLayerLesson.progressPrefix}{' '}
               <span className="text-slate-200">{progressLabel}</span>
@@ -312,6 +332,19 @@ export function LearningLastLayerView() {
           </p>
         ) : null}
 
+        {step?.kind === 'intro' ? (
+          <div className="mt-4">
+            <button
+              type="button"
+              className="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-600"
+              onClick={handleContinueIntro}
+              disabled={isStepPending}
+            >
+              {ui.continue}
+            </button>
+          </div>
+        ) : null}
+
         {step?.kind === 'prerequisite' ? (
           <div className="mt-4 flex flex-wrap gap-3">
             <button
@@ -340,7 +373,8 @@ export function LearningLastLayerView() {
 
         {step &&
         step.kind !== 'complete' &&
-        step.kind !== 'prerequisite' ? (
+        step.kind !== 'prerequisite' &&
+        step.kind !== 'intro' ? (
           <p className="mt-3 text-xs text-slate-500">
             {SAME_HOLD_NOTE(
               formatColorLabel(lessonHold.F),

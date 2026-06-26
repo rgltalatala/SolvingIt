@@ -173,7 +173,7 @@ function buildSolveEdgeStep(
       action === 'extract'
         ? middleLayerSteps.extractEdge
         : onUAligned
-          ? middleLayerSteps.insertAligned
+          ? middleLayerSteps.insertAlignedEdge
           : middleLayerSteps.insertEdge,
     body,
     demoMoves,

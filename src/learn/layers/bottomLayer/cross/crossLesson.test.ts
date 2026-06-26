@@ -100,7 +100,7 @@ describe('white cross lesson', () => {
     expect(step.kind).toBe('intro');
     if (step.kind === 'intro') {
       expect(step.body).toContain('white sticker');
-      expect(step.body).toContain('solved cross edge');
+      expect(step.body).toContain('that edge is solved');
     }
   });
 

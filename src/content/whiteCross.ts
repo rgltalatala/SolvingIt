@@ -41,9 +41,11 @@ export function whitePartnerEdgeHeading(partner: Color): string {
 export const whiteCrossSteps = {
   intro: {
     title: 'How this lesson works',
-    body: `Look for edge pieces with a white sticker. For each one, match its partner color to the matching center on the side of the cube. Then turn that face to connect the edge to the white center on the bottom. That's a solved cross edge.
+    body: `The white cross is the foundation of every beginner solve, so it's worth taking your time here.
 
-Repeat for the other three edges while keeping the ones you've already solved in place. This step is mostly intuitive. There aren't as many named cases as later lessons, but this step gets easier the more you practice it.`,
+Start by finding an edge piece with a white sticker. Match its other color with the center of the same color, then turn that face to connect the edge with the white center on the bottom. Once both colors line up, that edge is solved.
+
+Repeat the process for the other three white edges, being careful not to undo the ones you've already placed. There aren't many fixed cases to memorize here. This step is mostly about learning how the pieces move. The more cubes you solve, the more intuitive it becomes.`,
   },
   complete: {
     title: 'White cross complete',

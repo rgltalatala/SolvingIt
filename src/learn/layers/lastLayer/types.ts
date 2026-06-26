@@ -10,7 +10,25 @@ export const LAST_LAYER_SUB_LESSONS = [
 
 export type LastLayerSubLesson = (typeof LAST_LAYER_SUB_LESSONS)[number];
 
+export const LAST_LAYER_INTRO_IDS = [
+  'overview',
+  ...LAST_LAYER_SUB_LESSONS,
+] as const;
+
+export type LastLayerIntroId = (typeof LAST_LAYER_INTRO_IDS)[number];
+
+export type SeenLastLayerIntros = Partial<Record<LastLayerIntroId, boolean>>;
+
+export const ALL_LAST_LAYER_INTROS_SEEN: SeenLastLayerIntros = {
+  overview: true,
+  'orient-edges': true,
+  'permute-edges': true,
+  'permute-corners': true,
+  'orient-corners': true,
+};
+
 export const LAST_LAYER_STEP_KINDS = [
+  'intro',
   'complete',
   'prerequisite',
   'align-u',
@@ -40,9 +58,18 @@ export interface LastLayerLessonStepOptions {
   permuteCornersZeroFlowStep?: PermuteCornersZeroFlowStep;
   /** Set once orient-corners starts; F2L may be temporarily disturbed until all corners are oriented. */
   inOrientCornersPhase?: boolean;
+  /** Strategy intros shown once per session before each sub-lesson (and once for the overview). */
+  seenIntros?: SeenLastLayerIntros;
 }
 
 export type LastLayerLessonStep =
+  | {
+      kind: 'intro';
+      title: string;
+      body: string;
+      introId: LastLayerIntroId;
+      demoMoves?: Move[];
+    }
   | {
       kind: 'complete';
       title: string;

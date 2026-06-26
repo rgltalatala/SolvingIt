@@ -8,19 +8,31 @@ import {
   getLastLayerLessonStep,
   getLastLayerLessonStepAsync,
 } from './computeLessonStep';
+import { markLastLayerIntroSeen } from './introSteps';
 import { isLastLayerComplete } from './permuteCorners/uLayerCornerPermuteModel';
 import type {
   LastLayerLessonStep,
   LastLayerLessonStepOptions,
   PermuteCornersZeroFlowStep,
+  SeenLastLayerIntros,
   SimulateLastLayerLessonResult,
 } from './types';
 
-type SimulationSession = {
+type SimulationSession = LastLayerLessonStepOptions & {
   currentHoldIndex: CornerHoldIndex;
-  permuteCornersZeroFlowStep?: PermuteCornersZeroFlowStep;
-  inOrientCornersPhase?: boolean;
+  seenIntros: SeenLastLayerIntros;
 };
+
+function markIntroSeen(
+  step: LastLayerLessonStep,
+  session: SimulationSession,
+): SimulationSession {
+  if (step.kind !== 'intro') return session;
+  return {
+    ...session,
+    seenIntros: markLastLayerIntroSeen(session.seenIntros, step.introId),
+  };
+}
 
 function markOrientCornersPhase(
   step: LastLayerLessonStep,
@@ -77,12 +89,12 @@ function applyStepToSimulation(
   return {
     student,
     session: {
+      ...session,
       currentHoldIndex: advanceHoldAfterStep(step, session.currentHoldIndex),
       permuteCornersZeroFlowStep: advanceZeroFlowAfterStep(
         step,
         session.permuteCornersZeroFlowStep,
       ),
-      inOrientCornersPhase: session.inOrientCornersPhase,
     },
   };
 }
@@ -95,7 +107,7 @@ function simulateLoop(
     options: LastLayerLessonStepOptions,
   ) => LastLayerLessonStep,
 ): SimulateLastLayerLessonResult {
-  let session: SimulationSession = { currentHoldIndex: 0 };
+  let session: SimulationSession = { currentHoldIndex: 0, seenIntros: {} };
   let student = cloneCubeState(studentFrame);
   let lessonStepsSimulated = 0;
   let lastStepKind: LastLayerLessonStep['kind'] | undefined;
@@ -133,6 +145,11 @@ function simulateLoop(
         stuckNoDemo: true,
         finalHoldIndex: session.currentHoldIndex,
       };
+    }
+
+    if (step.kind === 'intro') {
+      session = markIntroSeen(step, session);
+      continue;
     }
 
     if (!step.demoMoves?.length) {
@@ -178,7 +195,7 @@ export async function simulateLastLayerLessonOnStorageCubeAsync(
   studentFrame: CubeState,
   maxLessonSteps = 48,
 ): Promise<SimulateLastLayerLessonResult> {
-  let session: SimulationSession = { currentHoldIndex: 0 };
+  let session: SimulationSession = { currentHoldIndex: 0, seenIntros: {} };
   let student = cloneCubeState(studentFrame);
   let lessonStepsSimulated = 0;
   let lastStepKind: LastLayerLessonStep['kind'] | undefined;
@@ -216,6 +233,11 @@ export async function simulateLastLayerLessonOnStorageCubeAsync(
         stuckNoDemo: true,
         finalHoldIndex: session.currentHoldIndex,
       };
+    }
+
+    if (step.kind === 'intro') {
+      session = markIntroSeen(step, session);
+      continue;
     }
 
     if (!step.demoMoves?.length) {

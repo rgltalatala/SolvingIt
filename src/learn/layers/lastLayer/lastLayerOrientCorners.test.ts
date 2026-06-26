@@ -9,6 +9,7 @@ import {
 } from '../../../cube/cubeState';
 import { parseFaceTurnAlgToMoves } from '../../../cube/parseFaceTurnAlg';
 import {
+  ALL_LAST_LAYER_INTROS_SEEN,
   countSolvedCorners,
   getLastLayerLessonStep,
   isCornersFullyPermuted,
@@ -23,6 +24,8 @@ import {
   repeatOrientAlg,
   simulateLastLayerLessonOnStorageCube,
 } from './index';
+
+const AFTER_ALL_INTROS = { seenIntros: ALL_LAST_LAYER_INTROS_SEEN } as const;
 
 function invertMoves(moves: Move[]): Move[] {
   const inverted: Move[] = [];
@@ -56,7 +59,7 @@ function zeroUnsolvedAfterPermuteStudent(): CubeState {
     solvedStudent(),
     invertMoves(PERMUTE_CORNERS_ALG),
   );
-  const permute = getLastLayerLessonStep(onePermuted);
+  const permute = getLastLayerLessonStep(onePermuted, AFTER_ALL_INTROS);
   if (permute.kind !== 'permute-corners' || !permute.demoMoves?.length) {
     throw new Error('zeroUnsolvedAfterPermuteStudent: expected permute-corners');
   }
@@ -82,11 +85,19 @@ function threeUnsolvedOrientStudent(): CubeState {
   let session: {
     currentHoldIndex: 0 | 1 | 2 | 3;
     permuteCornersZeroFlowStep?: 0 | 1 | 2;
-  } = { currentHoldIndex: 0 };
+    seenIntros: typeof ALL_LAST_LAYER_INTROS_SEEN;
+  } = { currentHoldIndex: 0, seenIntros: ALL_LAST_LAYER_INTROS_SEEN };
 
   for (let i = 0; i < 20; i += 1) {
     const step = getLastLayerLessonStep(current, session);
     if (step.kind === 'orient-corners') return current;
+    if (step.kind === 'intro') {
+      session = {
+        ...session,
+        seenIntros: { ...session.seenIntros, [step.introId]: true },
+      };
+      continue;
+    }
     if (step.kind === 'complete' || !step.demoMoves?.length) {
       throw new Error('threeUnsolvedOrientStudent: expected orient-corners entry');
     }
@@ -115,7 +126,7 @@ function threeUnsolvedOrientStudent(): CubeState {
 /** URF oriented with two corners still needing orient (after first orient demo). */
 function needsAlignStudent(): CubeState {
   const start = threeUnsolvedOrientStudent();
-  const orient = getLastLayerLessonStep(start, { inOrientCornersPhase: true });
+  const orient = getLastLayerLessonStep(start, { ...AFTER_ALL_INTROS, inOrientCornersPhase: true });
   if (orient.kind !== 'orient-corners' || !orient.demoMoves?.length) {
     throw new Error('needsAlignStudent: expected orient-corners first');
   }
@@ -132,9 +143,11 @@ function simulateOrientCornersPhase(
 
   for (let i = 0; i < maxSteps; i += 1) {
     const step = getLastLayerLessonStep(current, {
+      ...AFTER_ALL_INTROS,
       currentHoldIndex: hold,
       inOrientCornersPhase,
     });
+    if (step.kind === 'intro') continue;
     if (
       step.kind === 'orient-corners' ||
       (step.kind === 'align-u' && step.subLesson === 'orient-corners')
@@ -221,14 +234,14 @@ describe('last layer orient corners model', () => {
 
 describe('last layer orient corners planner', () => {
   it('skips orient-corners when permute already oriented all corners', () => {
-    expect(getLastLayerLessonStep(zeroUnsolvedAfterPermuteStudent())).toMatchObject({
+    expect(getLastLayerLessonStep(zeroUnsolvedAfterPermuteStudent(), AFTER_ALL_INTROS)).toMatchObject({
       kind: 'complete',
       title: 'Last layer complete',
     });
   });
 
   it('routes permuted twisted cube to orient-corners not complete', () => {
-    expect(getLastLayerLessonStep(twoUnsolvedOrientStudent())).toMatchObject({
+    expect(getLastLayerLessonStep(twoUnsolvedOrientStudent(), AFTER_ALL_INTROS)).toMatchObject({
       kind: 'orient-corners',
       reps: 2,
     });
@@ -242,7 +255,7 @@ describe('last layer orient corners planner', () => {
   });
 
   it('returns align-u when URF is already oriented', () => {
-    expect(getLastLayerLessonStep(needsAlignStudent(), { inOrientCornersPhase: true })).toMatchObject({
+    expect(getLastLayerLessonStep(needsAlignStudent(), { ...AFTER_ALL_INTROS, inOrientCornersPhase: true })).toMatchObject({
       kind: 'align-u',
       subLesson: 'orient-corners',
     });
@@ -250,7 +263,7 @@ describe('last layer orient corners planner', () => {
 
   it('orients URF with demo then makes progress on solved count', () => {
     const student = twoUnsolvedOrientStudent();
-    const orient = getLastLayerLessonStep(student);
+    const orient = getLastLayerLessonStep(student, AFTER_ALL_INTROS);
     expect(orient.kind).toBe('orient-corners');
     if (orient.kind !== 'orient-corners') return;
     const afterOrient = applyMoves(cloneCubeState(student), orient.demoMoves);
@@ -261,7 +274,7 @@ describe('last layer orient corners planner', () => {
 
   it('verifies orient corner algorithm demo', () => {
     const student = twoUnsolvedOrientStudent();
-    const step = getLastLayerLessonStep(student);
+    const step = getLastLayerLessonStep(student, AFTER_ALL_INTROS);
     expect(step.kind).toBe('orient-corners');
     if (step.kind === 'orient-corners' && step.demoMoves) {
       expect(isVerifiedOrientCornersDemo(student, step.demoMoves)).toBe(true);
@@ -309,9 +322,11 @@ describe('last layer orient corners simulation', () => {
     let inOrientCornersPhase = true;
     for (let i = 0; i < 16; i += 1) {
       const step = getLastLayerLessonStep(current, {
+        ...AFTER_ALL_INTROS,
         currentHoldIndex: hold,
         inOrientCornersPhase,
       });
+      if (step.kind === 'intro') continue;
       if (step.kind === 'complete') break;
       expect(step.demoMoves?.length).toBeGreaterThan(0);
       const before = countSolvedCorners(current);

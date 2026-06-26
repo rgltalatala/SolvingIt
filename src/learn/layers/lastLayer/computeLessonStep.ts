@@ -17,6 +17,9 @@ import type {
   LastLayerLessonStepOptions,
 } from './types';
 import { lastLayerSteps } from '../../../content/lastLayer';
+import {
+  maybeLastLayerIntro,
+} from './introSteps';
 
 const PREREQUISITE_BODY = lastLayerSteps.prerequisite.body;
 
@@ -61,7 +64,19 @@ function computeLastLayerLessonStep(
     return prerequisiteStep();
   }
 
+  if (isLastLayerComplete(studentState)) {
+    if ((options.currentHoldIndex ?? 0) !== 0) {
+      return computeOrientCornersStep(studentState, options);
+    }
+    return lastLayerCompleteStep();
+  }
+
+  const overviewIntro = maybeLastLayerIntro(options, 'overview');
+  if (overviewIntro) return overviewIntro;
+
   if (!isYellowCrossComplete(studentState)) {
+    const intro = maybeLastLayerIntro(options, 'orient-edges');
+    if (intro) return intro;
     return computeOrientEdgesStep(studentState);
   }
 
@@ -69,23 +84,26 @@ function computeLastLayerLessonStep(
     options.inOrientCornersPhase &&
     !isLastLayerComplete(studentState)
   ) {
+    const intro = maybeLastLayerIntro(options, 'orient-corners');
+    if (intro) return intro;
     return computeOrientCornersStep(studentState, options);
   }
 
   if (!isEdgesFullyPermuted(studentState)) {
+    const intro = maybeLastLayerIntro(options, 'permute-edges');
+    if (intro) return intro;
     return computePermuteEdgesStep(studentState, options);
   }
 
   if (!isCornersFullyPermuted(studentState)) {
+    const intro = maybeLastLayerIntro(options, 'permute-corners');
+    if (intro) return intro;
     return computePermuteCornersStep(studentState, options);
   }
 
   if (!isLastLayerComplete(studentState)) {
-    return computeOrientCornersStep(studentState, options);
-  }
-
-  // Corners solved but cube may still be on green/orange/red hold (e.g. zero-flow permute).
-  if ((options.currentHoldIndex ?? 0) !== 0) {
+    const intro = maybeLastLayerIntro(options, 'orient-corners');
+    if (intro) return intro;
     return computeOrientCornersStep(studentState, options);
   }
 
