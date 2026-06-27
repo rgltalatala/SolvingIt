@@ -96,3 +96,11 @@ export function computeOrientEdgesStep(
 
   throw new Error('computeOrientEdgesStep: unexpected solved case in orient phase');
 }
+
+export function buildOrientEdgesAlreadyCompleteStep(): LastLayerLessonStep {
+  return {
+    kind: 'orient-edges-already-complete',
+    title: lastLayerSteps.orientEdgesAlreadyComplete.title,
+    body: lastLayerSteps.orientEdgesAlreadyComplete.body,
+  };
+}

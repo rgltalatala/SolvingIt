@@ -29,6 +29,7 @@ type LastSession = {
   permuteCornersZeroFlowStep?: PermuteCornersZeroFlowStep;
   inOrientCornersPhase?: boolean;
   seenIntros: SeenLastLayerIntros;
+  hasAcknowledgedOrientEdgesComplete?: boolean;
 };
 
 function emptyLastSession(): LastSession {
@@ -59,6 +60,8 @@ export function useLastLayerLessonStep(
   >(undefined);
   const [inOrientCornersPhase, setInOrientCornersPhase] = useState(false);
   const [seenIntros, setSeenIntros] = useState<SeenLastLayerIntros>({});
+  const [hasAcknowledgedOrientEdgesComplete, setHasAcknowledgedOrientEdgesComplete] =
+    useState(false);
   const [sessionUndoStack, setSessionUndoStack] = useState<
     LastSessionUndoEntry[]
   >([]);
@@ -71,6 +74,9 @@ export function useLastLayerLessonStep(
     setPermuteCornersZeroFlowStep(session.permuteCornersZeroFlowStep);
     setInOrientCornersPhase(session.inOrientCornersPhase ?? false);
     setSeenIntros(session.seenIntros);
+    setHasAcknowledgedOrientEdgesComplete(
+      session.hasAcknowledgedOrientEdgesComplete ?? false,
+    );
   }, []);
 
   const resetLastSession = useCallback(() => {
@@ -85,7 +91,7 @@ export function useLastLayerLessonStep(
     resetLastSession();
   }, [studentFrame, options?.resetKey, resetLastSession]);
 
-  const sessionKey = `${currentHoldIndex}:${permuteCornersZeroFlowStep ?? 'none'}:${inOrientCornersPhase}:${JSON.stringify(seenIntros)}`;
+  const sessionKey = `${currentHoldIndex}:${permuteCornersZeroFlowStep ?? 'none'}:${inOrientCornersPhase}:${hasAcknowledgedOrientEdgesComplete}:${JSON.stringify(seenIntros)}`;
 
   const getStepAsync = useCallback(async (_frame: CubeState) => {
     const cube = useCubeStore.getState().cubeState;
@@ -95,6 +101,8 @@ export function useLastLayerLessonStep(
       permuteCornersZeroFlowStep: sessionRef.current.permuteCornersZeroFlowStep,
       inOrientCornersPhase: sessionRef.current.inOrientCornersPhase,
       seenIntros: sessionRef.current.seenIntros,
+      hasAcknowledgedOrientEdgesComplete:
+        sessionRef.current.hasAcknowledgedOrientEdgesComplete,
     });
   }, []);
 
@@ -144,6 +152,14 @@ export function useLastLayerLessonStep(
             session.seenIntros,
             appliedStep.introId,
           ),
+        });
+        return;
+      }
+
+      if (appliedStep.kind === 'orient-edges-already-complete') {
+        applyLastSession({
+          ...session,
+          hasAcknowledgedOrientEdgesComplete: true,
         });
         return;
       }

@@ -9,7 +9,7 @@ import {
 } from '../../../cube/cubeState';
 import { parseFaceTurnAlgToMoves } from '../../../cube/parseFaceTurnAlg';
 import {
-  ALL_LAST_LAYER_INTROS_SEEN,
+  LAST_LAYER_PAST_ORIENT_EDGES,
   PERMUTE_EDGES_ALG,
   backRightULayerSlots,
   countPermutedEdges,
@@ -24,7 +24,25 @@ import {
   simulateLastLayerLessonOnStorageCube,
 } from './index';
 
-const AFTER_ALL_INTROS = { seenIntros: ALL_LAST_LAYER_INTROS_SEEN } as const;
+const AFTER_ORIENT_EDGES = LAST_LAYER_PAST_ORIENT_EDGES;
+
+function expectStepDemoMoves(
+  step: ReturnType<typeof getLastLayerLessonStep>,
+): Move[] {
+  if (
+    step.kind === 'intro' ||
+    step.kind === 'complete' ||
+    step.kind === 'prerequisite' ||
+    step.kind === 'orient-edges-already-complete'
+  ) {
+    throw new Error(`expected step with demoMoves, got ${step.kind}`);
+  }
+  expect(step.demoMoves?.length).toBeGreaterThan(0);
+  if (!step.demoMoves?.length) {
+    throw new Error(`expected step with demoMoves, got ${step.kind}`);
+  }
+  return step.demoMoves;
+}
 
 function invertMoves(moves: Move[]): Move[] {
   const inverted: Move[] = [];
@@ -121,7 +139,7 @@ describe('last layer permute edges planner', () => {
   });
 
   it('returns align-u for u-only permute', () => {
-    expect(getLastLayerLessonStep(uOnlyPermuteStudent(), AFTER_ALL_INTROS)).toMatchObject({
+    expect(getLastLayerLessonStep(uOnlyPermuteStudent(), AFTER_ORIENT_EDGES)).toMatchObject({
       kind: 'align-u',
       subLesson: 'permute-edges',
     });
@@ -132,19 +150,19 @@ describe('last layer permute edges planner', () => {
     const recognized = recognizePermuteEdgesCase(student, 0);
     if (recognized.kind !== 'adjacent') return;
     if (isPairAtBackRight(recognized.slots)) {
-      expect(getLastLayerLessonStep(student, { ...AFTER_ALL_INTROS, currentHoldIndex: 0 })).toMatchObject({
+      expect(getLastLayerLessonStep(student, { ...AFTER_ORIENT_EDGES, currentHoldIndex: 0 })).toMatchObject({
         kind: 'permute-edges',
         permuteCase: 'adjacent',
       });
       return;
     }
-    const reorient = getLastLayerLessonStep(student, { ...AFTER_ALL_INTROS, currentHoldIndex: 0 });
+    const reorient = getLastLayerLessonStep(student, { ...AFTER_ORIENT_EDGES, currentHoldIndex: 0 });
     expect(reorient.kind).toBe('reorient-hold');
     if (reorient.kind !== 'reorient-hold') return;
     let hold = reorient.targetHoldIndex ?? 0;
     let current = cloneCubeState(student);
     current = applyMoves(current, reorient.demoMoves);
-    const permute = getLastLayerLessonStep(current, { ...AFTER_ALL_INTROS, currentHoldIndex: hold });
+    const permute = getLastLayerLessonStep(current, { ...AFTER_ORIENT_EDGES, currentHoldIndex: hold });
     expect(permute).toMatchObject({
       kind: 'permute-edges',
       permuteCase: 'adjacent',
@@ -152,7 +170,7 @@ describe('last layer permute edges planner', () => {
   });
 
   it('returns permute-edges for opposite case', () => {
-    expect(getLastLayerLessonStep(oppositePermuteStudent(), AFTER_ALL_INTROS)).toMatchObject({
+    expect(getLastLayerLessonStep(oppositePermuteStudent(), AFTER_ORIENT_EDGES)).toMatchObject({
       kind: 'permute-edges',
       permuteCase: 'opposite',
     });
@@ -160,23 +178,21 @@ describe('last layer permute edges planner', () => {
 
   it('verifies permute algorithm demo', () => {
     const student = adjacentPermuteStudent();
-    const step = getLastLayerLessonStep(student, AFTER_ALL_INTROS);
+    const step = getLastLayerLessonStep(student, AFTER_ORIENT_EDGES);
     if (step.kind === 'reorient-hold') {
       const after = applyMoves(student, step.demoMoves);
       const next = getLastLayerLessonStep(after, {
-        ...AFTER_ALL_INTROS,
+        ...AFTER_ORIENT_EDGES,
         currentHoldIndex: step.targetHoldIndex,
       });
-      expect(next.demoMoves?.length).toBeGreaterThan(0);
-      if (next.demoMoves) {
-        expect(isVerifiedPermuteEdgesDemo(after, next.demoMoves)).toBe(true);
-      }
+      expect(isVerifiedPermuteEdgesDemo(after, expectStepDemoMoves(next))).toBe(
+        true,
+      );
       return;
     }
-    expect(step.demoMoves?.length).toBeGreaterThan(0);
-    if (step.demoMoves) {
-      expect(isVerifiedPermuteEdgesDemo(student, step.demoMoves)).toBe(true);
-    }
+    expect(isVerifiedPermuteEdgesDemo(student, expectStepDemoMoves(step))).toBe(
+      true,
+    );
   });
 });
 
@@ -201,14 +217,9 @@ describe('last layer permute edges simulation', () => {
     let hold = 0 as 0 | 1 | 2 | 3;
     let before = countPermutedEdges(current);
     for (let i = 0; i < 8; i += 1) {
-      const step = getLastLayerLessonStep(current, { ...AFTER_ALL_INTROS, currentHoldIndex: hold });
+      const step = getLastLayerLessonStep(current, { ...AFTER_ORIENT_EDGES, currentHoldIndex: hold });
       if (step.kind === 'complete') break;
-      expect(step.demoMoves?.length).toBeGreaterThan(0);
-      if (step.kind !== 'reorient-hold') {
-        current = applyMoves(current, step.demoMoves!);
-      } else {
-        current = applyMoves(current, step.demoMoves!);
-      }
+      current = applyMoves(current, expectStepDemoMoves(step));
       if (step.kind === 'reorient-hold') {
         hold = (step.targetHoldIndex ?? hold) as 0 | 1 | 2 | 3;
         if (step.returnToInitialHold) hold = 0;

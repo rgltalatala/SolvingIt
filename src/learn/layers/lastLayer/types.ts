@@ -27,12 +27,19 @@ export const ALL_LAST_LAYER_INTROS_SEEN: SeenLastLayerIntros = {
   'orient-corners': true,
 };
 
+/** All intros seen and past orient-edges (including already-complete yellow cross). */
+export const LAST_LAYER_PAST_ORIENT_EDGES: LastLayerLessonStepOptions = {
+  seenIntros: ALL_LAST_LAYER_INTROS_SEEN,
+  hasAcknowledgedOrientEdgesComplete: true,
+};
+
 export const LAST_LAYER_STEP_KINDS = [
   'intro',
   'complete',
   'prerequisite',
   'align-u',
   'orient-edges',
+  'orient-edges-already-complete',
   'orient-corners',
   'permute-edges',
   'permute-corners',
@@ -60,6 +67,8 @@ export interface LastLayerLessonStepOptions {
   inOrientCornersPhase?: boolean;
   /** Strategy intros shown once per session before each sub-lesson (and once for the overview). */
   seenIntros?: SeenLastLayerIntros;
+  /** User continued past orient-edges when the yellow cross was already complete. */
+  hasAcknowledgedOrientEdgesComplete?: boolean;
 }
 
 export type LastLayerLessonStep =
@@ -96,6 +105,11 @@ export type LastLayerLessonStep =
       body: string;
       demoMoves: Move[];
       ollCase: OrientEdgesOllCase;
+    }
+  | {
+      kind: 'orient-edges-already-complete';
+      title: string;
+      body: string;
     }
   | {
       kind: 'permute-edges';

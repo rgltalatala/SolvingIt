@@ -104,6 +104,9 @@ function advanceSessionAfterStep(
     permuteCornersZeroFlowStep: zeroFlow,
     inOrientCornersPhase: session.inOrientCornersPhase,
     seenIntros: session.seenIntros,
+    hasAcknowledgedOrientEdgesComplete:
+      session.hasAcknowledgedOrientEdgesComplete ||
+      step.kind === 'orient-edges-already-complete',
   };
 }
 
@@ -115,6 +118,7 @@ function stepBelongsToSubLesson(
     case 'orient-edges':
       return (
         step.kind === 'orient-edges' ||
+        step.kind === 'orient-edges-already-complete' ||
         (step.kind === 'align-u' && step.subLesson === 'orient-edges')
       );
     case 'permute-edges':
@@ -224,7 +228,15 @@ function simulateLastLayerLesson(
       continue;
     }
 
-    if (!step.demoMoves?.length) {
+    if (step.kind === 'orient-edges-already-complete') {
+      session = {
+        ...session,
+        hasAcknowledgedOrientEdgesComplete: true,
+      };
+      continue;
+    }
+
+    if (!('demoMoves' in step) || !step.demoMoves?.length) {
       return {
         stuckNoDemo: true,
         lastLayerComplete: isLastLayerComplete(student),

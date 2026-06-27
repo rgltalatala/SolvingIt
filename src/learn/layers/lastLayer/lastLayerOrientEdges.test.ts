@@ -215,8 +215,30 @@ describe('last layer lesson planner', () => {
     const yellowCrossOnly = applyMoves(solvedStudent(), ["U'"]);
     expect(isYellowCrossComplete(yellowCrossOnly)).toBe(true);
     const step = getLastLayerLessonStep(yellowCrossOnly, AFTER_ALL_INTROS);
+    expect(step).toMatchObject({
+      kind: 'orient-edges-already-complete',
+    });
+  });
+
+  it('advances to permute-edges after acknowledging yellow cross is already complete', () => {
+    const yellowCrossOnly = applyMoves(solvedStudent(), ["U'"]);
+    const step = getLastLayerLessonStep(yellowCrossOnly, {
+      ...AFTER_ALL_INTROS,
+      hasAcknowledgedOrientEdgesComplete: true,
+    });
     expect(step.kind).not.toBe('complete');
     expect(['align-u', 'permute-edges', 'reorient-hold']).toContain(step.kind);
+  });
+
+  it('shows orient-edges intro before already-complete step when yellow cross is done', () => {
+    const yellowCrossOnly = applyMoves(solvedStudent(), ["U'"]);
+    const step = getLastLayerLessonStep(yellowCrossOnly, {
+      seenIntros: { overview: true },
+    });
+    expect(step.kind).toBe('intro');
+    if (step.kind === 'intro') {
+      expect(step.introId).toBe('orient-edges');
+    }
   });
 
   it('returns align-u before L algorithm when misaligned', () => {

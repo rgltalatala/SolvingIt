@@ -145,11 +145,18 @@ export function LearningLastLayerView() {
     return <LessonUnavailable onBack={() => setAppPhase('ready')} />;
   }
 
+  const isOrientEdgesLessonStep =
+    step?.kind === 'orient-edges-already-complete' ||
+    step?.kind === 'orient-edges' ||
+    (step?.kind === 'align-u' && step.subLesson === 'orient-edges') ||
+    (step?.kind === 'intro' && step.introId === 'orient-edges');
+
   const edgePermutePhase =
-    isEdgePermutePhase ||
-    (studentFrame &&
-      isYellowCrossComplete(studentFrame) &&
-      !isEdgesFullyPermuted(studentFrame));
+    !isOrientEdgesLessonStep &&
+    (isEdgePermutePhase ||
+      (studentFrame &&
+        isYellowCrossComplete(studentFrame) &&
+        !isEdgesFullyPermuted(studentFrame)));
 
   const cornerPermutePhase =
     isCornerPermutePhase ||
@@ -217,6 +224,14 @@ export function LearningLastLayerView() {
     });
   };
 
+  const handleContinueOrientEdgesComplete = () => {
+    if (step?.kind !== 'orient-edges-already-complete') return;
+    startLessonTransition(() => {
+      advanceAfterStep(step, studentFrame);
+      recomputeStep();
+    });
+  };
+
   const handleApplyDemo = () => {
     if (!step || !canApplyDemo) return;
     startLessonTransition(() => {
@@ -252,7 +267,9 @@ export function LearningLastLayerView() {
             'permute-corners': LAST_LAYER_SUB_LESSON_LABELS.permuteCorners,
             'orient-corners': LAST_LAYER_SUB_LESSON_LABELS.orientCorners,
           }[step.introId]
-        : cornerOrientPhase
+        : isOrientEdgesLessonStep
+          ? LAST_LAYER_SUB_LESSON_LABELS.orientEdges
+          : cornerOrientPhase
           ? LAST_LAYER_SUB_LESSON_LABELS.orientCorners
           : cornerPermutePhase
             ? LAST_LAYER_SUB_LESSON_LABELS.permuteCorners
@@ -260,7 +277,9 @@ export function LearningLastLayerView() {
               ? LAST_LAYER_SUB_LESSON_LABELS.permuteEdges
               : LAST_LAYER_SUB_LESSON_LABELS.orientEdges;
 
-  const progressLabel = cornerOrientPhase
+  const progressLabel = isOrientEdgesLessonStep
+    ? lastLayerLesson.progress.orientEdges(solvedSlots)
+    : cornerOrientPhase
     ? lastLayerLesson.progress.orientCorners(solvedSlots)
     : cornerPermutePhase
       ? lastLayerLesson.progress.permuteCorners(solvedSlots)
@@ -345,6 +364,19 @@ export function LearningLastLayerView() {
           </div>
         ) : null}
 
+        {step?.kind === 'orient-edges-already-complete' ? (
+          <div className="mt-4">
+            <button
+              type="button"
+              className="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-600"
+              onClick={handleContinueOrientEdgesComplete}
+              disabled={isStepPending}
+            >
+              {ui.continue}
+            </button>
+          </div>
+        ) : null}
+
         {step?.kind === 'prerequisite' ? (
           <div className="mt-4 flex flex-wrap gap-3">
             <button
@@ -374,7 +406,8 @@ export function LearningLastLayerView() {
         {step &&
         step.kind !== 'complete' &&
         step.kind !== 'prerequisite' &&
-        step.kind !== 'intro' ? (
+        step.kind !== 'intro' &&
+        step.kind !== 'orient-edges-already-complete' ? (
           <p className="mt-3 text-xs text-slate-500">
             {SAME_HOLD_NOTE(
               formatColorLabel(lessonHold.F),

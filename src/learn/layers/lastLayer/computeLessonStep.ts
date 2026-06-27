@@ -3,7 +3,7 @@ import { isWhiteCrossComplete } from '../bottomLayer/cross/crossSlotModel';
 import { isWhiteCornersComplete } from '../bottomLayer/corners/cornerSlotModel';
 import { isMiddleLayerEdgesComplete } from '../middleLayer/edges/edgeSlotModel';
 import { computeOrientCornersStep, lastLayerCompleteStep } from './computeOrientCornersStep';
-import { computeOrientEdgesStep } from './computeOrientEdgesStep';
+import { computeOrientEdgesStep, buildOrientEdgesAlreadyCompleteStep } from './computeOrientEdgesStep';
 import { computePermuteCornersStep } from './computePermuteCornersStep';
 import { computePermuteEdgesStep } from './computePermuteEdgesStep';
 import { isYellowCrossComplete } from './orientEdges/uLayerEdgeModel';
@@ -78,6 +78,12 @@ function computeLastLayerLessonStep(
     const intro = maybeLastLayerIntro(options, 'orient-edges');
     if (intro) return intro;
     return computeOrientEdgesStep(studentState);
+  }
+
+  if (!options.hasAcknowledgedOrientEdgesComplete) {
+    const intro = maybeLastLayerIntro(options, 'orient-edges');
+    if (intro) return intro;
+    return buildOrientEdgesAlreadyCompleteStep();
   }
 
   if (

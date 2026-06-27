@@ -114,6 +114,10 @@ export const lastLayerSteps = {
     title: 'Orient edges. Bar',
     body: "Yellow-on-U edges sit at UL and UR. Run F R U R' U' F' to complete the yellow cross.",
   },
+  orientEdgesAlreadyComplete: {
+    title: 'Orient edges',
+    body: "You've already got a yellow cross on top. All four edges show yellow on U, so there's nothing to do in this step. Continue when you're ready to permute edges into their correct positions.",
+  },
   alignTopLayer: {
     title: 'Line up the top layer',
     body: 'A single U turn can permute all four top edges. Turn U until each edge side sticker lines up with its center.',

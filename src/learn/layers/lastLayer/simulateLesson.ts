@@ -34,6 +34,27 @@ function markIntroSeen(
   };
 }
 
+function markOrientEdgesAcknowledged(
+  session: SimulationSession,
+): SimulationSession {
+  return { ...session, hasAcknowledgedOrientEdgesComplete: true };
+}
+
+function isContinueOnlyStep(step: LastLayerLessonStep): boolean {
+  return step.kind === 'intro' || step.kind === 'orient-edges-already-complete';
+}
+
+function advanceContinueOnlyStep(
+  step: LastLayerLessonStep,
+  session: SimulationSession,
+): SimulationSession {
+  if (step.kind === 'intro') return markIntroSeen(step, session);
+  if (step.kind === 'orient-edges-already-complete') {
+    return markOrientEdgesAcknowledged(session);
+  }
+  return session;
+}
+
 function markOrientCornersPhase(
   step: LastLayerLessonStep,
   session: SimulationSession,
@@ -85,6 +106,9 @@ function applyStepToSimulation(
   student: CubeState,
   session: SimulationSession,
 ): { student: CubeState; session: SimulationSession } {
+  if (!('demoMoves' in step) || !step.demoMoves?.length) {
+    throw new Error(`applyStepToSimulation: step ${step.kind} has no demoMoves`);
+  }
   student = applyMoves(student, step.demoMoves);
   return {
     student,
@@ -147,12 +171,12 @@ function simulateLoop(
       };
     }
 
-    if (step.kind === 'intro') {
-      session = markIntroSeen(step, session);
+    if (isContinueOnlyStep(step)) {
+      session = advanceContinueOnlyStep(step, session);
       continue;
     }
 
-    if (!step.demoMoves?.length) {
+    if (!('demoMoves' in step) || !step.demoMoves?.length) {
       return {
         lessonStepsSimulated,
         lastLayerComplete: isLastLayerComplete(student),
@@ -235,12 +259,12 @@ export async function simulateLastLayerLessonOnStorageCubeAsync(
       };
     }
 
-    if (step.kind === 'intro') {
-      session = markIntroSeen(step, session);
+    if (isContinueOnlyStep(step)) {
+      session = advanceContinueOnlyStep(step, session);
       continue;
     }
 
-    if (!step.demoMoves?.length) {
+    if (!('demoMoves' in step) || !step.demoMoves?.length) {
       return {
         lessonStepsSimulated,
         lastLayerComplete: isLastLayerComplete(student),
