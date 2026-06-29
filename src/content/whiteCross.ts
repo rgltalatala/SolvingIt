@@ -1,5 +1,4 @@
 import type { Color } from '../cube/cubeState';
-import { formatColorLabel } from '../cube/cubeState';
 
 export const whiteCrossLesson = {
   title: 'Lesson: White cross',
@@ -35,7 +34,7 @@ export const whiteCrossLesson = {
 } as const;
 
 export function whitePartnerEdgeHeading(partner: Color): string {
-  return `White–${formatColorLabel(partner)} edge`;
+  return `white–${partner} edge`;
 }
 
 export const whiteCrossSteps = {

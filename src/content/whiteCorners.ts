@@ -60,7 +60,7 @@ Once a corner is solved, simply rotate the entire cube so the next unsolved corn
     title: 'Face the blue side',
     body: "Corners are done. Turn the cube so blue is toward you again. White on bottom, yellow on top, same as when you started.",
   },
-  faceSideTitle: (faceLabel: string) => `Face the ${faceLabel.toLowerCase()} side`,
+  faceSideTitle: (faceLabel: string) => `Face the ${faceLabel} side`,
   reorient: (faceLabel: string, cornerLabel: string, skipNote: string) =>
     `Turn the whole cube so ${faceLabel} is toward you. White stays on bottom, yellow on top. You're setting up to solve the ${cornerLabel}.${skipNote}`,
   reorientSkipAlignNote:

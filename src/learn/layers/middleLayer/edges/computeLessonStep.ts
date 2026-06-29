@@ -1,4 +1,5 @@
 import type { Color, CubeState, Move } from '../../../../cube/cubeState';
+import { formatColorLabel } from '../../../../cube/cubeState';
 import { isWhiteCrossComplete } from '../../bottomLayer/cross/crossSlotModel';
 import { isWhiteCornersComplete } from '../../bottomLayer/corners/cornerSlotModel';
 import {
@@ -105,7 +106,7 @@ function buildReorientToPartnerStep(
       );
   return {
     kind: 'reorient-hold',
-    title: middleLayerSteps.faceSideTitle(formatColor(partnerColor)),
+    title: middleLayerSteps.faceSideTitle(formatColorLabel(partnerColor)),
     body,
     demoMoves,
     targetHoldIndex: targetHold,

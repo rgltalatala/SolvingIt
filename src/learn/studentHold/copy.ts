@@ -77,7 +77,7 @@ export function getRotationText(
 export function getMoveText(move: Move, hold: StudentHold): string {
   const face = getFaceFromMove(move);
   const modifier = getModifierFromMove(move);
-  const color = formatColorLabel(centersForHold(hold)[face]);
+  const color = centersForHold(hold)[face];
   const position = facePosition(face);
   if (modifier === '2') {
     return moveHalf(color, position, face);

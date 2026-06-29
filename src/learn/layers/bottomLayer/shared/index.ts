@@ -13,4 +13,9 @@ export {
 } from './pieceQueries';
 
 export { isWhiteCrossComplete } from '../cross/crossSlotModel';
-export { formatColorLabel as formatColor } from '../../../../cube/cubeState';
+import type { Color } from '../../../../cube/cubeState';
+
+/** Lowercase color name for piece references in lesson step copy. */
+export function formatColor(color: Color): string {
+  return color;
+}
