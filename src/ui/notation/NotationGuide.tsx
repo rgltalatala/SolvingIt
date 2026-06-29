@@ -126,29 +126,20 @@ export function NotationGuide() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <div className="flex flex-col gap-2">
-        <CubeView
-          cubeState={displayState}
-          meshRotation={[0, 0, 0]}
-          frameClassName={cubeFrameClass}
-          canvasKey={canvasKey}
-          moveAnimation={isAnatomySection ? null : moveAnimation}
-          cameraBaselineKey={canvasKey}
-          snapCameraOnWholeCubeRotation={false}
-          enableOrbitControls={false}
-          anatomyHighlight={anatomyHighlight}
-          faceLabels={
-            activeSection === 'faceNames' ? { highlightedFace } : undefined
-          }
-        />
-        <button
-          type="button"
-          className="self-start rounded-lg border border-slate-600 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-700"
-          onClick={resetOrientation}
-        >
-          {notationGuideCopy.resetOrientation}
-        </button>
-      </div>
+      <CubeView
+        cubeState={displayState}
+        meshRotation={[0, 0, 0]}
+        frameClassName={cubeFrameClass}
+        canvasKey={canvasKey}
+        moveAnimation={isAnatomySection ? null : moveAnimation}
+        cameraBaselineKey={canvasKey}
+        snapCameraOnWholeCubeRotation={false}
+        enableOrbitControls={false}
+        anatomyHighlight={anatomyHighlight}
+        faceLabels={
+          activeSection === 'faceNames' ? { highlightedFace } : undefined
+        }
+      />
 
       <div className="flex flex-col gap-4">
         {showReplayCheckbox ? (

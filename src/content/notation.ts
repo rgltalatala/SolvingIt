@@ -1,7 +1,6 @@
 import type { Face } from '../cube/cubeState';
 
 export const notationGuide = {
-  resetOrientation: 'Reset orientation',
   replayAnimations: 'Replay animations (up to 5 while hovered)',
 } as const;
 
