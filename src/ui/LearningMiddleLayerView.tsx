@@ -72,6 +72,7 @@ export function LearningMiddleLayerView() {
   const resetLessonSession = useCubeStore((state) => state.resetLessonSession);
   const undoLessonStep = useCubeStore((state) => state.undoLessonStep);
   const canUndoLesson = useCubeStore((state) => state.lessonHistory.length > 0);
+  const startLessonRescan = useCubeStore((state) => state.startLessonRescan);
 
   const [, startLessonTransition] = useTransition();
 
@@ -269,6 +270,7 @@ export function LearningMiddleLayerView() {
           canUndo={canUndo}
           isStepPending={isStepPending}
           onUndo={handleUndoLessonStep}
+          onRescan={startLessonRescan}
           onBack={leaveLesson}
           onResetTips={handleRestartLessonTips}
           extraActions={

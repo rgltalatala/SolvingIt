@@ -15,6 +15,10 @@ export const whiteCrossLesson = {
       text: "puts your virtual cube back to before the last apply. The next step title might change even though the cube matches an earlier point in the lesson. That's normal.",
     },
     {
+      label: 'Re-scan cube',
+      text: "opens the scanner so you can sync the virtual cube with your physical one. We'll figure out where you are and pick up from there.",
+    },
+    {
       label: 'Apply on my cube',
       text: 'updates your virtual cube and advances the lesson. Any y2 bookends are stored on the cube; the internal hold flag resets each apply.',
     },

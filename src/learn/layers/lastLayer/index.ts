@@ -71,8 +71,10 @@ export { PERMUTE_EDGES_ALG } from './permuteEdges/permuteEdgesAlgs';
 
 export {
   backRightULayerSlots,
+  holdIndexFromFrontColor,
   holdIndexWherePairIsBackRight,
   isPairAtBackRight,
+  isPairAtHoldBackRight,
   reorientMovesForPermuteSetup,
 } from './permuteEdges/permuteHold';
 

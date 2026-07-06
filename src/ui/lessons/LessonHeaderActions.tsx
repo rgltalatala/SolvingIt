@@ -5,6 +5,7 @@ type LessonHeaderActionsProps = {
   canUndo: boolean;
   isStepPending: boolean;
   onUndo: () => void;
+  onRescan: () => void;
   onBack: () => void;
   onResetTips: () => void;
   extraActions?: ReactNode;
@@ -14,6 +15,7 @@ export function LessonHeaderActions({
   canUndo,
   isStepPending,
   onUndo,
+  onRescan,
   onBack,
   onResetTips,
   extraActions,
@@ -27,6 +29,14 @@ export function LessonHeaderActions({
         disabled={!canUndo || isStepPending}
       >
         {ui.undoLastExample}
+      </button>
+      <button
+        type="button"
+        className="inline-flex w-fit rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+        onClick={onRescan}
+        disabled={isStepPending}
+      >
+        {ui.rescanCube}
       </button>
       <button
         type="button"

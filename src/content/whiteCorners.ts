@@ -33,6 +33,10 @@ export const whiteCornersLesson = {
       text: 'puts the virtual cube back before the last apply. That includes corner demo or reorient.',
     },
     {
+      label: 'Re-scan cube',
+      text: "opens the scanner so you can sync the virtual cube with your physical one. We'll figure out where you are and pick up from there.",
+    },
+    {
       label: 'Reset corner session',
       text: "clears hold tracking and re-counts solved corners from the current cube. Your scramble doesn't change.",
     },

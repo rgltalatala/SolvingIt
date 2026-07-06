@@ -8,7 +8,6 @@ import { useCubeStore } from '../store/cubeStore';
 export function useScannerFlow() {
   const scannedFaces = useCubeStore((state) => state.scannedFaces);
   const setScannedFace = useCubeStore((state) => state.setScannedFace);
-  const setCubeState = useCubeStore((state) => state.setCubeState);
   const setValidationResult = useCubeStore(
     (state) => state.setValidationResult,
   );
@@ -43,9 +42,8 @@ export function useScannerFlow() {
         return;
       }
 
-      setCubeState(assembled);
+      useCubeStore.getState().completeLessonResync(assembled);
       clearValidationResult();
-      setAppPhase('ready');
     }
   };
 

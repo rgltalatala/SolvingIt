@@ -80,6 +80,7 @@ export function LearningCornersView() {
   const resetLessonSession = useCubeStore((state) => state.resetLessonSession);
   const undoLessonStep = useCubeStore((state) => state.undoLessonStep);
   const canUndoLesson = useCubeStore((state) => state.lessonHistory.length > 0);
+  const startLessonRescan = useCubeStore((state) => state.startLessonRescan);
 
   const [, startLessonTransition] = useTransition();
 
@@ -337,6 +338,7 @@ export function LearningCornersView() {
           canUndo={canUndo}
           isStepPending={isStepPending}
           onUndo={handleUndoLessonStep}
+          onRescan={startLessonRescan}
           onBack={leaveLesson}
           onResetTips={handleRestartLessonTips}
           extraActions={

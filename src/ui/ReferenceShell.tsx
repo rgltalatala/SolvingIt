@@ -3,6 +3,7 @@ import { LearningCrossView } from './LearningCrossView';
 import { LearningCornersView } from './LearningCornersView';
 import { LearningMiddleLayerView } from './LearningMiddleLayerView';
 import { LearningLastLayerView } from './LearningLastLayerView';
+import { LessonResyncView } from './LessonResyncView';
 import { LessonTopNav } from './LessonTopNav';
 import { NotationIntroPanel } from './NotationIntroPanel';
 import { ScanView } from './ScanView';
@@ -36,6 +37,9 @@ function LessonTabContent() {
   }
   if (appPhase === 'scanning' || appPhase === 'correcting') {
     return <ScanView />;
+  }
+  if (appPhase === 'lessonResync') {
+    return <LessonResyncView />;
   }
   if (appPhase === 'learning') {
     return <ActiveLessonView />;

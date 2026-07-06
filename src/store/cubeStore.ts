@@ -48,8 +48,20 @@ export interface CubeStore {
   ) => void;
   clearValidationResult: () => void;
 
-  appPhase: 'notation' | 'scanning' | 'correcting' | 'ready' | 'learning';
+  appPhase:
+    | 'notation'
+    | 'scanning'
+    | 'correcting'
+    | 'ready'
+    | 'learning'
+    | 'lessonResync';
   setAppPhase: (phase: CubeStore['appPhase']) => void;
+
+  /** Set while re-scanning from an active lesson; not persisted. */
+  scanReturnContext: { previousLesson: ActiveLessonId } | null;
+  startLessonRescan: () => void;
+  completeLessonResync: (cube: CubeState) => void;
+  clearScanReturnContext: () => void;
 
   /** Which bottom-layer lesson is active while `appPhase === 'learning'`. */
   activeLesson: ActiveLessonId;
@@ -163,8 +175,31 @@ export const useCubeStore = create<CubeStore>((set) => ({
 
   appPhase: initialAppPhase(),
   activeLesson: 'white-cross',
+  scanReturnContext: null,
   lessonHistory: [],
   ...lessonSessionReset(),
+
+  clearScanReturnContext: () => set({ scanReturnContext: null }),
+
+  startLessonRescan: () =>
+    set((state) => ({
+      scanReturnContext: { previousLesson: state.activeLesson },
+      scannedFaces: {},
+      validationIssues: [],
+      validationSuggestedFace: null,
+      appPhase: 'scanning',
+      lessonHistory: [],
+    })),
+
+  completeLessonResync: (cube) =>
+    set({
+      cubeState: cube,
+      scannedFaces: scannedFacesFromCube(cube),
+      validationIssues: [],
+      validationSuggestedFace: null,
+      appPhase: 'lessonResync',
+      lessonHistory: [],
+    }),
 
   undoLessonStep: () =>
     set((state) => {

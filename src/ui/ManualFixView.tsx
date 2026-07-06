@@ -28,7 +28,6 @@ export function ManualFixView({ assembledFromScanned }: ManualFixViewProps) {
   );
   const clearScannedFace = useCubeStore((state) => state.clearScannedFace);
   const setAppPhase = useCubeStore((state) => state.setAppPhase);
-  const setCubeState = useCubeStore((state) => state.setCubeState);
   const setScannedFacesFromCube = useCubeStore(
     (state) => state.setScannedFacesFromCube,
   );
@@ -140,11 +139,9 @@ export function ManualFixView({ assembledFromScanned }: ManualFixViewProps) {
                   setManualDraft(workingDraft);
                   return;
                 }
-                setScannedFacesFromCube(workingDraft);
-                setCubeState(workingDraft);
+                useCubeStore.getState().completeLessonResync(workingDraft);
                 clearValidationResult();
                 setManualDraft(null);
-                setAppPhase('ready');
               }}
             >
               {ui.revalidateCube}

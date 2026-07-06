@@ -9,8 +9,9 @@ import {
 import { recognizePermuteEdgesCase } from './permuteEdges/permuteEdgesCases';
 import { PERMUTE_EDGES_ALG } from './permuteEdges/permuteEdgesAlgs';
 import {
-  holdMatchesFaceColor,
+  holdIndexFromFrontColor,
   isPairAtBackRight,
+  findReorientToPlacePairAtWorldBackRight,
   reorientMovesForPermuteSetup,
 } from './permuteEdges/permuteHold';
 import { permutedEdgeSlots } from './permuteEdges/uLayerEdgePermuteModel';
@@ -38,15 +39,21 @@ function buildReturnToBlueStep(
 }
 
 function buildReorientForPermuteStep(
-  currentHoldIndex: CornerHoldIndex,
+  studentState: CubeState,
   targetHoldIndex: CornerHoldIndex,
+  options?: { syncHoldOnly?: boolean },
 ): LastLayerLessonStep {
+  const physicalHold = holdIndexFromFrontColor(
+    faceCentersFromCubeState(studentState).F,
+  );
   const faceLabel = formatHoldFaceLabel(targetHoldIndex);
   return {
     kind: 'reorient-hold',
     title: lastLayerSteps.faceSideTitle(faceLabel),
     body: lastLayerSteps.reorientEdges(faceLabel),
-    demoMoves: reorientMovesForPermuteSetup(currentHoldIndex, targetHoldIndex),
+    demoMoves: options?.syncHoldOnly
+      ? []
+      : reorientMovesForPermuteSetup(physicalHold, targetHoldIndex),
     targetHoldIndex,
   };
 }
@@ -72,7 +79,9 @@ export function computePermuteEdgesStep(
   options: LastLayerLessonStepOptions = {},
 ): LastLayerLessonStep {
   const currentHoldIndex = (options.currentHoldIndex ?? 0) as CornerHoldIndex;
-  const permuteCase = recognizePermuteEdgesCase(studentState, currentHoldIndex);
+  const frontColor = faceCentersFromCubeState(studentState).F;
+  const physicalHold = holdIndexFromFrontColor(frontColor);
+  const permuteCase = recognizePermuteEdgesCase(studentState, physicalHold);
 
   if (permuteCase.kind === 'solved') {
     if (currentHoldIndex !== 0) {
@@ -111,15 +120,31 @@ export function computePermuteEdgesStep(
   }
 
   if (permuteCase.kind === 'adjacent') {
-    const frontColor = faceCentersFromCubeState(studentState).F;
-    const cubeMatchesHold = holdMatchesFaceColor(frontColor, currentHoldIndex);
-    if (!cubeMatchesHold || !isPairAtBackRight(permuteCase.slots)) {
+    if (currentHoldIndex !== physicalHold) {
+      return buildReorientForPermuteStep(studentState, physicalHold, {
+        syncHoldOnly: true,
+      });
+    }
+
+    if (isPairAtBackRight(permuteCase.slots)) {
+      return buildPermuteEdgesStep('adjacent');
+    }
+
+    const setup = findReorientToPlacePairAtWorldBackRight(
+      studentState,
+      physicalHold,
+    );
+    if (setup && setup.demoMoves.length > 0) {
       return buildReorientForPermuteStep(
-        currentHoldIndex,
-        permuteCase.targetHoldIndex,
+        studentState,
+        setup.targetHoldIndex,
       );
     }
-    return buildPermuteEdgesStep('adjacent');
+
+    return buildReorientForPermuteStep(
+      studentState,
+      permuteCase.targetHoldIndex,
+    );
   }
 
   return buildPermuteEdgesStep('opposite');

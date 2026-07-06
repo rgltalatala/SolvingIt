@@ -156,6 +156,19 @@ function simulateLoop(
       continue;
     }
 
+    if (
+      step.kind === 'reorient-hold' &&
+      (!('demoMoves' in step) || !step.demoMoves?.length) &&
+      step.targetHoldIndex !== undefined &&
+      session.currentHoldIndex !== step.targetHoldIndex
+    ) {
+      session = {
+        ...session,
+        currentHoldIndex: step.targetHoldIndex as CornerHoldIndex,
+      };
+      continue;
+    }
+
     if (!('demoMoves' in step) || !step.demoMoves?.length) {
       return {
         lessonStepsSimulated,

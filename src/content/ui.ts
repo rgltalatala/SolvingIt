@@ -12,6 +12,38 @@ export const ui = {
   resetLessonTips: 'Reset lesson tips',
   applyExampleContinue: 'Apply on my cube & continue',
   revalidateCube: 'Re-validate cube',
+  rescanCube: 'Re-scan cube',
+} as const;
+
+export const lessonLabels: Record<
+  'white-cross' | 'white-corners' | 'middle-layer-edges' | 'last-layer',
+  string
+> = {
+  'white-cross': 'white cross',
+  'white-corners': 'white corners',
+  'middle-layer-edges': 'middle layer edges',
+  'last-layer': 'last layer',
+};
+
+export const resyncCopy = {
+  determiningTitle: 'Figuring out where you are…',
+  determiningBody:
+    "We're matching your scan to the lesson. This usually takes a moment.",
+  confirmTitle: 'Ready to pick up again',
+  confirmBody: "Your scan is in. Here's the step we'll start from.",
+  resumeLesson: 'Resume lesson',
+  initialConfirmTitle: 'Ready to start',
+  initialConfirmBody:
+    "Your scan is in. Here's the lesson we'll begin with based on what's already done on your cube.",
+  startLesson: 'Start lesson',
+  lessonChangedNote: (previous: string, next: string) =>
+    `Your cube is further along than ${previous}, so we'll pick up in ${next}.`,
+  initialLessonNote: (lesson: string) =>
+    `Based on your scan, we'll start with ${lesson}.`,
+  lessonBehindNote: (lesson: string) =>
+    `Your cube isn't quite where we left off. We'll start from what we see in ${lesson}.`,
+  holdReminder:
+    'Hold white on bottom and yellow on top, same as the lesson diagrams.',
 } as const;
 
 export const lessonUnavailable = {
@@ -25,7 +57,7 @@ export const cubeOverview = {
     'Scan and confirm all six faces first. We need a full picture before we can build your virtual cube.',
   readyTitle: 'Cube ready',
   readyBody:
-    'Your virtual cube matches your scanned scramble. Drag to rotate and take a look around.',
+    'Your virtual cube matches your scanned scramble. Drag to rotate and take a look around. You can also pick a lesson below. If you drift off during a lesson, use Re-scan cube on the lesson page to sync back up.',
   startLessonWhiteCross: 'Start lesson: White cross',
   startLessonWhiteCorners: 'Start lesson: White corners',
   startLessonMiddleLayer: 'Start lesson: Middle layer edges',

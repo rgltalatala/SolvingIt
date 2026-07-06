@@ -76,6 +76,7 @@ export function LearningLastLayerView() {
   const resetLessonSession = useCubeStore((state) => state.resetLessonSession);
   const undoLessonStep = useCubeStore((state) => state.undoLessonStep);
   const canUndoLesson = useCubeStore((state) => state.lessonHistory.length > 0);
+  const startLessonRescan = useCubeStore((state) => state.startLessonRescan);
 
   const [, startLessonTransition] = useTransition();
 
@@ -207,10 +208,15 @@ export function LearningLastLayerView() {
         });
 
   const isReorientStep = step?.kind === 'reorient-hold';
+  const isHoldSyncStep =
+    isReorientStep &&
+    demoMoves.length === 0 &&
+    step.targetHoldIndex !== undefined &&
+    step.targetHoldIndex !== currentHoldIndex;
   const canApplyDemo =
     step !== null &&
     !isStepPending &&
-    demoMoves.length > 0 &&
+    (demoMoves.length > 0 || isHoldSyncStep) &&
     step.kind !== 'complete' &&
     step.kind !== 'prerequisite' &&
     step.kind !== 'intro';
@@ -260,7 +266,9 @@ export function LearningLastLayerView() {
         step.kind === 'orient-corners'
       ) {
         advanceAfterStep(step, studentFrame);
-        applyLessonDemoMoves(step.demoMoves);
+        if (step.demoMoves.length > 0) {
+          applyLessonDemoMoves(step.demoMoves);
+        }
       }
     });
   };
@@ -340,6 +348,7 @@ export function LearningLastLayerView() {
           canUndo={canUndo}
           isStepPending={isStepPending}
           onUndo={handleUndoLessonStep}
+          onRescan={startLessonRescan}
           onBack={leaveLesson}
           onResetTips={handleRestartLessonTips}
         />

@@ -98,13 +98,14 @@ export function useLastLayerLessonStep(studentFrame: CubeState | null) {
     const cube = useCubeStore.getState().cubeState;
     const frame = cube ? cubeStateToStudentFrame(cube) : _frame;
     const current = sessionRef.current;
-    return getLastLayerLessonStepAsync(frame, {
+    const result = await getLastLayerLessonStepAsync(frame, {
       currentHoldIndex: current.currentHoldIndex,
       inOrientCornersPhase: current.inOrientCornersPhase,
       seenIntros: current.seenIntros,
       hasAcknowledgedOrientEdgesComplete:
         current.hasAcknowledgedOrientEdgesComplete,
     });
+    return result;
   }, []);
 
   const isComplete = useCallback(

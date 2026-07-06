@@ -40,7 +40,7 @@ function isPrerequisiteIncomplete(studentState: CubeState): boolean {
 }
 
 /** Orient-corners may temporarily disturb F2L; skip that gate once the sub-lesson has started. */
-function isOrientCornersPhase(
+export function isOrientCornersPhase(
   studentState: CubeState,
   options: LastLayerLessonStepOptions,
 ): boolean {

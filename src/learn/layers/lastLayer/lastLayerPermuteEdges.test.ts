@@ -7,6 +7,7 @@ import {
   type CubeState,
   type Move,
 } from '../../../cube/cubeState';
+import { cubeJsStringToCubeState } from '../../../cube/cubeStateToFacelets';
 import { parseFaceTurnAlgToMoves } from '../../../cube/parseFaceTurnAlg';
 import {
   LAST_LAYER_PAST_ORIENT_EDGES,
@@ -18,6 +19,7 @@ import {
   holdIndexWherePairIsBackRight,
   isEdgesFullyPermuted,
   isPairAtBackRight,
+  isPairAtHoldBackRight,
   isVerifiedPermuteEdgesDemo,
   isYellowCrossComplete,
   recognizePermuteEdgesCase,
@@ -123,12 +125,21 @@ describe('last layer permute edges model', () => {
     expect(isPairAtBackRight(['UF', 'UL'])).toBe(false);
   });
 
+  it('detects back+right U relative to each hold', () => {
+    expect(isPairAtHoldBackRight(['UB', 'UR'], 0)).toBe(true);
+    expect(isPairAtHoldBackRight(['UL', 'UB'], 1)).toBe(true);
+    expect(isPairAtHoldBackRight(['UF', 'UL'], 2)).toBe(true);
+    expect(isPairAtHoldBackRight(['UR', 'UF'], 3)).toBe(true);
+    expect(isPairAtHoldBackRight(['UB', 'UR'], 3)).toBe(false);
+  });
+
   it('picks hold where aligned pair should sit at back+right U', () => {
     for (let hold = 0 as 0 | 1 | 2 | 3; hold < 4; hold += 1) {
       const slots = backRightULayerSlots(hold);
       expect(holdIndexWherePairIsBackRight(slots, 0)).toBe(hold);
     }
     expect(holdIndexWherePairIsBackRight(['UB', 'UR'], 0)).toBe(0);
+    expect(holdIndexWherePairIsBackRight(['UB', 'UR'], 3)).toBe(0);
     expect(holdIndexWherePairIsBackRight(['UF', 'UL'], 0)).toBe(2);
   });
 });
@@ -164,6 +175,74 @@ describe('last layer permute edges planner', () => {
     current = applyMoves(current, reorient.demoMoves);
     const permute = getLastLayerLessonStep(current, { ...AFTER_ORIENT_EDGES, currentHoldIndex: hold });
     expect(permute).toMatchObject({
+      kind: 'permute-edges',
+      permuteCase: 'adjacent',
+    });
+  });
+
+  it('syncs session hold without cube rotation when cube already matches target', () => {
+    const student = adjacentPermuteStudent();
+    const step = getLastLayerLessonStep(student, {
+      ...AFTER_ORIENT_EDGES,
+      currentHoldIndex: 3,
+    });
+    expect(step.kind).toBe('reorient-hold');
+    if (step.kind !== 'reorient-hold') return;
+    expect(step.demoMoves).toEqual([]);
+    expect(step.targetHoldIndex).toBe(0);
+    const permute = getLastLayerLessonStep(student, {
+      ...AFTER_ORIENT_EDGES,
+      currentHoldIndex: 0,
+    });
+    expect(permute).toMatchObject({
+      kind: 'permute-edges',
+      permuteCase: 'adjacent',
+    });
+  });
+
+  it('reaches permute-edges from logged desynced session without y/y-prime loop', () => {
+    const student = cubeJsStringToCubeState(
+      'RDLDDDBDDFFDFFFFFFLBRRRRRRRUUUUUUUUUBRDBBBBBBFLDLLLLLL',
+    );
+    const sync = getLastLayerLessonStep(student, {
+      ...AFTER_ORIENT_EDGES,
+      currentHoldIndex: 3,
+    });
+    expect(sync).toMatchObject({
+      kind: 'reorient-hold',
+      demoMoves: [],
+      targetHoldIndex: 1,
+    });
+    const permute = getLastLayerLessonStep(student, {
+      ...AFTER_ORIENT_EDGES,
+      currentHoldIndex: 1,
+    });
+    expect(permute).toMatchObject({
+      kind: 'permute-edges',
+      permuteCase: 'adjacent',
+    });
+  });
+
+  it('reaches permute-edges from hold-2 green-front loop cube without y/y-prime oscillation', () => {
+    const student = cubeJsStringToCubeState(
+      'BDRDDDDDLFLDLLLLLLFFDFFFFFFUUUUUUUUULBRRRRRRRBRDBBBBBB',
+    );
+    const reorient = getLastLayerLessonStep(student, {
+      ...AFTER_ORIENT_EDGES,
+      currentHoldIndex: 2,
+    });
+    expect(reorient).toMatchObject({
+      kind: 'reorient-hold',
+      demoMoves: ["y'"],
+      targetHoldIndex: 1,
+    });
+    const after = applyMoves(student, reorient.demoMoves);
+    expect(
+      getLastLayerLessonStep(after, {
+        ...AFTER_ORIENT_EDGES,
+        currentHoldIndex: 1,
+      }),
+    ).toMatchObject({
       kind: 'permute-edges',
       permuteCase: 'adjacent',
     });

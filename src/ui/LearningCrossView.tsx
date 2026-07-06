@@ -44,6 +44,7 @@ export function LearningCrossView() {
   const resetLessonSession = useCubeStore((state) => state.resetLessonSession);
   const undoLessonStep = useCubeStore((state) => state.undoLessonStep);
   const canUndoLesson = useCubeStore((state) => state.lessonHistory.length > 0);
+  const startLessonRescan = useCubeStore((state) => state.startLessonRescan);
 
   const [, startLessonTransition] = useTransition();
 
@@ -237,6 +238,7 @@ export function LearningCrossView() {
           canUndo={canUndoLesson}
           isStepPending={isStepPending}
           onUndo={handleUndoLessonStep}
+          onRescan={startLessonRescan}
           onBack={leaveLesson}
           onResetTips={handleRestartLessonTips}
         />
