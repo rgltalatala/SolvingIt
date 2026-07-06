@@ -16,6 +16,8 @@ import {
 } from '../../learn/studentHold';
 import { resolveVisibleDemo, type DemoSnapshot } from './lessonDemo';
 
+const DEFAULT_INITIAL_HOLD = noneHold();
+
 export type DemoExpansionResult = {
   steps: DemoStep[];
   instructions: Instruction[];
@@ -41,7 +43,7 @@ export function useLessonDemoPipeline({
   isStepPending,
   stepKind,
   snapshotKeySuffix = '',
-  initialHold = noneHold(),
+  initialHold = DEFAULT_INITIAL_HOLD,
   expandDemo,
 }: UseLessonDemoPipelineOptions) {
   const showAvoidBackToggle = useMemo(
