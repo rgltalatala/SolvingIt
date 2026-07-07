@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { parseFaceTurnAlgToMoves } from '../cube/parseFaceTurnAlg';
+import { generateRandom333Scramble } from '../cube/random333Scramble';
 import { prepareFreshLessonStart } from '../learn/lessonSessionPersistence';
 import { practiceBar as practiceBarCopy } from '../content/ui';
 import { useCubeStore } from '../store/cubeStore';
-import { randomScrambleForEvent } from 'cubing/scramble';
 
 /**
- * Skip scanning: fetch a WCA random 3×3 scramble and jump straight into the white-cross lesson (practice).
+ * Skip scanning: apply a random WCA-style 3×3 scramble and jump into the white-cross lesson (practice).
  */
 export function RandomScrambleLessonBar() {
   const loadScrambledCubeIntoLesson = useCubeStore(
@@ -16,12 +16,11 @@ export function RandomScrambleLessonBar() {
   const [error, setError] = useState<string | null>(null);
   const [lastAlg, setLastAlg] = useState<string | null>(null);
 
-  const run = async () => {
+  const run = () => {
     setError(null);
     setBusy(true);
     try {
-      const alg = await randomScrambleForEvent('333');
-      const algStr = alg.toString().replace(/\u2032/g, "'");
+      const algStr = generateRandom333Scramble();
       const moves = parseFaceTurnAlgToMoves(algStr);
       prepareFreshLessonStart('white-cross');
       loadScrambledCubeIntoLesson(moves);
