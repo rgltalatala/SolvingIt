@@ -236,7 +236,7 @@ describe('last layer permute edges planner', () => {
       demoMoves: ["y'"],
       targetHoldIndex: 1,
     });
-    const after = applyMoves(student, reorient.demoMoves);
+    const after = applyMoves(student, expectStepDemoMoves(reorient));
     expect(
       getLastLayerLessonStep(after, {
         ...AFTER_ORIENT_EDGES,

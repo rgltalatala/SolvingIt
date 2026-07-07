@@ -3,6 +3,7 @@ import {
   cloneCubeState,
   cubeStateToStudentFrame,
   type CubeState,
+  type Move,
 } from '../../../../cube/cubeState';
 import { getLessonExecutionMoves, noneHold } from '../../../studentHold';
 import {
@@ -29,7 +30,7 @@ import { CORNER_ORDER } from './types';
 
 function applyStepDemo(
   storage: CubeState,
-  demoMoves: readonly string[],
+  demoMoves: readonly Move[],
 ): CubeState {
   const { moves } = getLessonExecutionMoves([...demoMoves], false, noneHold());
   return applyMovesInStudentHold(storage, moves);

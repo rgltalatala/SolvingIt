@@ -29,6 +29,13 @@ import {
 
 const AFTER_ALL_INTROS = { seenIntros: ALL_LAST_LAYER_INTROS_SEEN } as const;
 
+function requireDemoMoves(step: { kind: string; demoMoves?: Move[] }): Move[] {
+  if ('demoMoves' in step && step.demoMoves?.length) {
+    return step.demoMoves;
+  }
+  throw new Error(`Expected demoMoves on ${step.kind}`);
+}
+
 function invertMoves(moves: Move[]): Move[] {
   const inverted: Move[] = [];
   for (let i = moves.length - 1; i >= 0; i -= 1) {
@@ -152,11 +159,10 @@ describe('last layer orient edges algorithms', () => {
     ];
     for (const student of cases) {
       const step = getLastLayerLessonStep(student, AFTER_ALL_INTROS);
-      expect(step.demoMoves?.length).toBeGreaterThan(0);
+      const demoMoves = requireDemoMoves(step);
+      expect(demoMoves.length).toBeGreaterThan(0);
       expect(isLastLayerLessonStateValid(student)).toBe(true);
-      if (step.demoMoves) {
-        expect(isVerifiedOrientEdgesDemo(student, step.demoMoves)).toBe(true);
-      }
+      expect(isVerifiedOrientEdgesDemo(student, demoMoves)).toBe(true);
     }
   });
 
@@ -296,8 +302,7 @@ describe('last layer lesson simulation', () => {
       const step = getLastLayerLessonStep(current, session);
       if (step.kind === 'complete') break;
       if (step.kind === 'intro') continue;
-      expect(step.demoMoves?.length).toBeGreaterThan(0);
-      current = applyMoves(current, step.demoMoves!);
+      current = applyMoves(current, requireDemoMoves(step));
       const after = countYellowEdgesOnU(current);
       expect(after >= before || isYellowCrossComplete(current)).toBe(true);
       before = after;

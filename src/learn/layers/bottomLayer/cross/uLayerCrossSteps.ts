@@ -118,6 +118,8 @@ export function tryULayerAlignStepForCrossId(
 
   if (!best) return null;
 
+  const { demo, turnFace } = best as { demo: Move[]; turnFace: Face };
+
   const label = `${formatColor(partner)} edge`;
 
   return {
@@ -126,8 +128,8 @@ export function tryULayerAlignStepForCrossId(
     edgeLabel: label,
     partnerColor: partner,
     body: whiteCrossSteps.uLayerAlign(formatColor(partner)),
-    face: best.turnFace,
-    demoMoves: best.demo,
+    face: turnFace,
+    demoMoves: demo,
   };
 }
 

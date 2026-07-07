@@ -7,6 +7,6 @@ export function demoChangesState(
   demo: readonly Move[],
 ): boolean {
   if (demo.length === 0) return false;
-  const after = applyMoves(state, demo);
+  const after = applyMoves(state, [...demo]);
   return JSON.stringify(after) !== JSON.stringify(state);
 }

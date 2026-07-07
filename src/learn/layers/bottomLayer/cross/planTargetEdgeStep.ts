@@ -30,7 +30,6 @@ import {
 } from './uLayerCrossSteps';
 import {
   edgeAlignedToSideCenter,
-  faceForWhiteOnEdge,
   findEdgeWithColors,
 } from '../shared/pieceQueries';
 import type { CrossEdgeId, WhiteCrossLessonStep } from './types';

@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import type { Group } from 'three';
 import type { CubeState, Move } from '../cube/cubeState';
+import type { DisplayCubeState } from './cubeGeometry';
 import type { CubeAnatomyHighlight } from './cubeAnatomy';
 import { Cubie } from './Cubie';
 import { cubieDefinitions, getCubieFaceColors } from './cubeGeometry';
@@ -27,7 +28,7 @@ export type CubeMoveAnimation = {
 };
 
 type AnimatedCubeMeshProps = {
-  cubeState: CubeState;
+  cubeState: CubeState | DisplayCubeState;
   animation: CubeMoveAnimation | null;
   anatomyHighlight?: CubeAnatomyHighlight | null;
 };
@@ -59,7 +60,7 @@ function CubieAt({
   position,
   anatomyHighlight = null,
 }: {
-  cubeState: CubeState;
+  cubeState: CubeState | DisplayCubeState;
   position: (typeof cubieDefinitions)[0]['position'];
   anatomyHighlight?: CubeAnatomyHighlight | null;
 }) {

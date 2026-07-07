@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import type { Group } from 'three';
 import type { CubeState, Face } from '../cube/cubeState';
+import type { DisplayCubeState } from './cubeGeometry';
 import { isWholeCubeRotation } from '../cube/cubeState';
 import type { CubeAnatomyHighlight } from './cubeAnatomy';
 import { AnimatedCubeMesh, type CubeMoveAnimation } from './AnimatedCubeMesh';
@@ -19,7 +20,7 @@ import {
 export type { CubeMoveAnimation, LessonCameraView };
 
 export interface CubeViewProps {
-  cubeState: CubeState;
+  cubeState: CubeState | DisplayCubeState;
   /** Optional radians [x,y,z] applied to the assembled cube (e.g. π on X = flip for white-down / yellow-up hold). */
   meshRotation?: [number, number, number];
   /** Outer frame height/layout (default tall preview). */

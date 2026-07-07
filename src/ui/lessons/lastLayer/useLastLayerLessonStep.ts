@@ -16,7 +16,6 @@ import {
 } from '../../../learn/layers/lastLayer';
 import type {
   LastLayerLessonStep,
-  SeenLastLayerIntros,
 } from '../../../learn/layers/lastLayer/types';
 import { markLastLayerIntroSeen } from '../../../learn/layers/lastLayer/introSteps';
 import { useCubeStore } from '../../../store/cubeStore';

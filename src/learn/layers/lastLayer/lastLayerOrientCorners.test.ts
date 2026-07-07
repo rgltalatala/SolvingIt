@@ -29,6 +29,13 @@ import type { LastLayerLessonStepOptions } from './types';
 
 const AFTER_ORIENT_EDGES = LAST_LAYER_PAST_ORIENT_EDGES;
 
+function requireDemoMoves(step: { kind: string; demoMoves?: Move[] }): Move[] {
+  if ('demoMoves' in step && step.demoMoves?.length) {
+    return step.demoMoves;
+  }
+  throw new Error(`Expected demoMoves on ${step.kind}`);
+}
+
 function advanceLessonSessionAfterStep(
   step: ReturnType<typeof getLastLayerLessonStep>,
   session: LastLayerLessonStepOptions,
@@ -239,17 +246,20 @@ describe('last layer orient corners model', () => {
   it('uses a single U turn to finish when all remaining corners are oriented on U', () => {
     let current = cloneCubeState(twoUnsolvedOrientStudent());
     const session = { ...AFTER_ORIENT_EDGES, inOrientCornersPhase: true };
-    current = applyMoves(current, getLastLayerLessonStep(current, session).demoMoves!);
-    current = applyMoves(current, getLastLayerLessonStep(current, session).demoMoves!);
-    current = applyMoves(current, getLastLayerLessonStep(current, session).demoMoves!);
+    current = applyMoves(current, requireDemoMoves(getLastLayerLessonStep(current, session)));
+    current = applyMoves(current, requireDemoMoves(getLastLayerLessonStep(current, session)));
+    current = applyMoves(current, requireDemoMoves(getLastLayerLessonStep(current, session)));
     const finishAlign = getLastLayerLessonStep(current, session);
     expect(finishAlign).toMatchObject({
       kind: 'align-u',
       subLesson: 'orient-corners',
     });
-    expect(finishAlign.demoMoves?.length).toBe(1);
-    expect(finishAlign.demoMoves?.[0]).not.toBe('U');
-    expect(isLastLayerComplete(applyMoves(current, finishAlign.demoMoves!))).toBe(
+    if (finishAlign.kind !== 'align-u') {
+      throw new Error('expected align-u');
+    }
+    expect(finishAlign.demoMoves.length).toBe(1);
+    expect(finishAlign.demoMoves[0]).not.toBe('U');
+    expect(isLastLayerComplete(applyMoves(current, finishAlign.demoMoves))).toBe(
       true,
     );
   });
@@ -324,15 +334,15 @@ describe('last layer orient corners planner', () => {
 
     const firstOrient = getLastLayerLessonStep(current, session);
     expect(firstOrient.kind).toBe('orient-corners');
-    current = applyMoves(current, firstOrient.demoMoves!);
+    current = applyMoves(current, requireDemoMoves(firstOrient));
 
     const firstAlign = getLastLayerLessonStep(current, session);
     expect(firstAlign.kind).toBe('align-u');
-    current = applyMoves(current, firstAlign.demoMoves!);
+    current = applyMoves(current, requireDemoMoves(firstAlign));
 
     const secondOrient = getLastLayerLessonStep(current, session);
     expect(secondOrient.kind).toBe('orient-corners');
-    current = applyMoves(current, secondOrient.demoMoves!);
+    current = applyMoves(current, requireDemoMoves(secondOrient));
 
     const remainingAligns: Move[][] = [];
     for (let i = 0; i < 4; i += 1) {
@@ -388,9 +398,10 @@ describe('last layer orient corners simulation', () => {
       });
       if (step.kind === 'intro') continue;
       if (step.kind === 'complete') break;
-      expect(step.demoMoves?.length).toBeGreaterThan(0);
+      const demoMoves = requireDemoMoves(step);
+      expect(demoMoves.length).toBeGreaterThan(0);
       const before = countSolvedCorners(current);
-      current = applyMoves(current, step.demoMoves!);
+      current = applyMoves(current, demoMoves);
       if (step.kind === 'orient-corners') {
         expect(countSolvedCorners(current)).toBeGreaterThanOrEqual(before);
       }

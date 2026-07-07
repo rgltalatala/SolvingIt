@@ -138,7 +138,9 @@ describe('white cross lesson', () => {
       expect(asyncStep.title).toBe(sync.title);
       if ('demoMoves' in sync && sync.demoMoves?.length) {
         expect('demoMoves' in asyncStep && asyncStep.demoMoves).toBeTruthy();
-        expect(asyncStep.demoMoves).toEqual(sync.demoMoves);
+        if ('demoMoves' in asyncStep) {
+          expect(asyncStep.demoMoves).toEqual(sync.demoMoves);
+        }
       }
     }
   });
@@ -177,8 +179,10 @@ describe('white cross lesson', () => {
 
     const step = crossLessonStep(student);
     expect(step.kind).toBe('rotate-bottom');
-    expect(step.demoMoves).toEqual(['D2']);
-    expect(isVerifiedSlotDemo(student, targetId!, step.demoMoves!)).toBe(true);
+    if (step.kind === 'rotate-bottom') {
+      expect(step.demoMoves).toEqual(['D2']);
+      expect(isVerifiedSlotDemo(student, targetId!, step.demoMoves!)).toBe(true);
+    }
   });
 
   it('rotate-bottom prefers D-only over align when a quarter D turn fully solves the edge', () => {
@@ -195,7 +199,9 @@ describe('white cross lesson', () => {
 
     const step = crossLessonStep(student);
     expect(step.kind).toBe('rotate-bottom');
-    expect(step.demoMoves).toEqual(["D'"]);
+    if (step.kind === 'rotate-bottom') {
+      expect(step.demoMoves).toEqual(["D'"]);
+    }
   });
 
   it('middle-layer align-to-center uses exactly one side quarter turn', () => {
@@ -311,7 +317,7 @@ describe('white cross lesson', () => {
     for (const m of candidates) {
       const broken = applyMove(student, m);
       const step = crossLessonStep(broken);
-      if (!step.demoMoves?.length) continue;
+      if (!('demoMoves' in step) || !step.demoMoves?.length) continue;
       if (step.kind !== 'insert-double' && step.kind !== 'rotate-bottom') {
         continue;
       }

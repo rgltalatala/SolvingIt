@@ -64,7 +64,6 @@ function expandReorientDemoForPipeline(moves: Move[]) {
 
 export function LearningCornersView() {
   const cubeState = useCubeStore((state) => state.cubeState);
-  const setAppPhase = useCubeStore((state) => state.setAppPhase);
   const setActiveLesson = useCubeStore((state) => state.setActiveLesson);
   const applyLessonDemoMoves = useCubeStore(
     (state) => state.applyLessonDemoMoves,

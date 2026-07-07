@@ -10,6 +10,7 @@ export {
   type DemoCache,
 } from './demoCache';
 export { normalizeLessonDemoMovesInStep } from './normalizeDemoStep';
+export { stepHasDemoMoves } from './stepDemoMoves';
 export {
   lessonStepHasDemo,
   pickBestPermuteInTier,

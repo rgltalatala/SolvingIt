@@ -93,7 +93,6 @@ export function FaceAnatomyLabels({ highlightedFace }: FaceAnatomyLabelsProps) {
                 outlineWidth={0.02}
                 outlineColor="#111827"
                 fillOpacity={isHighlighted ? 1 : 0.55}
-                depthTest={false}
                 renderOrder={11}
               >
                 {face}

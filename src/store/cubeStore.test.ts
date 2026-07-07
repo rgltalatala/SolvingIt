@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   applyMovesInStudentHold,
   createSolvedCubeState,
-  cubeStateToStudentFrame,
   type Move,
 } from '../cube/cubeState';
 import {

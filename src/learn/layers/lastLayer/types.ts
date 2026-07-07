@@ -1,5 +1,5 @@
 import type { Move } from '../../../cube/cubeState';
-import type { CornerHoldIndex } from '../../bottomLayer/corners/cornerHold';
+import type { CornerHoldIndex } from '../bottomLayer/corners/cornerHold';
 
 export const LAST_LAYER_SUB_LESSONS = [
   'orient-edges',

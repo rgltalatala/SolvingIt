@@ -1,4 +1,4 @@
-import type { CubeState, Move } from '../../cube/cubeState';
+import type { Move } from '../../cube/cubeState';
 import type { DemoCache } from './demoCache';
 
 export type VerifiedDemoSearchTier = {

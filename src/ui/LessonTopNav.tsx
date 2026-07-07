@@ -4,7 +4,6 @@ import {
   useLessonSessionStore,
   type LearningSection,
 } from '../store/lessonSessionStore';
-import { useCubeStore } from '../store/cubeStore';
 
 const SECTIONS: { id: LearningSection; label: string }[] = [
   { id: 'lesson', label: learningNav.lessonTab },

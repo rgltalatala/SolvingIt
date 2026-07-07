@@ -83,9 +83,9 @@ function searchTwistDemos(
 }
 
 function buildTwistedInSlotStep(
-  studentState: CubeState,
+  _studentState: CubeState,
   cornerId: CornerSlotId,
-  whiteOnFace: Face,
+  _whiteOnFace: Face,
   demo: Move[],
 ): WhiteCornersLessonStep {
   return {

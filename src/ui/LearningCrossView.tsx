@@ -29,7 +29,6 @@ import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
 
 export function LearningCrossView() {
   const cubeState = useCubeStore((state) => state.cubeState);
-  const setAppPhase = useCubeStore((state) => state.setAppPhase);
   const applyLessonDemoMoves = useCubeStore(
     (state) => state.applyLessonDemoMoves,
   );

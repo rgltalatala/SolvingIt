@@ -1,6 +1,6 @@
 import type { CubeState } from '../../../../cube/cubeState';
 import { whiteCornersSteps, formatCornerLabel } from '../../../../content/whiteCorners';
-import { normalizeLessonDemoMovesInStep } from '../../../lessonCore';
+import { normalizeLessonDemoMovesInStep, stepHasDemoMoves } from '../../../lessonCore';
 import { isWhiteCrossComplete } from '../cross/crossSlotModel';
 import {
   formatHoldFaceLabel,
@@ -129,7 +129,7 @@ function tryInteractiveCornerSolveStep(
     currentHoldIndex,
     solvedCornerIds,
   );
-  if (uLayerStep?.demoMoves?.length) return uLayerStep;
+  if (stepHasDemoMoves(uLayerStep)) return uLayerStep;
 
   const wrongDStep = tryFrdWrongDLayerExtract(
     studentState,
@@ -137,7 +137,7 @@ function tryInteractiveCornerSolveStep(
     currentHoldIndex,
     solvedCornerIds,
   );
-  if (wrongDStep?.demoMoves?.length) return wrongDStep;
+  if (stepHasDemoMoves(wrongDStep)) return wrongDStep;
 
   const caseSteps = [
     tryFrdTwistedInSlot(
@@ -148,7 +148,7 @@ function tryInteractiveCornerSolveStep(
     ),
   ];
   for (const step of caseSteps) {
-    if (step?.demoMoves?.length) return normalizeLessonDemoMovesInStep(step);
+    if (stepHasDemoMoves(step)) return normalizeLessonDemoMovesInStep(step);
   }
 
   const fixed = tryDirectSolveStepForCornerId(
@@ -157,7 +157,7 @@ function tryInteractiveCornerSolveStep(
     currentHoldIndex,
     solvedCornerIds,
   );
-  if (fixed?.demoMoves?.length) return normalizeLessonDemoMovesInStep(fixed);
+  if (stepHasDemoMoves(fixed)) return normalizeLessonDemoMovesInStep(fixed);
 
   return null;
 }
@@ -210,7 +210,7 @@ function computeWhiteCornerLessonStepSync(
     currentHoldIndex,
     solvedCornerIds,
   );
-  if (direct?.demoMoves?.length) return direct;
+  if (direct) return direct;
 
   return buildSolveCornerPlaceholderStep(
     studentState,
@@ -274,7 +274,7 @@ export async function getWhiteCornerLessonStepAsync(
     currentHoldIndex,
     solvedCornerIds,
   );
-  if (direct?.demoMoves?.length) return direct;
+  if (direct) return direct;
 
   return buildSolveCornerPlaceholderStep(
     studentState,
