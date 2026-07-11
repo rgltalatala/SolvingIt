@@ -1,19 +1,11 @@
-import type { CornerSlotId } from '../learn/layers/bottomLayer/corners/types';
+import type { Color } from '../cube/cubeState';
+import { whiteCornerIdentity } from './pieceIdentity';
 
-export const CORNER_LABELS: Record<CornerSlotId, string> = {
-  FRD: 'Front–right corner',
-  BDR: 'Back–right corner',
-  BLD: 'Back–left corner',
-  FDL: 'Front–left corner',
-};
-
-export function formatCornerLabel(id: CornerSlotId): string {
-  return CORNER_LABELS[id];
-}
+export { whiteCornerIdentity };
 
 export const whiteCornersLesson = {
   title: 'Lesson: White corners',
-  subtitle: 'Solve every white corner into the front-right-bottom slot.',
+  subtitle: 'Solve every white corner into FRD.',
   defaultStepTitle: 'White corners',
   progress: (solved: number) =>
     `Progress: ${solved}/4 white corners in place (white on D, side stickers matching their centers).`,
@@ -47,11 +39,11 @@ export const whiteCornersLesson = {
 export const whiteCornersSteps = {
   intro: {
     title: 'How this lesson works',
-    body: `For every white corner, we'll use the same target position: the front-right-bottom corner (FRD). Keeping the target in one place means you only need to learn one set of cases.
+    body: `Each white corner has a permanent identity from its stickers, like the White–Blue–Red Corner. We'll always insert into the same target position: FRD.
 
-If the corner isn't already ready to insert, we'll first move it to the top layer at the front-right position (URF). From there, you'll use the algorithm that matches your case to insert it into FRD.
+If the corner isn't already ready to insert, we'll first bring it to URF on the top layer. From there, you'll use the algorithm that matches your case to insert it into FRD.
 
-Once a corner is solved, simply rotate the entire cube so the next unsolved corner becomes your new target. You'll repeat the same process until the whole white face is complete.`,
+Once a corner is solved, rotate the entire cube so the next unsolved corner's home slot becomes FRD. Repeat until every white corner is solved.`,
   },
   complete: {
     title: 'White corners complete',
@@ -69,17 +61,17 @@ Once a corner is solved, simply rotate the entire cube so the next unsolved corn
   reorient: (faceLabel: string, cornerLabel: string, skipNote: string) =>
     `Turn the whole cube so ${faceLabel} is toward you. White stays on bottom, yellow on top. You're setting up to solve the ${cornerLabel}.${skipNote}`,
   reorientSkipAlignNote:
-    " The next piece is on the top layer; we'll line it up above the front-right slot before inserting.",
-  placeholder: (colorA: string, colorB: string) =>
-    `Slot the white–${colorA}–${colorB} corner: white on the bottom, side colors matching their centers. Line it up on your own, or reset the scramble and try again.`,
+    " The next piece is on the top layer; we'll line it up at URF before inserting into FRD.",
+  placeholder: (corner: string) =>
+    `Slot the ${corner}: white on the bottom, side colors matching their centers. Line it up on your own, or reset the scramble and try again.`,
   twisted: (corner: string) =>
-    `The ${corner.toLowerCase()} is in the front-right slot but twisted. The demo orients white onto the bottom without disturbing your cross or corners you've already placed.`,
+    `The ${corner} is in FRD but twisted. The demo orients white onto the bottom without disturbing your cross or corners you've already placed.`,
   wrongDSlot: (corner: string) =>
-    `The ${corner.toLowerCase()} is in the wrong bottom corner. The demo lifts it to the top layer, lines it up above the front-right slot (URF), then runs the matching insert. Your cross and solved corners stay put.`,
+    `The ${corner} is in the wrong bottom slot. The demo lifts it to the top layer, brings it to URF, then runs the matching insert into FRD. Your cross and solved corners stay put.`,
   directSolve: (corner: string) =>
-    `Slot the ${corner.toLowerCase()} with the demo. Your white cross and any corners you've already solved stay put.`,
+    `Slot the ${corner} into FRD with the demo. Your white cross and any corners you've already solved stay put.`,
   uLayer: (corner: string) =>
-    `The ${corner.toLowerCase()} is on the top layer. The demo lines it up above the front-right slot and inserts it with white on the bottom, without touching your cross or solved corners.`,
+    `The ${corner} is on the top layer. The demo brings it to URF and inserts it into FRD with white on the bottom, without touching your cross or solved corners.`,
   uLayerAlignHabitNote:
-    "Some U turns might look redundant, like U then U' or U2 then U. That's on purpose. We're building the habit of lining up every top-layer corner above the front-right slot (URF) before you insert. Check how white is facing, then run the matching insert. Once you're comfortable, skip the extra U turns and go straight to the insert.",
+    "Some U turns might look redundant, like U then U' or U2 then U. That's on purpose. We're building the habit of lining up every top-layer corner at URF before you insert into FRD. Check how white is facing, then run the matching insert. Once you're comfortable, skip the extra U turns and go straight to the insert.",
 } as const;

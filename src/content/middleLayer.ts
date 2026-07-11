@@ -35,13 +35,13 @@ export const middleLayerLesson = {
 export const middleLayerSteps = {
   intro: {
     title: 'How this lesson works',
-    body: `Now we'll solve the four edges in the middle layer. The easiest way to recognize these pieces is that they don't have a yellow sticker. Any edge with yellow belongs in the last layer, so we'll leave those alone for now.
+    body: `Now we'll solve the four middle-layer edges. Each one has a permanent identity from its two side colors, like the Green–Orange Edge. These pieces have no yellow sticker. Any edge with yellow belongs in the last layer, so leave those alone for now.
 
 Choose a middle-layer edge from the top layer and line up its front sticker with the matching center. Then rotate the entire cube so that center is facing you.
 
-From there, decide whether the edge belongs on the front-left or front-right side. Each direction has its own insertion algorithm, and we'll show you exactly which one to use.
+From there, decide whether the edge belongs in FL or FR. Each direction has its own insertion algorithm, and we'll show you exactly which one to use.
 
-Sometimes you'll find an incorrect edge already sitting in the middle layer. That's perfectly normal. We'll use the same algorithm to bring it back to the top, then insert it correctly.
+Sometimes you'll find an incorrect edge already sitting in a middle-layer slot. That's perfectly normal. We'll use the same algorithm to bring it back to the top, then insert the right piece.
 
 If all of your unsolved middle-layer edges are trapped in the middle, simply remove one first. That creates room to place every edge where it belongs.`,
   },
@@ -66,25 +66,16 @@ If all of your unsolved middle-layer edges are trapped in the middle, simply rem
   extractEdge: 'Lift the edge out',
   insertAlignedEdge: 'Insert the aligned top-layer edge',
   insertEdge: 'Insert the edge',
-  alignU: (colorA: string, colorB: string, partner: string) =>
-    `The ${colorA}–${colorB} edge is on the top layer. Turn U until the ${partner} sticker lines up with the ${partner} center. Then you can turn the whole cube.`,
-  reorient: (faceLabel: string, colorA: string, colorB: string) =>
-    `Turn the whole cube so the ${faceLabel} face is toward you. You'll insert the ${colorA}–${colorB} edge into the middle layer between its centers.`,
-  reorientAligned: (
-    faceLabel: string,
-    colorA: string,
-    colorB: string,
-  ) =>
-    `The ${colorA}–${colorB} edge is on top and already lined up with its centers. Turn the whole cube so ${faceLabel} is toward you, then insert it between its centers.`,
-  extract: (slotLabel: string, algName: string) =>
-    `The edge in the ${slotLabel} middle slot needs to come out. The ${algName} algorithm lifts it to the top layer without disturbing your bottom layer.`,
-  insert: (colorA: string, colorB: string, slotLabel: string, algName: string) =>
-    `Insert the ${colorA}–${colorB} edge into the ${slotLabel} middle slot with the ${algName} algorithm. Your cross, corners, and any middle edges you've already placed stay intact.`,
-  insertAligned: (
-    colorA: string,
-    colorB: string,
-    slotLabel: string,
-    algName: string,
-  ) =>
-    `The ${colorA}–${colorB} edge is on top and lined up with its centers. Insert it into the ${slotLabel} slot with the ${algName} algorithm. Your cross, corners, and placed middle edges stay intact.`,
+  alignU: (edgeLabel: string, partner: string) =>
+    `The ${edgeLabel} is on the top layer. Turn U until the ${partner} sticker lines up with the ${partner} center. Then you can turn the whole cube.`,
+  reorient: (faceLabel: string, edgeLabel: string) =>
+    `Turn the whole cube so the ${faceLabel} face is toward you. You'll insert the ${edgeLabel} into the middle layer between its centers.`,
+  reorientAligned: (faceLabel: string, edgeLabel: string) =>
+    `The ${edgeLabel} is on top and already lined up with its centers. Turn the whole cube so ${faceLabel} is toward you, then insert it between its centers.`,
+  extract: (slot: string, algName: string) =>
+    `The edge in ${slot} needs to come out. The ${algName} algorithm lifts it to the top layer without disturbing your bottom layer.`,
+  insert: (edgeLabel: string, slot: string, algName: string) =>
+    `Insert the ${edgeLabel} into ${slot} with the ${algName} algorithm. Your cross, corners, and any middle edges you've already placed stay intact.`,
+  insertAligned: (edgeLabel: string, slot: string, algName: string) =>
+    `The ${edgeLabel} is on top and lined up with its centers. Insert it into ${slot} with the ${algName} algorithm. Your cross, corners, and placed middle edges stay intact.`,
 } as const;

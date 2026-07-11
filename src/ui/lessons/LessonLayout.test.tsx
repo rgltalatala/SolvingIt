@@ -14,7 +14,7 @@ describe('LessonProgress', () => {
         progress={{
           solved: 1,
           total: 4,
-          slotLabels: ['DF', 'DR', 'DB', 'DL'],
+          slotLabels: ['White–Blue', 'White–Red', 'White–Green', 'White–Orange'],
           ariaLabel: '1 of 4 cross edges',
         }}
       />,
@@ -24,20 +24,36 @@ describe('LessonProgress', () => {
       '1',
     );
     expect(screen.getByText('1 / 4')).toBeInTheDocument();
-    expect(screen.getByText('DF')).toBeInTheDocument();
+    expect(screen.getByText('White–Blue')).toBeInTheDocument();
   });
 
-  it('colors solved slots by partner color instead of fill order', () => {
+  it('fills only solved pieces with sticker colors; current uses border only', () => {
     const { container } = render(
       <LessonProgress
         progress={{
           solved: 2,
           total: 4,
           slots: [
-            { key: 'DF', label: 'DF', solved: true, color: 'blue' },
-            { key: 'DR', label: 'DR', solved: false },
-            { key: 'DB', label: 'DB', solved: false },
-            { key: 'DL', label: 'DL', solved: true, color: 'orange' },
+            {
+              key: 'DF',
+              label: 'White–Blue',
+              solved: true,
+              colors: ['white', 'blue'],
+            },
+            {
+              key: 'DR',
+              label: 'White–Red',
+              solved: false,
+              isCurrent: true,
+              colors: ['white', 'red'],
+            },
+            { key: 'DB', label: 'White–Green', solved: false },
+            {
+              key: 'DL',
+              label: 'White–Orange',
+              solved: true,
+              colors: ['white', 'orange'],
+            },
           ],
           ariaLabel: '2 of 4 cross edges',
         }}
@@ -46,28 +62,48 @@ describe('LessonProgress', () => {
 
     const segments = container.querySelectorAll('[role="progressbar"] > div');
     expect(segments).toHaveLength(4);
-    expect(segments[0]).toHaveStyle({
-      backgroundColor: colorHexMap.blue,
-    });
-    expect(segments[1]).toHaveStyle({ backgroundColor: '' });
-    expect(segments[3]).toHaveStyle({
-      backgroundColor: colorHexMap.orange,
-    });
-    expect(screen.getByText('DF')).toHaveStyle({ color: colorHexMap.blue });
-    expect(screen.getByText('DL')).toHaveStyle({ color: colorHexMap.orange });
+
+    const dfHalves = segments[0].querySelectorAll('div');
+    expect(dfHalves).toHaveLength(2);
+    expect(dfHalves[0]).toHaveStyle({ backgroundColor: colorHexMap.white });
+    expect(dfHalves[1]).toHaveStyle({ backgroundColor: colorHexMap.blue });
+
+    expect(segments[1].querySelectorAll('div')).toHaveLength(0);
+    expect(segments[1]).toHaveClass('bg-slate-700');
+    expect(segments[1]).toHaveClass('ring-violet-400');
+
+    expect(segments[2].querySelectorAll('div')).toHaveLength(0);
+
+    const dlHalves = segments[3].querySelectorAll('div');
+    expect(dlHalves[0]).toHaveStyle({ backgroundColor: colorHexMap.white });
+    expect(dlHalves[1]).toHaveStyle({ backgroundColor: colorHexMap.orange });
+
+    expect(screen.getByText('White–Blue')).toHaveClass('text-emerald-400');
+    expect(screen.getByText('White–Red')).toHaveClass('text-slate-500');
   });
 
-  it('outlines the current unsolved slot without changing its fill', () => {
+  it('outlines the current unsolved slot without changing unsolved empty fill', () => {
     const { container } = render(
       <LessonProgress
         progress={{
           solved: 1,
           total: 4,
           slots: [
-            { key: 'DF', label: 'DF', solved: true, color: 'blue' },
-            { key: 'DR', label: 'DR', solved: false, isCurrent: true },
-            { key: 'DB', label: 'DB', solved: false },
-            { key: 'DL', label: 'DL', solved: false },
+            {
+              key: 'DF',
+              label: 'White–Blue',
+              solved: true,
+              colors: ['white', 'blue'],
+            },
+            {
+              key: 'DR',
+              label: 'White–Red',
+              solved: false,
+              isCurrent: true,
+              colors: ['white', 'red'],
+            },
+            { key: 'DB', label: 'White–Green', solved: false },
+            { key: 'DL', label: 'White–Orange', solved: false },
           ],
           ariaLabel: '1 of 4 cross edges',
         }}
@@ -81,7 +117,7 @@ describe('LessonProgress', () => {
     expect(segments[2]).not.toHaveClass('ring-violet-400');
   });
 
-  it('fills solved slots with two partner colors on each half', () => {
+  it('fills solved corners with white plus both side colors', () => {
     const { container } = render(
       <LessonProgress
         progress={{
@@ -90,22 +126,24 @@ describe('LessonProgress', () => {
           slots: [
             {
               key: 'FRD',
-              label: 'FRD',
+              label: 'White–Blue–Red',
               solved: true,
-              colors: ['blue', 'red'],
+              colors: ['white', 'blue', 'red'],
             },
-            { key: 'BDR', label: 'BDR', solved: false },
-            { key: 'BLD', label: 'BLD', solved: false },
-            { key: 'FDL', label: 'FDL', solved: false },
+            { key: 'BDR', label: 'White–Red–Green', solved: false },
+            { key: 'BLD', label: 'White–Green–Orange', solved: false },
+            { key: 'FDL', label: 'White–Orange–Blue', solved: false },
           ],
           ariaLabel: '1 of 4 corners',
         }}
       />,
     );
 
-    const halves = container.querySelectorAll('[role="progressbar"] > div > div');
-    expect(halves[0]).toHaveStyle({ backgroundColor: colorHexMap.blue });
-    expect(halves[1]).toHaveStyle({ backgroundColor: colorHexMap.red });
+    const thirds = container.querySelectorAll('[role="progressbar"] > div > div');
+    expect(thirds).toHaveLength(3);
+    expect(thirds[0]).toHaveStyle({ backgroundColor: colorHexMap.white });
+    expect(thirds[1]).toHaveStyle({ backgroundColor: colorHexMap.blue });
+    expect(thirds[2]).toHaveStyle({ backgroundColor: colorHexMap.red });
   });
 });
 

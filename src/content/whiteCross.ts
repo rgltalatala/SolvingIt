@@ -1,4 +1,5 @@
 import type { Color } from '../cube/cubeState';
+import { whiteEdgeIdentity } from './pieceIdentity';
 
 export const whiteCrossLesson = {
   title: 'Lesson: White cross',
@@ -35,7 +36,7 @@ export const whiteCrossLesson = {
 } as const;
 
 export function whitePartnerEdgeHeading(partner: Color): string {
-  return `White–${partner} edge`;
+  return whiteEdgeIdentity(partner);
 }
 
 export const whiteCrossSteps = {
@@ -43,30 +44,30 @@ export const whiteCrossSteps = {
     title: 'How this lesson works',
     body: `The white cross is the foundation of every beginner solve, so it's worth taking your time here.
 
-Start by finding an edge piece with a white sticker. Match its other color with the center of the same color, then turn that face to connect the edge with the white center on the bottom. Once both colors line up, that edge is solved.
+Start by finding an edge by its colors, like the White–Blue Edge. Match its side sticker with the center of the same color, then turn that face to connect the edge with the white center on the bottom. Once both colors line up, that edge is solved in its home slot (DF, DR, DB, or DL).
 
-Repeat the process for the other three white edges, being careful not to undo the ones you've already placed. There aren't many fixed cases to memorize here. This step is mostly about learning how the pieces move. The more cubes you solve, the more intuitive it becomes.`,
+Repeat for the other three white edges, being careful not to undo the ones you've already placed. There aren't many fixed cases to memorize here. This step is mostly about learning how the pieces move. The more cubes you solve, the more intuitive it becomes.`,
   },
   complete: {
     title: 'White cross complete',
     body: "You've got the full white cross. Each edge matches its center on the bottom. Line up your physical cube with the diagram (white on bottom, yellow on top), then head back to the overview when you're done.",
   },
-  alignBfs: (partner: string) =>
-    `Match the ${partner} sticker on this white–${partner} edge to the ${partner} center, then slot white on the bottom. The demo finds a path that won't knock out cross edges you've already solved.`,
-  solveEdge: (partner: string) =>
-    `Work this white–${partner} edge: line up its ${partner} sticker with the ${partner} center, then slot white on the bottom. The demo handles setup and keeps solved cross edges in place.`,
-  stuck: (partner: string) =>
-    `We couldn't build a safe demo for this white–${partner} edge from here. Match the side sticker to its center and slot white on the bottom yourself, or reset the scramble and try again.`,
-  middleLayer: (partner: string) =>
-    `This white–${partner} edge is in the middle layer. Line up its ${partner} sticker with the ${partner} center, then slot white on the bottom. The demo walks you through it without disturbing solved cross edges.`,
-  uLayerAlign: (partner: string) =>
-    `This white–${partner} edge is on the top layer. Match its ${partner} sticker to the ${partner} center, then slot white on the bottom. The demo includes any positioning you need first.`,
-  uLayerInsert: (partner: string) =>
-    `This white–${partner} edge already lines up with the ${partner} center on top. Slot it into the cross on the bottom. The demo shows the insert and any setup.`,
-  dLayerRotate: (partner: string) =>
-    `White is on the bottom for this white–${partner} edge, but it's not under the ${partner} center yet. Turn the bottom layer until the side sticker matches its center.`,
-  dLayerInsert: (partner: string) =>
-    `This white–${partner} edge lines up with the ${partner} center. Slot it on the bottom. The demo handles setup so your other cross edges stay put.`,
-  directSolve: (partner: string) =>
-    `This white–${partner} edge is ready to slot. Keep the ${partner} sticker matched to its center and put white on the bottom. The demo takes care of any setup.`,
+  alignBfs: (partner: string, edgeLabel: string) =>
+    `Match the ${partner} sticker on this ${edgeLabel} to the ${partner} center, then slot white on the bottom. The demo finds a path that won't knock out cross edges you've already solved.`,
+  solveEdge: (partner: string, edgeLabel: string) =>
+    `Work this ${edgeLabel}: line up its ${partner} sticker with the ${partner} center, then slot white on the bottom. The demo handles setup and keeps solved cross edges in place.`,
+  stuck: (partner: string, edgeLabel: string) =>
+    `We couldn't build a safe demo for this ${edgeLabel} from here. Match the side sticker to its center and slot white on the bottom yourself, or reset the scramble and try again.`,
+  middleLayer: (partner: string, edgeLabel: string) =>
+    `This ${edgeLabel} is in the middle layer. Line up its ${partner} sticker with the ${partner} center, then slot white on the bottom. The demo walks you through it without disturbing solved cross edges.`,
+  uLayerAlign: (partner: string, edgeLabel: string) =>
+    `This ${edgeLabel} is on the top layer. Match its ${partner} sticker to the ${partner} center, then slot white on the bottom. The demo includes any positioning you need first.`,
+  uLayerInsert: (partner: string, edgeLabel: string) =>
+    `This ${edgeLabel} already lines up with the ${partner} center on top. Slot it into its cross position on the bottom. The demo shows the insert and any setup.`,
+  dLayerRotate: (partner: string, edgeLabel: string) =>
+    `White is on the bottom for this ${edgeLabel}, but it's not under the ${partner} center yet. Turn the bottom layer until the side sticker matches its center.`,
+  dLayerInsert: (partner: string, edgeLabel: string) =>
+    `This ${edgeLabel} lines up with the ${partner} center. Slot it on the bottom. The demo handles setup so your other cross edges stay put.`,
+  directSolve: (partner: string, edgeLabel: string) =>
+    `This ${edgeLabel} is ready to slot. Keep the ${partner} sticker matched to its center and put white on the bottom. The demo takes care of any setup.`,
 } as const;

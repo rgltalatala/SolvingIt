@@ -8,6 +8,7 @@ import {
   whiteCrossSteps,
   whitePartnerEdgeHeading,
 } from '../../../../content/whiteCross';
+import { whiteEdgeIdentity } from '../../../../content/pieceIdentity';
 import { demoChangesState } from '../../../lessonCore';
 import {
   crossSlotsSolvedInState,
@@ -127,7 +128,10 @@ export function tryULayerAlignStepForCrossId(
     title: whitePartnerEdgeHeading(partner),
     edgeLabel: label,
     partnerColor: partner,
-    body: whiteCrossSteps.uLayerAlign(formatColor(partner)),
+    body: whiteCrossSteps.uLayerAlign(
+      formatColor(partner),
+      whiteEdgeIdentity(partner),
+    ),
     face: turnFace,
     demoMoves: demo,
   };
@@ -167,7 +171,10 @@ export function tryULayerInsertStepForCrossId(
     title: whitePartnerEdgeHeading(partner),
     edgeLabel: label,
     partnerColor: partner,
-    body: whiteCrossSteps.uLayerInsert(formatColor(partner)),
+    body: whiteCrossSteps.uLayerInsert(
+      formatColor(partner),
+      whiteEdgeIdentity(partner),
+    ),
     face,
     demoMoves: best,
   };

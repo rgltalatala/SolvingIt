@@ -376,6 +376,7 @@ export function LearningLastLayerView() {
                 studentFrame,
                 lastLayerProgressPhase,
                 progressLabelForPhase,
+                currentHoldIndex,
               ),
               phaseLabel: `${lastLayerLesson.subLessonPrefix} ${subLessonLabel}`,
             }

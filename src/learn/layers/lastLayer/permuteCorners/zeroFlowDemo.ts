@@ -60,7 +60,7 @@ export function zeroFlowCaseDemoMetadata(phases: readonly Move[][]): {
       type: 'rotation',
       rotation: 'y2',
       label: 'Reorient',
-      text: 'Turn the whole cube so the permuted corner sits at front-right on U.',
+      text: 'Turn the whole cube so the permuted corner sits at URF.',
     });
   }
 

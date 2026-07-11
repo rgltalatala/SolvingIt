@@ -1,5 +1,7 @@
-import type { CubeState } from '../../../../cube/cubeState';
+import type { Color, CubeState, Face } from '../../../../cube/cubeState';
 import type { CubiePosition } from '../../../../cube3d/cubeGeometry';
+import { faceStickerIndex } from '../../../../cube3d/cubeGeometry';
+import { findEdgeWithColors } from '../../bottomLayer/shared/pieceQueries';
 
 export const U_LAYER_EDGE_SLOTS = ['UB', 'UL', 'UR', 'UF'] as const;
 
@@ -13,6 +15,14 @@ export const U_LAYER_EDGE_DEF: Record<
   UL: { pos: [-1, 1, 0], uIndex: 3 },
   UR: { pos: [1, 1, 0], uIndex: 5 },
   UF: { pos: [0, 1, 1], uIndex: 7 },
+};
+
+/** Side face whose center is the non-yellow sticker for this home slot. */
+export const U_EDGE_SIDE_FACE: Record<ULayerEdgeId, Face> = {
+  UB: 'B',
+  UL: 'L',
+  UR: 'R',
+  UF: 'F',
 };
 
 export function yellowStickerOnU(
@@ -33,4 +43,22 @@ export function countYellowEdgesOnU(state: CubeState): number {
 
 export function isYellowCrossComplete(state: CubeState): boolean {
   return countYellowEdgesOnU(state) === 4;
+}
+
+export function expectedULayerEdgePartner(
+  state: CubeState,
+  homeSlotId: ULayerEdgeId,
+): Color {
+  return state[U_EDGE_SIDE_FACE[homeSlotId]][4];
+}
+
+/** True when the yellow–{partner} edge cubie for this home slot shows yellow on U. */
+export function edgeOrientedByIdentity(
+  state: CubeState,
+  homeSlotId: ULayerEdgeId,
+): boolean {
+  const partner = expectedULayerEdgePartner(state, homeSlotId);
+  const pos = findEdgeWithColors(state, 'yellow', partner);
+  if (!pos || pos[1] !== 1) return false;
+  return state.U[faceStickerIndex('U', pos)] === 'yellow';
 }

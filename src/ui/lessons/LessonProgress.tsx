@@ -5,10 +5,11 @@ export type LessonProgressSlot = {
   key: string;
   label: string;
   solved: boolean;
-  /** Single partner color; fills the bar segment when solved. */
-  color?: Color;
-  /** Two partner colors; each fills half of the bar segment when solved. */
-  colors?: readonly [Color, Color];
+  /**
+   * All sticker colors on this piece (edge: 2, corner: 3), in identity order.
+   * Shown as equal stripes when solved or current.
+   */
+  colors?: readonly Color[];
   /** Lesson's current target slot (border highlight when still unsolved). */
   isCurrent?: boolean;
 };
@@ -27,6 +28,12 @@ type LessonProgressProps = {
   progress: LessonProgressConfig;
 };
 
+function pieceColors(slot: LessonProgressSlot): readonly Color[] {
+  if (slot.colors && slot.colors.length > 0) return slot.colors;
+  if (slot.color) return [slot.color];
+  return [];
+}
+
 function segmentClassName(slot: LessonProgressSlot): string {
   const base = 'flex h-2 flex-1 overflow-hidden rounded-full transition-colors';
   if (slot.solved) {
@@ -39,40 +46,34 @@ function segmentClassName(slot: LessonProgressSlot): string {
 }
 
 function labelClassName(slot: LessonProgressSlot): string {
-  const base = 'flex-1 truncate text-center text-[10px] font-mono';
+  const base = 'flex-1 truncate text-center text-[9px] font-medium leading-tight';
   if (slot.solved) {
-    return base;
+    return `${base} text-emerald-400`;
   }
   return `${base} text-slate-500`;
 }
 
 function ProgressSegment({ slot }: { slot: LessonProgressSlot }) {
-  if (slot.solved && slot.colors) {
+  const colors = pieceColors(slot);
+
+  if (slot.solved && colors.length > 0) {
     return (
       <div title={slot.label} className={segmentClassName(slot)}>
-        <div
-          className="h-full w-1/2"
-          style={{ backgroundColor: colorHexMap[slot.colors[0]] }}
-        />
-        <div
-          className="h-full w-1/2"
-          style={{ backgroundColor: colorHexMap[slot.colors[1]] }}
-        />
+        {colors.map((color, index) => (
+          <div
+            key={`${slot.key}-${color}-${index}`}
+            className="h-full"
+            style={{
+              backgroundColor: colorHexMap[color],
+              width: `${100 / colors.length}%`,
+            }}
+          />
+        ))}
       </div>
     );
   }
 
-  return (
-    <div
-      title={slot.label}
-      className={segmentClassName(slot)}
-      style={
-        slot.solved && slot.color
-          ? { backgroundColor: colorHexMap[slot.color] }
-          : undefined
-      }
-    />
-  );
+  return <div title={slot.label} className={segmentClassName(slot)} />;
 }
 
 export function LessonProgress({ progress }: LessonProgressProps) {
@@ -120,15 +121,7 @@ export function LessonProgress({ progress }: LessonProgressProps) {
           {useSlotMode ? (
             <div className="flex gap-1.5">
               {slots.map((slot) => (
-                <span
-                  key={slot.key}
-                  className={labelClassName(slot)}
-                  style={
-                    slot.solved && slot.color
-                      ? { color: colorHexMap[slot.color] }
-                      : undefined
-                  }
-                >
+                <span key={slot.key} className={labelClassName(slot)}>
                   {slot.label}
                 </span>
               ))}

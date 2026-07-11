@@ -20,7 +20,10 @@ export {
   mustPreserveCornerIds,
 } from './cornerSlotModel';
 
-export { formatCornerLabel } from '../../../../content/whiteCorners';
+export {
+  whiteCornerIdentity,
+  whiteCornerIdentity as formatCornerLabel,
+} from '../../../../content/pieceIdentity';
 
 export type {
   CornerCase,

@@ -1,5 +1,7 @@
 import type { Color, CubeState, Move } from '../../../../cube/cubeState';
 import { formatColorLabel } from '../../../../cube/cubeState';
+import { middleLayerSteps } from '../../../../content/middleLayer';
+import { edgeIdentity } from '../../../../content/pieceIdentity';
 import { isWhiteCrossComplete } from '../../bottomLayer/cross/crossSlotModel';
 import { isWhiteCornersComplete } from '../../bottomLayer/corners/cornerSlotModel';
 import {
@@ -41,7 +43,6 @@ import type {
   MiddleLayerEdgeLessonStepOptions,
   MiddleLayerEdgesLessonStep,
 } from './types';
-import { middleLayerSteps } from '../../../../content/middleLayer';
 
 const COMPLETE_BODY = middleLayerSteps.complete.body;
 
@@ -96,13 +97,11 @@ function buildReorientToPartnerStep(
   const body = onUAligned
     ? middleLayerSteps.reorientAligned(
         faceLabel,
-        formatColor(edgeColors[0]),
-        formatColor(edgeColors[1]),
+        edgeIdentity(edgeColors[0], edgeColors[1]),
       )
     : middleLayerSteps.reorient(
         faceLabel,
-        formatColor(edgeColors[0]),
-        formatColor(edgeColors[1]),
+        edgeIdentity(edgeColors[0], edgeColors[1]),
       );
   return {
     kind: 'reorient-hold',
@@ -134,8 +133,7 @@ function buildAlignUStep(
     kind: 'align-u',
     title: middleLayerSteps.alignPartnerTitle(formatColor(partnerColor)),
     body: middleLayerSteps.alignU(
-      formatColor(edgeColors[0]),
-      formatColor(edgeColors[1]),
+      edgeIdentity(edgeColors[0], edgeColors[1]),
       formatColor(partnerColor),
     ),
     demoMoves,
@@ -151,31 +149,19 @@ function buildSolveEdgeStep(
   onUAligned = false,
 ): MiddleLayerEdgesLessonStep {
   const algName = slot === 'FL' ? 'left' : 'right';
-  const slotLabel = slot === 'FL' ? 'front-left' : 'front-right';
+  const edgeLabel = edgeIdentity(edgeColors[0], edgeColors[1]);
   const body =
     action === 'extract'
-      ? middleLayerSteps.extract(slotLabel, algName)
+      ? middleLayerSteps.extract(slot, algName)
       : onUAligned
-        ? middleLayerSteps.insertAligned(
-            formatColor(edgeColors[0]),
-            formatColor(edgeColors[1]),
-            slotLabel,
-            algName,
-          )
-        : middleLayerSteps.insert(
-            formatColor(edgeColors[0]),
-            formatColor(edgeColors[1]),
-            slotLabel,
-            algName,
-          );
+        ? middleLayerSteps.insertAligned(edgeLabel, slot, algName)
+        : middleLayerSteps.insert(edgeLabel, slot, algName);
   return {
     kind: 'solve-edge',
     title:
       action === 'extract'
         ? middleLayerSteps.extractEdge
-        : onUAligned
-          ? middleLayerSteps.insertAlignedEdge
-          : middleLayerSteps.insertEdge,
+        : edgeLabel,
     body,
     demoMoves,
     edgeColors,
@@ -317,7 +303,7 @@ function assertPlannerExhausted(
 ): never {
   throw new Error(
     `Middle-layer edge lesson planner exhausted all cases for ` +
-      `${formatColor(edgeColors[0])}–${formatColor(edgeColors[1])} ` +
+      `${edgeIdentity(edgeColors[0], edgeColors[1])} ` +
       `(slot ${targetSlotId}, hold ${holdIndex}, ` +
       `onU=${unsolvedEdgeCubieOnU(studentState, targetSlotId, holdIndex)}, ` +
       `anyOnU=${anyUnsolvedMiddleEdgeOnU(studentState, holdIndex)})`,

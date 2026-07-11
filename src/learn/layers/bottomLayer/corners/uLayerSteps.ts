@@ -6,7 +6,7 @@ import type { CubeState, Face, Move } from '../../../../cube/cubeState';
 import type { CubiePosition } from '../../../../cube3d/cubeGeometry';
 import { parseFaceTurnAlgToMoves } from '../../../../cube/parseFaceTurnAlg';
 import { faceForWhiteOnCorner } from '../shared/pieceQueries';
-import { whiteCornersSteps, formatCornerLabel } from '../../../../content/whiteCorners';
+import { whiteCornersSteps } from '../../../../content/whiteCorners';
 import { recognizeCornerCaseInFrdView, type ULayerCornerId } from './cornerCases';
 import { studentHoldView, verifiedFrdDemoAtHold } from './frdViewDemoBuild';
 import type { CornerSlotId } from './types';
@@ -61,12 +61,10 @@ export function uLayerDemoHasAlignInsertUOverlap(
 }
 
 export function uLayerInsertStepBody(
-  cornerId: CornerSlotId,
+  cornerLabel: string,
   demo: readonly Move[],
 ): string {
-  const base = whiteCornersSteps.uLayer(
-    formatCornerLabel(cornerId).toLowerCase(),
-  );
+  const base = whiteCornersSteps.uLayer(cornerLabel);
   return uLayerDemoHasAlignInsertUOverlap(demo)
     ? `${base} ${whiteCornersSteps.uLayerAlignHabitNote}`
     : base;

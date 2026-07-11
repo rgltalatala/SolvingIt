@@ -3,6 +3,7 @@ import {
   whiteCrossSteps,
   whitePartnerEdgeHeading,
 } from '../../../../content/whiteCross';
+import { whiteEdgeIdentity } from '../../../../content/pieceIdentity';
 import { demoChangesState } from '../../../lessonCore';
 import {
   formatColor,
@@ -37,7 +38,10 @@ function buildInsertDoubleStep(
     title: whitePartnerEdgeHeading(partner),
     edgeLabel: label,
     partnerColor: partner,
-    body: whiteCrossSteps.directSolve(formatColor(partner)),
+    body: whiteCrossSteps.directSolve(
+      formatColor(partner),
+      whiteEdgeIdentity(partner),
+    ),
     face,
     demoMoves: demo,
   };

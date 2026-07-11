@@ -4,6 +4,7 @@ import {
   whiteCrossSteps,
   whitePartnerEdgeHeading,
 } from '../../../../content/whiteCross';
+import { whiteEdgeIdentity } from '../../../../content/pieceIdentity';
 import { demoChangesState } from '../../../lessonCore';
 import {
   crossSlotsSolvedInState,
@@ -52,7 +53,10 @@ function buildAlignToCenterStep(
     title: whitePartnerEdgeHeading(partner),
     edgeLabel: label,
     partnerColor: partner,
-    body: whiteCrossSteps.middleLayer(partnerLabel),
+    body: whiteCrossSteps.middleLayer(
+      partnerLabel,
+      whiteEdgeIdentity(partner),
+    ),
     face: turnFace,
     demoMoves: demo,
   };

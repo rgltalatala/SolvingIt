@@ -8,6 +8,7 @@ import {
   whiteCrossSteps,
   whitePartnerEdgeHeading,
 } from '../../../../content/whiteCross';
+import { whiteEdgeIdentity } from '../../../../content/pieceIdentity';
 import {
   crossSlotsToPreserve,
   formatColor,
@@ -103,7 +104,10 @@ export function tryRotateBottomStepForCrossId(
     title: whitePartnerEdgeHeading(partner),
     edgeLabel: label,
     partnerColor: partner,
-    body: whiteCrossSteps.dLayerRotate(formatColor(partner)),
+    body: whiteCrossSteps.dLayerRotate(
+      formatColor(partner),
+      whiteEdgeIdentity(partner),
+    ),
     targetFace: slot.sideFace,
     demoMoves: bottomSpinMoves,
   };
@@ -131,7 +135,10 @@ export function tryDLayerInsertStepForCrossId(
     title: whitePartnerEdgeHeading(partner),
     edgeLabel: label,
     partnerColor: partner,
-    body: whiteCrossSteps.dLayerInsert(formatColor(partner)),
+    body: whiteCrossSteps.dLayerInsert(
+      formatColor(partner),
+      whiteEdgeIdentity(partner),
+    ),
     face,
     demoMoves: insert,
   };

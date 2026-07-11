@@ -4,7 +4,7 @@ import {
 } from '../../../../cube/cubeState';
 import type { CubeState, Move } from '../../../../cube/cubeState';
 import { parseFaceTurnAlgToMoves } from '../../../../cube/parseFaceTurnAlg';
-import { whiteCornersSteps, formatCornerLabel } from '../../../../content/whiteCorners';
+import { whiteCornersSteps } from '../../../../content/whiteCorners';
 import { faceForWhiteOnCorner } from '../shared/pieceQueries';
 import type { WrongDLayerSlotId } from './cornerCases';
 import { recognizeCornerCaseInFrdView } from './cornerCases';
@@ -47,10 +47,10 @@ export function setupMovesForWrongDSlotStorage(
 }
 
 export function wrongDSlotStepBody(
-  cornerId: CornerSlotId,
+  cornerLabel: string,
   demo: readonly Move[],
 ): string {
-  const base = whiteCornersSteps.wrongDSlot(formatCornerLabel(cornerId));
+  const base = whiteCornersSteps.wrongDSlot(cornerLabel);
   return uLayerDemoHasAlignInsertUOverlap(demo)
     ? `${base} ${whiteCornersSteps.uLayerAlignHabitNote}`
     : base;

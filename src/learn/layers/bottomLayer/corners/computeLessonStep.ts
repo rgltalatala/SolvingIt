@@ -1,5 +1,6 @@
 import type { CubeState } from '../../../../cube/cubeState';
-import { whiteCornersSteps, formatCornerLabel } from '../../../../content/whiteCorners';
+import { whiteCornersSteps } from '../../../../content/whiteCorners';
+import { whiteCornerIdentity } from '../../../../content/pieceIdentity';
 import { normalizeLessonDemoMovesInStep, stepHasDemoMoves } from '../../../lessonCore';
 import { isWhiteCrossComplete } from '../cross/crossSlotModel';
 import {
@@ -12,7 +13,6 @@ import {
 import {
   activeCornerId,
   expectedCornerColors,
-  formatColor,
   isWhiteCornersComplete,
 } from './cornerSlotModel';
 import {
@@ -69,12 +69,18 @@ function buildReturnToBlueStep(
 }
 
 function buildReorientHoldStep(
+  studentState: CubeState,
   targetCornerId: CornerSlotId,
   currentHoldIndex: number,
   targetHold: CornerHoldIndex,
 ): WhiteCornersLessonStep {
   const demoMoves = relativeY(currentHoldIndex, targetHold);
   const faceLabel = formatHoldFaceLabel(targetHold);
+  const [, colorA, colorB] = expectedCornerColors(
+    studentState,
+    targetCornerId,
+    currentHoldIndex,
+  );
 
   const delta = (((targetHold - currentHoldIndex) % 4) + 4) % 4;
   const skipNote =
@@ -87,7 +93,7 @@ function buildReorientHoldStep(
     title: whiteCornersSteps.faceSideTitle(faceLabel),
     body: whiteCornersSteps.reorient(
       faceLabel,
-      formatCornerLabel(targetCornerId).toLowerCase(),
+      whiteCornerIdentity(colorA, colorB),
       skipNote,
     ),
     demoMoves,
@@ -108,11 +114,8 @@ function buildSolveCornerPlaceholderStep(
   return {
     kind: 'solve-corner',
     cornerId,
-    title: formatCornerLabel(cornerId),
-    body: whiteCornersSteps.placeholder(
-      formatColor(colorA),
-      formatColor(colorB),
-    ),
+    title: whiteCornerIdentity(colorA, colorB),
+    body: whiteCornersSteps.placeholder(whiteCornerIdentity(colorA, colorB)),
   };
 }
 
@@ -200,7 +203,12 @@ function computeWhiteCornerLessonStepSync(
   if (currentHoldIndex !== target) {
     const reorientMoves = relativeY(currentHoldIndex, target);
     if (reorientMoves.length) {
-      return buildReorientHoldStep(cornerId, currentHoldIndex, target);
+      return buildReorientHoldStep(
+        studentState,
+        cornerId,
+        currentHoldIndex,
+        target,
+      );
     }
   }
 
@@ -264,7 +272,12 @@ export async function getWhiteCornerLessonStepAsync(
   if (currentHoldIndex !== target) {
     const reorientMoves = relativeY(currentHoldIndex, target);
     if (reorientMoves.length) {
-      return buildReorientHoldStep(cornerId, currentHoldIndex, target);
+      return buildReorientHoldStep(
+        studentState,
+        cornerId,
+        currentHoldIndex,
+        target,
+      );
     }
   }
 

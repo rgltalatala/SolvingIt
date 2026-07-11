@@ -61,6 +61,26 @@ export function cornerPermutedAtSlot(
   ]);
 }
 
+/** True when the corner cubie for this home slot sits in that slot (orientation ignored). */
+export function cornerPermutedByIdentity(
+  state: CubeState,
+  homeSlotId: ULayerCornerId,
+): boolean {
+  if (!isYellowCrossComplete(state)) return false;
+  const [yellow, colorA, colorB] = expectedULayerCornerColors(
+    state,
+    homeSlotId,
+  );
+  const pos = findCornerWithColors(state, yellow, colorA, colorB);
+  const home = U_LAYER_CORNER_POS[homeSlotId];
+  return (
+    !!pos &&
+    pos[0] === home[0] &&
+    pos[1] === home[1] &&
+    pos[2] === home[2]
+  );
+}
+
 export function cornerOrientedAtSlot(
   state: CubeState,
   slotId: ULayerCornerId,

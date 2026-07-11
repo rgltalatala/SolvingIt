@@ -3,6 +3,7 @@ import {
   whiteCrossSteps,
   whitePartnerEdgeHeading,
 } from '../../../../content/whiteCross';
+import { whiteEdgeIdentity } from '../../../../content/pieceIdentity';
 import {
   firstUnsolvedCrossId,
   formatColor,
@@ -40,6 +41,7 @@ function buildAlignFromBfs(
   demo: Move[],
 ): WhiteCrossLessonStep {
   const partner = partnerColorForSlot(studentState, id);
+  const edgeLabel = whiteEdgeIdentity(partner);
   const label = `${formatColor(partner)} edge`;
   const slot = SLOT_DEF[id];
   return {
@@ -47,7 +49,7 @@ function buildAlignFromBfs(
     title: whitePartnerEdgeHeading(partner),
     edgeLabel: label,
     partnerColor: partner,
-    body: whiteCrossSteps.alignBfs(formatColor(partner)),
+    body: whiteCrossSteps.alignBfs(formatColor(partner), edgeLabel),
     face: slot.sideFace,
     demoMoves: demo,
   };
@@ -59,11 +61,12 @@ function buildSolveEdgeStep(
   demo: Move[],
 ): WhiteCrossLessonStep {
   const partner = partnerColorForSlot(studentState, id);
+  const edgeLabel = whiteEdgeIdentity(partner);
   const label = `${formatColor(partner)} edge`;
   return {
     kind: 'solve-edge',
     title: whitePartnerEdgeHeading(partner),
-    body: whiteCrossSteps.solveEdge(formatColor(partner)),
+    body: whiteCrossSteps.solveEdge(formatColor(partner), edgeLabel),
     edgeLabel: label,
     partnerColor: partner,
     demoMoves: demo,
@@ -208,7 +211,10 @@ export function stuckPartnerStep(studentState: CubeState): WhiteCrossLessonStep 
   return {
     kind: 'solve-edge',
     title: whitePartnerEdgeHeading(stuckPartner),
-    body: whiteCrossSteps.stuck(formatColor(stuckPartner)),
+    body: whiteCrossSteps.stuck(
+      formatColor(stuckPartner),
+      whiteEdgeIdentity(stuckPartner),
+    ),
     edgeLabel: `${formatColor(stuckPartner)} edge`,
     partnerColor: stuckPartner,
   };

@@ -1,4 +1,11 @@
-import type { Color, CubeState, Face } from '../../cube/cubeState';
+import type { CubeState } from '../../cube/cubeState';
+import {
+  edgeProgressLabel,
+  whiteCornerProgressLabel,
+  whiteEdgeProgressLabel,
+  yellowCornerProgressLabel,
+  yellowEdgeProgressLabel,
+} from '../../content/pieceIdentity';
 import {
   activeCornerId,
   CORNER_ORDER,
@@ -14,14 +21,15 @@ import {
   slotSolved,
 } from '../../learn/layers/bottomLayer/cross/crossSlotModel';
 import {
+  edgeOrientedByIdentity,
+  expectedULayerEdgePartner,
   U_LAYER_EDGE_SLOTS,
-  yellowStickerOnU,
   type ULayerEdgeId,
 } from '../../learn/layers/lastLayer/orientEdges/uLayerEdgeModel';
-import { edgePermutedAtSlot } from '../../learn/layers/lastLayer/permuteEdges/uLayerEdgePermuteModel';
+import { edgePermutedByIdentity } from '../../learn/layers/lastLayer/permuteEdges/uLayerEdgePermuteModel';
 import {
   cornerOrientedByIdentity,
-  cornerPermutedAtSlot,
+  cornerPermutedByIdentity,
   expectedULayerCornerColors,
   U_LAYER_CORNER_SLOTS,
 } from '../../learn/layers/lastLayer/permuteCorners/uLayerCornerPermuteModel';
@@ -33,13 +41,6 @@ import {
 import type { ULayerCornerId } from '../../learn/layers/bottomLayer/corners/cornerCases';
 import type { MiddleEdgeSlotId } from '../../learn/layers/middleLayer/edges/types';
 import type { LessonProgressConfig } from './LessonProgress';
-
-const U_EDGE_SIDE_FACE: Record<ULayerEdgeId, Face> = {
-  UB: 'B',
-  UL: 'L',
-  UR: 'R',
-  UF: 'F',
-};
 
 const MIDDLE_SLOT_ORDER: MiddleEdgeSlotId[] = ['FR', 'BR', 'BL', 'FL'];
 
@@ -69,45 +70,42 @@ function middleSlotDone(
   return edgeSlotSolved(studentState, id, holdIndex);
 }
 
-function uLayerEdgePartnerColor(
-  studentState: CubeState,
+function uLayerEdgeDone(
+  ref: CubeState,
   id: ULayerEdgeId,
-): Color {
-  return studentState[U_EDGE_SIDE_FACE[id]][4];
+  phase: 'orient-edges' | 'permute-edges',
+): boolean {
+  return phase === 'orient-edges'
+    ? edgeOrientedByIdentity(ref, id)
+    : edgePermutedByIdentity(ref, id);
 }
 
-function uLayerCornerPartnerColors(
-  studentState: CubeState,
+function uLayerCornerDone(
+  ref: CubeState,
   id: ULayerCornerId,
-): readonly [Color, Color] {
-  const [, colorA, colorB] = expectedULayerCornerColors(studentState, id);
-  return [colorA, colorB];
+  phase: 'permute-corners' | 'orient-corners',
+): boolean {
+  return phase === 'permute-corners'
+    ? cornerPermutedByIdentity(ref, id)
+    : cornerOrientedByIdentity(ref, id);
 }
 
 function firstUnsolvedULayerEdge(
-  studentState: CubeState,
+  ref: CubeState,
   phase: 'orient-edges' | 'permute-edges',
 ): ULayerEdgeId | null {
   for (const id of U_LAYER_EDGE_SLOTS) {
-    const done =
-      phase === 'orient-edges'
-        ? yellowStickerOnU(studentState, id)
-        : edgePermutedAtSlot(studentState, id);
-    if (!done) return id;
+    if (!uLayerEdgeDone(ref, id, phase)) return id;
   }
   return null;
 }
 
 function firstUnsolvedULayerCorner(
-  studentState: CubeState,
+  ref: CubeState,
   phase: 'permute-corners' | 'orient-corners',
 ): ULayerCornerId | null {
   for (const id of U_LAYER_CORNER_SLOTS) {
-    const done =
-      phase === 'permute-corners'
-        ? cornerPermutedAtSlot(studentState, id)
-        : cornerOrientedByIdentity(studentState, id);
-    if (!done) return id;
+    if (!uLayerCornerDone(ref, id, phase)) return id;
   }
   return null;
 }
@@ -119,11 +117,12 @@ export function crossLessonProgress(
   const currentId = firstUnsolvedCrossId(studentFrame);
   const slots = CROSS_ORDER.map((id) => {
     const solved = slotSolved(studentFrame, id);
+    const partner = partnerColorForSlot(studentFrame, id);
     return {
       key: id,
-      label: id,
+      label: whiteEdgeProgressLabel(partner),
       solved,
-      color: partnerColorForSlot(studentFrame, id),
+      colors: ['white', partner] as const,
       isCurrent: !solved && id === currentId,
     };
   });
@@ -151,16 +150,16 @@ export function cornersLessonProgress(
       holdIndex,
       solvedCornerIds,
     );
-    const [, colorA, colorB] = expectedCornerColors(
+    const [white, colorA, colorB] = expectedCornerColors(
       studentFrame,
       id,
       holdIndex,
     );
     return {
       key: id,
-      label: id,
+      label: whiteCornerProgressLabel(colorA, colorB),
       solved,
-      colors: [colorA, colorB] as const,
+      colors: [white, colorA, colorB] as const,
       isCurrent: !solved && id === currentId,
     };
   });
@@ -192,7 +191,7 @@ export function middleLayerLessonProgress(
     const colors = expectedEdgeColorsForSlot(studentFrame, id, holdIndex);
     return {
       key: id,
-      label: id,
+      label: edgeProgressLabel(colors[0], colors[1]),
       solved,
       colors,
       isCurrent: !solved && id === currentId,
@@ -212,19 +211,21 @@ export function lastLayerLessonProgress(
   studentFrame: CubeState,
   phase: LastLayerProgressPhase,
   progressLabel: (solved: number) => string,
+  holdIndex = 0,
 ): LessonProgressConfig {
+  // Blue-front + piece identity keeps subsection order stable across y holds and U turns.
+  const ref = normalizeHoldToBlue(studentFrame, holdIndex);
+
   if (phase === 'orient-edges' || phase === 'permute-edges') {
-    const currentId = firstUnsolvedULayerEdge(studentFrame, phase);
+    const currentId = firstUnsolvedULayerEdge(ref, phase);
     const slots = U_LAYER_EDGE_SLOTS.map((id) => {
-      const solved =
-        phase === 'orient-edges'
-          ? yellowStickerOnU(studentFrame, id)
-          : edgePermutedAtSlot(studentFrame, id);
+      const solved = uLayerEdgeDone(ref, id, phase);
+      const partner = expectedULayerEdgePartner(ref, id);
       return {
         key: id,
-        label: id,
+        label: yellowEdgeProgressLabel(partner),
         solved,
-        color: uLayerEdgePartnerColor(studentFrame, id),
+        colors: ['yellow', partner] as const,
         isCurrent: !solved && id === currentId,
       };
     });
@@ -237,17 +238,15 @@ export function lastLayerLessonProgress(
     };
   }
 
-  const currentId = firstUnsolvedULayerCorner(studentFrame, phase);
+  const currentId = firstUnsolvedULayerCorner(ref, phase);
   const slots = U_LAYER_CORNER_SLOTS.map((id) => {
-    const solved =
-      phase === 'permute-corners'
-        ? cornerPermutedAtSlot(studentFrame, id)
-        : cornerOrientedByIdentity(studentFrame, id);
+    const solved = uLayerCornerDone(ref, id, phase);
+    const [yellow, colorA, colorB] = expectedULayerCornerColors(ref, id);
     return {
       key: id,
-      label: id,
+      label: yellowCornerProgressLabel(colorA, colorB),
       solved,
-      colors: uLayerCornerPartnerColors(studentFrame, id),
+      colors: [yellow, colorA, colorB] as const,
       isCurrent: !solved && id === currentId,
     };
   });

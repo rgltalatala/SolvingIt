@@ -127,18 +127,18 @@ const WHITE_CORNERS_GROUPS: CaseReferenceGroup[] = [
 
 const MIDDLE_LAYER_GROUPS: CaseReferenceGroup[] = [
   {
-    heading: 'Front slots',
+    heading: 'Front slots (FL / FR)',
     cases: [
       entry(
         'middle-layer:left',
-        'Front slots',
-        'Front-left slot',
+        'Front slots (FL / FR)',
+        'Insert into FL',
         LEFT_INSERT,
       ),
       entry(
         'middle-layer:right',
-        'Front slots',
-        'Front-right slot',
+        'Front slots (FL / FR)',
+        'Insert into FR',
         RIGHT_INSERT,
       ),
     ],

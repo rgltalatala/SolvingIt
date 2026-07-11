@@ -1,13 +1,28 @@
 import type { CubeState, Face, Move } from '../../../../cube/cubeState';
-import { whiteCornersSteps, formatCornerLabel } from '../../../../content/whiteCorners';
+import { whiteCornersSteps } from '../../../../content/whiteCorners';
+import { whiteCornerIdentity } from '../../../../content/pieceIdentity';
 import { parseFaceTurnAlgToMoves } from '../../../../cube/parseFaceTurnAlg';
 import { recognizeCornerCaseInFrdView } from './cornerCases';
 import { demoChangesState } from '../../../lessonCore';
 import { verifiedFrdDemoAtHold, studentHoldView } from './frdViewDemoBuild';
+import { expectedCornerColors } from './cornerSlotModel';
 import type { CornerSlotId, WhiteCornersLessonStep } from './types';
 import { buildFrdULayerDemo, uLayerInsertStepBody } from './uLayerSteps';
 import { buildFrdWrongDLayerDemo, wrongDSlotStepBody } from './wrongDLayerSteps';
 import { U_LAYER_U_PREFIXES } from './uLayerSteps';
+
+function cornerLabel(
+  studentState: CubeState,
+  cornerId: CornerSlotId,
+  holdIndex: number,
+): string {
+  const [, colorA, colorB] = expectedCornerColors(
+    studentState,
+    cornerId,
+    holdIndex,
+  );
+  return whiteCornerIdentity(colorA, colorB);
+}
 
 export const FRD_WHITE_ON_F: Move[] =
   parseFaceTurnAlgToMoves("R U' R' U R U' R'");
@@ -83,55 +98,66 @@ function searchTwistDemos(
 }
 
 function buildTwistedInSlotStep(
-  _studentState: CubeState,
+  studentState: CubeState,
   cornerId: CornerSlotId,
+  holdIndex: number,
   _whiteOnFace: Face,
   demo: Move[],
 ): WhiteCornersLessonStep {
+  const label = cornerLabel(studentState, cornerId, holdIndex);
   return {
     kind: 'solve-corner',
     cornerId,
-    title: formatCornerLabel(cornerId),
-    body: whiteCornersSteps.twisted(formatCornerLabel(cornerId)),
+    title: label,
+    body: whiteCornersSteps.twisted(label),
     demoMoves: demo,
   };
 }
 
 function buildULayerInsertStep(
+  studentState: CubeState,
   cornerId: CornerSlotId,
+  holdIndex: number,
   demo: Move[],
 ): WhiteCornersLessonStep {
+  const label = cornerLabel(studentState, cornerId, holdIndex);
   return {
     kind: 'solve-corner',
     cornerId,
-    title: formatCornerLabel(cornerId),
-    body: uLayerInsertStepBody(cornerId, demo),
+    title: label,
+    body: uLayerInsertStepBody(label, demo),
     demoMoves: demo,
   };
 }
 
 function buildWrongDLayerStep(
+  studentState: CubeState,
   cornerId: CornerSlotId,
+  holdIndex: number,
   demo: Move[],
 ): WhiteCornersLessonStep {
+  const label = cornerLabel(studentState, cornerId, holdIndex);
   return {
     kind: 'solve-corner',
     cornerId,
-    title: formatCornerLabel(cornerId),
-    body: wrongDSlotStepBody(cornerId, demo),
+    title: label,
+    body: wrongDSlotStepBody(label, demo),
     demoMoves: demo,
   };
 }
 
 function buildGenericSolveStep(
+  studentState: CubeState,
   cornerId: CornerSlotId,
+  holdIndex: number,
   demo: Move[],
 ): WhiteCornersLessonStep {
+  const label = cornerLabel(studentState, cornerId, holdIndex);
   return {
     kind: 'solve-corner',
     cornerId,
-    title: formatCornerLabel(cornerId),
-    body: whiteCornersSteps.directSolve(formatCornerLabel(cornerId)),
+    title: label,
+    body: whiteCornersSteps.directSolve(label),
     demoMoves: demo,
   };
 }
@@ -150,6 +176,7 @@ export function tryFrdTwistedInSlot(
   return buildTwistedInSlotStep(
     studentState,
     id,
+    holdIndex,
     match.whiteOnFace,
     match.demo,
   );
@@ -170,7 +197,7 @@ export function tryFrdULayerInsert(
   );
   if (!demo?.length) return null;
 
-  return buildULayerInsertStep(id, demo);
+  return buildULayerInsertStep(studentState, id, holdIndex, demo);
 }
 
 export function tryFrdWrongDLayerExtract(
@@ -188,7 +215,7 @@ export function tryFrdWrongDLayerExtract(
   );
   if (!demo?.length) return null;
 
-  return buildWrongDLayerStep(id, demo);
+  return buildWrongDLayerStep(studentState, id, holdIndex, demo);
 }
 
 function shortestVerifiedDemo(
@@ -252,7 +279,8 @@ function buildStepForDemo(
     holdIndex,
     solvedCornerIds,
   );
-  if (uDemo && demosEqual(uDemo, demo)) return buildULayerInsertStep(id, demo);
+  if (uDemo && demosEqual(uDemo, demo))
+    return buildULayerInsertStep(studentState, id, holdIndex, demo);
 
   const wDemo = buildFrdWrongDLayerDemo(
     studentState,
@@ -261,7 +289,8 @@ function buildStepForDemo(
     holdIndex,
     solvedCornerIds,
   );
-  if (wDemo && demosEqual(wDemo, demo)) return buildWrongDLayerStep(id, demo);
+  if (wDemo && demosEqual(wDemo, demo))
+    return buildWrongDLayerStep(studentState, id, holdIndex, demo);
 
   const twistMatch = [
     ...searchTwistDemos(studentState, id, holdIndex, solvedCornerIds, {
@@ -278,12 +307,13 @@ function buildStepForDemo(
     return buildTwistedInSlotStep(
       studentState,
       id,
+      holdIndex,
       twistMatch.whiteOnFace,
       demo,
     );
   }
 
-  return buildGenericSolveStep(id, demo);
+  return buildGenericSolveStep(studentState, id, holdIndex, demo);
 }
 
 export function tryDirectSolveStepForCornerId(

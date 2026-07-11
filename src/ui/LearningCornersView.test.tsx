@@ -76,7 +76,7 @@ function mockCornerLessonStep(
   mockUseWhiteCornerLessonStep.mockReturnValue({
     step: {
       kind: 'solve-corner',
-      title: 'Front–right corner',
+      title: 'White–Blue–Red Corner',
       body: 'Insert the corner.',
       cornerId: 'FRD',
       demoMoves: ['R', 'U', "R'"],
@@ -112,7 +112,7 @@ describe('LearningCornersView', () => {
       step: {
         kind: 'intro',
         title: 'How this lesson works',
-        body: 'We solve every corner into the front-right-bottom slot (FRD).',
+        body: 'We solve every corner into FRD.',
       },
       hasSeenStrategyIntro: false,
       advanceAfterStep,
@@ -120,7 +120,7 @@ describe('LearningCornersView', () => {
     });
 
     render(<LearningCornersView />);
-    expect(screen.getByText(/front-right-bottom slot \(FRD\)/)).toBeInTheDocument();
+    expect(screen.getByText(/into FRD/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: ui.continue })).toBeEnabled();
     expect(
       screen.queryByRole('button', { name: ui.applyExampleContinue }),
@@ -164,7 +164,7 @@ describe('LearningCornersView', () => {
     mockCornerLessonStep({
       step: {
         kind: 'solve-corner',
-        title: 'Front–right corner',
+        title: 'White–Blue–Red Corner',
         body: 'Extract and insert.',
         cornerId: 'FRD',
         demoMoves: ['R', 'U', "R'", "U'", 'U', 'R', 'U', "R'"],
@@ -197,7 +197,7 @@ describe('LearningCornersView', () => {
     mockCornerLessonStep({
       step: {
         kind: 'solve-corner',
-        title: 'Back–right corner',
+        title: 'White–Red–Green Corner',
         body: 'Insert the corner.',
         cornerId: 'BDR',
         demoMoves: ['U', 'R', "U'", "R'"],
