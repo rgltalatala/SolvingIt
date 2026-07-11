@@ -29,10 +29,12 @@ import { useCubeStore } from '../store/cubeStore';
 import { useLastLayerLessonStep } from './lessons/lastLayer/useLastLayerLessonStep';
 import { LessonUnavailable } from './lessons/LessonUnavailable';
 import { LessonViewShell } from './lessons/LessonViewShell';
+import {
+  lastLayerLessonProgress,
+  type LastLayerProgressPhase,
+} from './lessons/lessonProgressBuilders';
 import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
 import { cornerHoldToStudentHold } from '../learn/layers/bottomLayer/corners';
-
-const LAST_LAYER_SLOTS = ['1', '2', '3', '4'];
 
 function expandHoldReorientDemo(moves: Move[]): {
   steps: DemoStep[];
@@ -79,7 +81,6 @@ export function LearningLastLayerView() {
     isStepPending,
     showPreparingOverlay,
     isLessonComplete,
-    solvedSlots,
     recomputeStep,
     advanceAfterStep,
     currentHoldIndex,
@@ -89,6 +90,7 @@ export function LearningLastLayerView() {
     isEdgePermutePhase,
     isCornerPermutePhase,
     isCornerOrientPhase,
+    inOrientCornersPhase,
   } = useLastLayerLessonStep(studentFrame);
 
   const demoMoves = useMemo((): Move[] => {
@@ -150,7 +152,13 @@ export function LearningLastLayerView() {
     (step?.kind === 'align-u' && step.subLesson === 'orient-edges') ||
     (step?.kind === 'intro' && step.introId === 'orient-edges');
 
+  const inOrientCornersLesson =
+    inOrientCornersPhase ||
+    step?.kind === 'orient-corners' ||
+    (step?.kind === 'align-u' && step.subLesson === 'orient-corners');
+
   const edgePermutePhase =
+    !inOrientCornersLesson &&
     !isOrientEdgesLessonStep &&
     (isEdgePermutePhase ||
       (studentFrame &&
@@ -158,13 +166,15 @@ export function LearningLastLayerView() {
         !isEdgesFullyPermuted(studentFrame)));
 
   const cornerPermutePhase =
-    isCornerPermutePhase ||
-    (studentFrame &&
-      isYellowCrossComplete(studentFrame) &&
-      isEdgesFullyPermuted(studentFrame) &&
-      !isCornersFullyPermuted(studentFrame));
+    !inOrientCornersLesson &&
+    (isCornerPermutePhase ||
+      (studentFrame &&
+        isYellowCrossComplete(studentFrame) &&
+        isEdgesFullyPermuted(studentFrame) &&
+        !isCornersFullyPermuted(studentFrame)));
 
   const cornerOrientPhase =
+    inOrientCornersLesson ||
     isCornerOrientPhase ||
     (studentFrame &&
       isYellowCrossComplete(studentFrame) &&
@@ -279,15 +289,24 @@ export function LearningLastLayerView() {
                 ? LAST_LAYER_SUB_LESSON_LABELS.permuteEdges
                 : LAST_LAYER_SUB_LESSON_LABELS.orientEdges;
 
-  const progressAriaLabel = isOrientEdgesLessonStep
-    ? lastLayerLesson.progress.orientEdges(solvedSlots)
+  const lastLayerProgressPhase: LastLayerProgressPhase = isOrientEdgesLessonStep
+    ? 'orient-edges'
     : cornerOrientPhase
-      ? lastLayerLesson.progress.orientCorners(solvedSlots)
+      ? 'orient-corners'
       : cornerPermutePhase
-        ? lastLayerLesson.progress.permuteCorners(solvedSlots)
+        ? 'permute-corners'
         : edgePermutePhase
-          ? lastLayerLesson.progress.permuteEdges(solvedSlots)
-          : lastLayerLesson.progress.orientEdges(solvedSlots);
+          ? 'permute-edges'
+          : 'orient-edges';
+
+  const progressLabelForPhase = (solved: number) =>
+    lastLayerProgressPhase === 'orient-edges'
+      ? lastLayerLesson.progress.orientEdges(solved)
+      : lastLayerProgressPhase === 'orient-corners'
+        ? lastLayerLesson.progress.orientCorners(solved)
+        : lastLayerProgressPhase === 'permute-corners'
+          ? lastLayerLesson.progress.permuteCorners(solved)
+          : lastLayerLesson.progress.permuteEdges(solved);
 
   const showProgress =
     !isLessonComplete &&
@@ -353,11 +372,12 @@ export function LearningLastLayerView() {
         titleClassName: isLessonComplete ? 'text-emerald-100' : undefined,
         progress: showProgress
           ? {
-              solved: solvedSlots,
-              total: 4,
-              slotLabels: LAST_LAYER_SLOTS,
+              ...lastLayerLessonProgress(
+                studentFrame,
+                lastLayerProgressPhase,
+                progressLabelForPhase,
+              ),
               phaseLabel: `${lastLayerLesson.subLessonPrefix} ${subLessonLabel}`,
-              ariaLabel: progressAriaLabel,
             }
           : undefined,
         sessionNotesSummary: 'Lesson session & reset',

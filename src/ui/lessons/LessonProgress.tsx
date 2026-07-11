@@ -5,8 +5,10 @@ export type LessonProgressSlot = {
   key: string;
   label: string;
   solved: boolean;
-  /** Partner color for this slot; fills the bar segment when solved. */
+  /** Single partner color; fills the bar segment when solved. */
   color?: Color;
+  /** Two partner colors; each fills half of the bar segment when solved. */
+  colors?: readonly [Color, Color];
   /** Lesson's current target slot (border highlight when still unsolved). */
   isCurrent?: boolean;
 };
@@ -26,7 +28,7 @@ type LessonProgressProps = {
 };
 
 function segmentClassName(slot: LessonProgressSlot): string {
-  const base = 'flex h-2 flex-1 rounded-full transition-colors';
+  const base = 'flex h-2 flex-1 overflow-hidden rounded-full transition-colors';
   if (slot.solved) {
     return base;
   }
@@ -42,6 +44,35 @@ function labelClassName(slot: LessonProgressSlot): string {
     return base;
   }
   return `${base} text-slate-500`;
+}
+
+function ProgressSegment({ slot }: { slot: LessonProgressSlot }) {
+  if (slot.solved && slot.colors) {
+    return (
+      <div title={slot.label} className={segmentClassName(slot)}>
+        <div
+          className="h-full w-1/2"
+          style={{ backgroundColor: colorHexMap[slot.colors[0]] }}
+        />
+        <div
+          className="h-full w-1/2"
+          style={{ backgroundColor: colorHexMap[slot.colors[1]] }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      title={slot.label}
+      className={segmentClassName(slot)}
+      style={
+        slot.solved && slot.color
+          ? { backgroundColor: colorHexMap[slot.color] }
+          : undefined
+      }
+    />
+  );
 }
 
 export function LessonProgress({ progress }: LessonProgressProps) {
@@ -67,18 +98,7 @@ export function LessonProgress({ progress }: LessonProgressProps) {
             aria-label={ariaLabel}
           >
             {useSlotMode
-              ? slots.map((slot) => (
-                  <div
-                    key={slot.key}
-                    title={slot.label}
-                    className={segmentClassName(slot)}
-                    style={
-                      slot.solved && slot.color
-                        ? { backgroundColor: colorHexMap[slot.color] }
-                        : undefined
-                    }
-                  />
-                ))
+              ? slots.map((slot) => <ProgressSegment key={slot.key} slot={slot} />)
               : legacySlots.map((label, index) => {
                   const done = index < solved;
                   const active = index === solved;

@@ -80,6 +80,33 @@ describe('LessonProgress', () => {
     expect(segments[2]).toHaveClass('bg-slate-700');
     expect(segments[2]).not.toHaveClass('ring-violet-400');
   });
+
+  it('fills solved slots with two partner colors on each half', () => {
+    const { container } = render(
+      <LessonProgress
+        progress={{
+          solved: 1,
+          total: 4,
+          slots: [
+            {
+              key: 'FRD',
+              label: 'FRD',
+              solved: true,
+              colors: ['blue', 'red'],
+            },
+            { key: 'BDR', label: 'BDR', solved: false },
+            { key: 'BLD', label: 'BLD', solved: false },
+            { key: 'FDL', label: 'FDL', solved: false },
+          ],
+          ariaLabel: '1 of 4 corners',
+        }}
+      />,
+    );
+
+    const halves = container.querySelectorAll('[role="progressbar"] > div > div');
+    expect(halves[0]).toHaveStyle({ backgroundColor: colorHexMap.blue });
+    expect(halves[1]).toHaveStyle({ backgroundColor: colorHexMap.red });
+  });
 });
 
 describe('LessonCurrentInstruction', () => {

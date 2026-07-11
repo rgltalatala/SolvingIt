@@ -257,6 +257,7 @@ export function useLastLayerLessonStep(studentFrame: CubeState | null) {
       !isEdgesFullyPermuted(studentFrame),
     isCornerPermutePhase,
     isCornerOrientPhase,
+    inOrientCornersPhase: session.inOrientCornersPhase ?? false,
     isFullyPermuted: studentFrame ? isCornersFullyPermuted(studentFrame) : false,
     isLastLayerComplete: studentFrame ? isLastLayerComplete(studentFrame) : false,
   };

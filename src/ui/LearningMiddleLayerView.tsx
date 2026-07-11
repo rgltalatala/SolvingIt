@@ -22,10 +22,9 @@ import { LAST_LAYER_LESSON_ID } from '../learn/layers/lastLayer';
 import { useMiddleLayerLessonStep } from './lessons/middleLayer/useMiddleLayerLessonStep';
 import { LessonUnavailable } from './lessons/LessonUnavailable';
 import { LessonViewShell } from './lessons/LessonViewShell';
+import { middleLayerLessonProgress } from './lessons/lessonProgressBuilders';
 import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
 import { cornerHoldToStudentHold } from '../learn/layers/bottomLayer/corners';
-
-const MIDDLE_SLOT_LABELS = ['FR', 'BR', 'BL', 'FL'];
 
 function expandHoldReorientDemo(moves: Move[]): {
   steps: DemoStep[];
@@ -72,9 +71,9 @@ export function LearningMiddleLayerView() {
     isStepPending,
     showPreparingOverlay,
     isLessonComplete,
-    solvedSlots,
     recomputeStep,
     currentHoldIndex,
+    solvedMiddleEdgeSlots,
     sessionUndoStack,
     advanceAfterStep,
     undoMiddleSessionStep,
@@ -248,12 +247,12 @@ export function LearningMiddleLayerView() {
         title: middleLayerLesson.title,
         subtitle: middleLayerLesson.subtitle,
         progress: showProgress
-          ? {
-              solved: solvedSlots,
-              total: 4,
-              slotLabels: MIDDLE_SLOT_LABELS,
-              ariaLabel: middleLayerLesson.progress(solvedSlots),
-            }
+          ? middleLayerLessonProgress(
+              studentFrame,
+              currentHoldIndex,
+              solvedMiddleEdgeSlots,
+              middleLayerLesson.progress,
+            )
           : undefined,
         sessionNotesSummary: middleLayerLesson.sessionNotesSummary,
         sessionNotes: middleLayerLesson.sessionNotes,

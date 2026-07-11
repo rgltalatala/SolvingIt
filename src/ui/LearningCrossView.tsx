@@ -13,7 +13,7 @@ import { useCubeStore } from '../store/cubeStore';
 import { useWhiteCrossLessonStep } from './lessons/bottomLayer/useWhiteCrossLessonStep';
 import { LessonUnavailable } from './lessons/LessonUnavailable';
 import { LessonViewShell } from './lessons/LessonViewShell';
-import { crossLessonProgress } from './lessons/crossLessonProgress';
+import { crossLessonProgress } from './lessons/lessonProgressBuilders';
 import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
 
 export function LearningCrossView() {

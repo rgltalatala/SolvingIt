@@ -21,11 +21,10 @@ import { useCubeStore } from '../store/cubeStore';
 import { useWhiteCornerLessonStep } from './lessons/bottomLayer/useWhiteCornerLessonStep';
 import { LessonUnavailable } from './lessons/LessonUnavailable';
 import { LessonViewShell } from './lessons/LessonViewShell';
+import { cornersLessonProgress } from './lessons/lessonProgressBuilders';
 import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
 import { MIDDLE_LAYER_EDGES_LESSON_ID } from '../learn/layers/middleLayer/edges';
 import { cornerHoldToStudentHold } from '../learn/layers/bottomLayer/corners';
-
-const CORNER_SLOT_LABELS = ['FRD', 'BDR', 'BLD', 'FDL'];
 
 function expandHoldReorientDemo(moves: Move[]): {
   steps: DemoStep[];
@@ -79,7 +78,6 @@ export function LearningCornersView() {
     isStepPending,
     showPreparingOverlay,
     isLessonComplete,
-    solvedSlots,
     recomputeStep,
     currentHoldIndex,
     solvedCornerIds,
@@ -306,12 +304,12 @@ export function LearningCornersView() {
         title: whiteCornersLesson.title,
         subtitle: whiteCornersLesson.subtitle,
         progress: showProgress
-          ? {
-              solved: solvedSlots,
-              total: 4,
-              slotLabels: CORNER_SLOT_LABELS,
-              ariaLabel: whiteCornersLesson.progress(solvedSlots),
-            }
+          ? cornersLessonProgress(
+              studentFrame,
+              currentHoldIndex,
+              solvedCornerIds,
+              whiteCornersLesson.progress,
+            )
           : undefined,
         sessionNotesSummary: whiteCornersLesson.sessionNotesSummary,
         sessionNotes: whiteCornersLesson.sessionNotes,

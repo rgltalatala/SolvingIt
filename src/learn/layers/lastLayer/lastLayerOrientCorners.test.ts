@@ -11,6 +11,7 @@ import { parseFaceTurnAlgToMoves } from '../../../cube/parseFaceTurnAlg';
 import {
   LAST_LAYER_PAST_ORIENT_EDGES,
   countSolvedCorners,
+  cornerOrientedByIdentity,
   getLastLayerLessonStep,
   isCornersFullyPermuted,
   isLastLayerComplete,
@@ -24,6 +25,8 @@ import {
   repeatOrientAlg,
   simulateLastLayerLessonOnStorageCube,
 } from './index';
+import { lastLayerLessonProgress } from '../../../ui/lessons/lessonProgressBuilders';
+import { U_LAYER_CORNER_SLOTS } from './permuteCorners/uLayerCornerPermuteModel';
 
 import type { LastLayerLessonStepOptions } from './types';
 
@@ -262,6 +265,40 @@ describe('last layer orient corners model', () => {
     expect(isLastLayerComplete(applyMoves(current, finishAlign.demoMoves))).toBe(
       true,
     );
+  });
+
+  it('identity-based orient progress survives U align between corners', () => {
+    let current = cloneCubeState(twoUnsolvedOrientStudent());
+    const session = { ...AFTER_ORIENT_EDGES, inOrientCornersPhase: true };
+
+    const firstOrient = getLastLayerLessonStep(current, session);
+    current = applyMoves(current, requireDemoMoves(firstOrient));
+
+    const beforeIdentity = U_LAYER_CORNER_SLOTS.filter((id) =>
+      cornerOrientedByIdentity(current, id),
+    ).length;
+
+    const align = getLastLayerLessonStep(current, session);
+    expect(align.kind).toBe('align-u');
+    current = applyMoves(current, requireDemoMoves(align));
+
+    const afterIdentity = U_LAYER_CORNER_SLOTS.filter((id) =>
+      cornerOrientedByIdentity(current, id),
+    ).length;
+    const progress = lastLayerLessonProgress(
+      current,
+      'orient-corners',
+      () => 'orient progress',
+    );
+
+    expect(afterIdentity).toBeGreaterThanOrEqual(beforeIdentity);
+    expect(progress.solved).toBe(afterIdentity);
+    expect(progress.slots?.map((slot) => slot.key)).toEqual([
+      'URF',
+      'UBR',
+      'ULB',
+      'UFL',
+    ]);
   });
 });
 

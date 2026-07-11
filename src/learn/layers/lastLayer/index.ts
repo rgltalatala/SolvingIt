@@ -84,6 +84,8 @@ export {
   countPermutedCorners,
   countSolvedCorners,
   cornerOrientedAtSlot,
+  cornerOrientedByIdentity,
+  countOrientedCornersByIdentity,
   cornerPermutedAtSlot,
   cornerSolvedAtSlot,
   isCornersFullyPermuted,

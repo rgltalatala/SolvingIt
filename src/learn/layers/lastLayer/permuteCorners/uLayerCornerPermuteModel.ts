@@ -5,6 +5,7 @@ import {
   U_LAYER_CORNER_POS,
   type ULayerCornerId,
 } from '../../bottomLayer/corners/cornerCases';
+import { findCornerWithColors } from '../../bottomLayer/shared/pieceQueries';
 import { isYellowCrossComplete } from '../orientEdges/uLayerEdgeModel';
 
 export const U_LAYER_CORNER_SLOTS = ['URF', 'UBR', 'ULB', 'UFL'] as const;
@@ -66,6 +67,23 @@ export function cornerOrientedAtSlot(
 ): boolean {
   const pos = U_LAYER_CORNER_POS[slotId];
   return readSticker(state, pos, 'U') === 'yellow';
+}
+
+/** True when the corner cubie for this slot (by side colors) has yellow on U, anywhere on the top layer. */
+export function cornerOrientedByIdentity(
+  state: CubeState,
+  slotId: ULayerCornerId,
+): boolean {
+  const [yellow, colorA, colorB] = expectedULayerCornerColors(state, slotId);
+  const pos = findCornerWithColors(state, yellow, colorA, colorB);
+  if (!pos || pos[1] !== 1) return false;
+  return readSticker(state, pos, 'U') === 'yellow';
+}
+
+export function countOrientedCornersByIdentity(state: CubeState): number {
+  return U_LAYER_CORNER_SLOTS.filter((id) =>
+    cornerOrientedByIdentity(state, id),
+  ).length;
 }
 
 export function cornerSolvedAtSlot(
