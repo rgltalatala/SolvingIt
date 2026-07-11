@@ -1,5 +1,7 @@
 import {
+  createContext,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -43,11 +45,45 @@ export interface MoveSequenceDemoProps {
   trailingActions?: ReactNode;
 }
 
-/**
- * Step-by-step preview of a move sequence on a copy of the cube (no store mutation).
- * Face turns and whole-cube rotations animate before advancing sticker state.
- */
-export function MoveSequenceDemo({
+type MoveSequenceDemoContextValue = {
+  hasMoves: boolean;
+  moves: Move[];
+  demoSteps?: DemoStep[];
+  instructions?: Instruction[];
+  summary: string;
+  playing: boolean;
+  applied: number;
+  animating: boolean;
+  instructionIndex: number;
+  activeMoveIndex: number;
+  reverseAnimating: boolean;
+  displayState: CubeState;
+  meshRotation: [number, number, number];
+  frameClassName: string;
+  baseStateKey: string;
+  holdForCopy: ReturnType<typeof studentLessonHoldFaceCenters>;
+  handleReset: () => void;
+  handlePrev: () => void;
+  handleNext: () => void;
+  handlePlayAll: () => void;
+  moveAnimation: CubeMoveAnimation | null;
+  canvasKey: string;
+};
+
+const MoveSequenceDemoContext =
+  createContext<MoveSequenceDemoContextValue | null>(null);
+
+export function useMoveSequenceDemoContext() {
+  const value = useContext(MoveSequenceDemoContext);
+  if (!value) {
+    throw new Error(
+      'MoveSequenceDemo parts must be rendered inside MoveSequenceDemoProvider',
+    );
+  }
+  return value;
+}
+
+function useMoveSequenceDemoState({
   baseCubeState,
   moves,
   demoSteps,
@@ -55,8 +91,7 @@ export function MoveSequenceDemo({
   instructionPhaseLengths,
   meshRotation = [0, 0, 0],
   frameClassName = 'h-[280px] w-full min-h-[240px] overflow-hidden rounded-lg border border-slate-600 bg-slate-950',
-  trailingActions,
-}: MoveSequenceDemoProps) {
+}: Omit<MoveSequenceDemoProps, 'trailingActions'>): MoveSequenceDemoContextValue {
   const [applied, setApplied] = useState(0);
   const [animating, setAnimating] = useState(false);
   const [animDirection, setAnimDirection] =
@@ -69,8 +104,6 @@ export function MoveSequenceDemo({
   }, [animDirection]);
 
   const hasMoves = moves.length > 0;
-
-  /** Stable for the lesson session — do not tie to `applied` or animations (avoids WebGL remount flash). */
   const canvasKey = 'lesson-move-demo';
 
   const movesSignature = moves.join(' ');
@@ -199,27 +232,112 @@ export function MoveSequenceDemo({
     return Math.min(completedMoves, instructions.length - 1);
   })();
 
-  return (
-    <div className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <h3 className="text-sm font-semibold text-slate-200">
-          {hasMoves
-            ? moveSequenceDemo.exampleHeading
-            : moveSequenceDemo.interactiveHeading}
-        </h3>
-        <p className="max-w-[min(100%,28rem)] font-mono text-xs leading-snug text-slate-400">
-          {summary}
-        </p>
-      </div>
+  return {
+    hasMoves,
+    moves,
+    demoSteps,
+    instructions,
+    summary,
+    playing,
+    applied,
+    animating,
+    instructionIndex,
+    activeMoveIndex,
+    reverseAnimating,
+    displayState,
+    meshRotation,
+    frameClassName,
+    baseStateKey,
+    holdForCopy,
+    handleReset,
+    handlePrev,
+    handleNext,
+    handlePlayAll,
+    moveAnimation,
+    canvasKey,
+  };
+}
 
-      <CubeView
-        cubeState={displayState}
-        meshRotation={meshRotation}
-        frameClassName={frameClassName}
-        canvasKey={canvasKey}
-        cameraBaselineKey={baseStateKey}
-        moveAnimation={moveAnimation}
-      />
+type MoveSequenceDemoProviderProps = MoveSequenceDemoProps & {
+  children: ReactNode;
+};
+
+export function MoveSequenceDemoProvider({
+  children,
+  ...props
+}: MoveSequenceDemoProviderProps) {
+  const value = useMoveSequenceDemoState(props);
+
+  return (
+    <MoveSequenceDemoContext.Provider value={value}>
+      {children}
+    </MoveSequenceDemoContext.Provider>
+  );
+}
+
+export function MoveSequenceDemoCube() {
+  const {
+    displayState,
+    meshRotation,
+    frameClassName,
+    canvasKey,
+    baseStateKey,
+    moveAnimation,
+  } = useMoveSequenceDemoContext();
+
+  return (
+    <CubeView
+      cubeState={displayState}
+      meshRotation={meshRotation}
+      frameClassName={frameClassName}
+      canvasKey={canvasKey}
+      cameraBaselineKey={baseStateKey}
+      moveAnimation={moveAnimation}
+    />
+  );
+}
+
+export function MoveSequenceDemoSummary() {
+  const { hasMoves, summary } = useMoveSequenceDemoContext();
+
+  return (
+    <div className="flex flex-wrap items-start justify-between gap-2">
+      <h3 className="text-sm font-semibold text-slate-200">
+        {hasMoves
+          ? moveSequenceDemo.exampleHeading
+          : moveSequenceDemo.interactiveHeading}
+      </h3>
+      <p className="max-w-[min(100%,28rem)] font-mono text-xs leading-snug text-slate-400">
+        {summary}
+      </p>
+    </div>
+  );
+}
+
+type MoveSequenceDemoControlsProps = {
+  trailingActions?: ReactNode;
+  showSummary?: boolean;
+};
+
+export function MoveSequenceDemoControls({
+  trailingActions,
+  showSummary = false,
+}: MoveSequenceDemoControlsProps) {
+  const {
+    hasMoves,
+    playing,
+    animating,
+    applied,
+    moves,
+    handleReset,
+    handlePrev,
+    handleNext,
+    handlePlayAll,
+  } = useMoveSequenceDemoContext();
+
+  return (
+    <div className={showSummary ? 'flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-900/60 p-4' : undefined}>
+      {showSummary ? <MoveSequenceDemoSummary /> : null}
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-2">
@@ -259,7 +377,26 @@ export function MoveSequenceDemo({
           <div className="ml-auto flex shrink-0 items-center">{trailingActions}</div>
         ) : null}
       </div>
+    </div>
+  );
+}
 
+export function MoveSequenceDemoStepInstructions() {
+  const {
+    hasMoves,
+    moves,
+    demoSteps,
+    instructions,
+    instructionIndex,
+    activeMoveIndex,
+    reverseAnimating,
+    applied,
+    animating,
+    holdForCopy,
+  } = useMoveSequenceDemoContext();
+
+  return (
+    <div className="flex flex-col gap-3">
       {instructions && instructions.length > 0 ? (
         <LessonInstructionDemo
           instructions={instructions}
@@ -325,11 +462,29 @@ export function MoveSequenceDemo({
             </>
           )
         ) : (
-          <>
-            {moveSequenceDemo.noAlgorithmYet}
-          </>
+          <>{moveSequenceDemo.noAlgorithmYet}</>
         )}
       </p>
     </div>
+  );
+}
+
+/**
+ * Step-by-step preview of a move sequence on a copy of the cube (no store mutation).
+ * Face turns and whole-cube rotations animate before advancing sticker state.
+ */
+export function MoveSequenceDemo({
+  trailingActions,
+  ...props
+}: MoveSequenceDemoProps) {
+  return (
+    <MoveSequenceDemoProvider {...props}>
+      <div className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+        <MoveSequenceDemoSummary />
+        <MoveSequenceDemoCube />
+        <MoveSequenceDemoControls trailingActions={trailingActions} />
+        <MoveSequenceDemoStepInstructions />
+      </div>
+    </MoveSequenceDemoProvider>
   );
 }

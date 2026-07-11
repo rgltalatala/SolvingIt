@@ -50,6 +50,7 @@ The cube will look scrambled while you're doing this, especially after the first
 
 export const lastLayerLesson = {
   title: 'Lesson: Last layer',
+  subtitle: 'Orient and permute the top layer in four stages.',
   defaultStepTitle: 'Last layer',
   subLessonPrefix: 'Sub-lesson:',
   progressPrefix: 'Progress:',

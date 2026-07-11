@@ -3,21 +3,63 @@ import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createSolvedCubeState } from '../cube/cubeState';
 import { ui } from '../content/ui';
-import { applyHints, PHYSICAL_CUBE_MATCH_NOTE } from '../content/tips';
+import { applyHints } from '../content/tips';
+import { lessonLayout } from '../content/tips';
 import { useCubeStore } from '../store/cubeStore';
 import { LearningCrossView } from './LearningCrossView';
 
-vi.mock('./MoveSequenceDemo', () => ({
-  MoveSequenceDemo: ({
-    moves,
-    trailingActions,
+vi.mock('./lessons/LessonViewShell', () => ({
+  LessonViewShell: ({
+    header,
+    step,
+    cube,
+    demo,
+    secondary,
   }: {
-    moves: string[];
-    trailingActions?: React.ReactNode;
+    header: {
+      title: string;
+      onUndo: () => void;
+    };
+    step: { body?: string };
+    cube: {
+      isComplete: boolean;
+      visibleDemo?: { moves?: string[] } | null;
+    };
+    demo?: {
+      canApply: boolean;
+      applyLabel: string;
+      applyHint?: string;
+      onApply: () => void;
+      alternateActions?: React.ReactNode;
+    };
+    secondary: { showOrientationPanel?: boolean };
   }) => (
-    <div data-testid="move-sequence-demo">
-      {moves.join(' ') || 'no-moves'}
-      {trailingActions}
+    <div>
+      <h1>{header.title}</h1>
+      {secondary.showOrientationPanel !== false ? (
+        <details>
+          <summary>{lessonLayout.cubeOrientationPanel}</summary>
+          <p>Hold your cube with white on the bottom</p>
+        </details>
+      ) : null}
+      {!cube.isComplete ? (
+        <div data-testid="move-sequence-demo">
+          {cube.visibleDemo?.moves?.join(' ') || 'no-moves'}
+        </div>
+      ) : null}
+      {step.body ? <p>{step.body}</p> : null}
+      {demo?.alternateActions}
+      {demo?.canApply ? (
+        <>
+          <button type="button" onClick={demo.onApply}>
+            {demo.applyLabel}
+          </button>
+          {demo.applyHint ? <p>{demo.applyHint}</p> : null}
+        </>
+      ) : null}
+      <button type="button" onClick={header.onUndo}>
+        Undo last example
+      </button>
     </div>
   ),
 }));
@@ -154,9 +196,9 @@ describe('LearningCrossView', () => {
     ).toBeEnabled();
   });
 
-  it('shows physical cube confirmation copy in header and apply panel', () => {
+  it('shows apply hint and collapsible orientation panel', () => {
     render(<LearningCrossView />);
-    expect(screen.getByText(PHYSICAL_CUBE_MATCH_NOTE)).toBeInTheDocument();
+    expect(screen.getByText(lessonLayout.cubeOrientationPanel)).toBeInTheDocument();
     expect(screen.getByText(applyHints.default)).toBeInTheDocument();
   });
 });

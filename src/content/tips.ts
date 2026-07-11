@@ -82,3 +82,11 @@ export const demoStepChips = {
   avoidBackStart: 'y2 · start',
   avoidBackReturn: 'y2 · return',
 } as const;
+
+export const lessonLayout = {
+  cubeOrientationPanel: 'Cube orientation',
+  seeAllSteps: 'See all steps',
+  lessonOptions: 'Lesson options',
+  goalHeading: 'Goal',
+  exampleHeading: 'Example',
+} as const;

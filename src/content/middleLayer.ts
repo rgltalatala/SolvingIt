@@ -1,5 +1,6 @@
 export const middleLayerLesson = {
   title: 'Lesson: Middle layer edges',
+  subtitle: 'Insert the four middle-layer edges one at a time.',
   defaultStepTitle: 'Middle layer edges',
   progress: (solved: number) =>
     `Progress: ${solved}/4 middle-layer edges in place (side stickers matching their centers).`,

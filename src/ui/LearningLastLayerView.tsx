@@ -3,7 +3,6 @@ import type { Move } from '../cube/cubeState';
 import {
   cubeStateToStudentFrame,
   faceCentersFromCubeState,
-  formatColorLabel,
   isWholeCubeRotation,
   studentLessonHoldFaceCenters,
 } from '../cube/cubeState';
@@ -24,24 +23,16 @@ import {
   LAST_LAYER_SUB_LESSON_LABELS,
   lastLayerLesson,
 } from '../content/lastLayer';
-import {
-  applyHints,
-  PHYSICAL_CUBE_MATCH_NOTE,
-  preparing,
-  SAME_HOLD_NOTE,
-} from '../content/tips';
+import { applyHints, preparing } from '../content/tips';
 import { ui } from '../content/ui';
 import { useCubeStore } from '../store/cubeStore';
 import { useLastLayerLessonStep } from './lessons/lastLayer/useLastLayerLessonStep';
-import {
-  LessonApplyButton,
-  LessonApplyPanel,
-} from './lessons/LessonApplyPanel';
-import { LessonCubeStage } from './lessons/LessonCubeStage';
-import { LessonHeaderActions } from './lessons/LessonHeaderActions';
 import { LessonUnavailable } from './lessons/LessonUnavailable';
+import { LessonViewShell } from './lessons/LessonViewShell';
 import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
 import { cornerHoldToStudentHold } from '../learn/layers/bottomLayer/corners';
+
+const LAST_LAYER_SLOTS = ['1', '2', '3', '4'];
 
 function expandHoldReorientDemo(moves: Move[]): {
   steps: DemoStep[];
@@ -99,7 +90,6 @@ export function LearningLastLayerView() {
     isCornerPermutePhase,
     isCornerOrientPhase,
   } = useLastLayerLessonStep(studentFrame);
-
 
   const demoMoves = useMemo((): Move[] => {
     if (
@@ -214,7 +204,8 @@ export function LearningLastLayerView() {
     (demoMoves.length > 0 || isHoldSyncStep) &&
     step.kind !== 'complete' &&
     step.kind !== 'prerequisite' &&
-    step.kind !== 'intro';
+    step.kind !== 'intro' &&
+    step.kind !== 'orient-edges-already-complete';
 
   const handleRestartLessonTips = () => {
     resetLessonSession();
@@ -268,14 +259,6 @@ export function LearningLastLayerView() {
     });
   };
 
-  const trailingActions = canApplyDemo ? (
-    <LessonApplyButton
-      buttonLabel={isReorientStep ? ui.continue : ui.applyExampleContinue}
-      disabled={isStepPending}
-      onApply={handleApplyDemo}
-    />
-  ) : undefined;
-
   const subLessonLabel =
     step?.kind === 'intro' && step.introId === 'overview'
       ? lastLayerLesson.defaultStepTitle
@@ -289,171 +272,141 @@ export function LearningLastLayerView() {
         : isOrientEdgesLessonStep
           ? LAST_LAYER_SUB_LESSON_LABELS.orientEdges
           : cornerOrientPhase
-          ? LAST_LAYER_SUB_LESSON_LABELS.orientCorners
-          : cornerPermutePhase
-            ? LAST_LAYER_SUB_LESSON_LABELS.permuteCorners
-            : edgePermutePhase
-              ? LAST_LAYER_SUB_LESSON_LABELS.permuteEdges
-              : LAST_LAYER_SUB_LESSON_LABELS.orientEdges;
+            ? LAST_LAYER_SUB_LESSON_LABELS.orientCorners
+            : cornerPermutePhase
+              ? LAST_LAYER_SUB_LESSON_LABELS.permuteCorners
+              : edgePermutePhase
+                ? LAST_LAYER_SUB_LESSON_LABELS.permuteEdges
+                : LAST_LAYER_SUB_LESSON_LABELS.orientEdges;
 
-  const progressLabel = isOrientEdgesLessonStep
+  const progressAriaLabel = isOrientEdgesLessonStep
     ? lastLayerLesson.progress.orientEdges(solvedSlots)
     : cornerOrientPhase
-    ? lastLayerLesson.progress.orientCorners(solvedSlots)
-    : cornerPermutePhase
-      ? lastLayerLesson.progress.permuteCorners(solvedSlots)
-      : edgePermutePhase
-        ? lastLayerLesson.progress.permuteEdges(solvedSlots)
-        : lastLayerLesson.progress.orientEdges(solvedSlots);
+      ? lastLayerLesson.progress.orientCorners(solvedSlots)
+      : cornerPermutePhase
+        ? lastLayerLesson.progress.permuteCorners(solvedSlots)
+        : edgePermutePhase
+          ? lastLayerLesson.progress.permuteEdges(solvedSlots)
+          : lastLayerLesson.progress.orientEdges(solvedSlots);
+
+  const showProgress =
+    !isLessonComplete &&
+    step &&
+    step.kind !== 'complete' &&
+    step.kind !== 'prerequisite' &&
+    step.kind !== 'intro';
+
+  const workflowAlternateActions =
+    step?.kind === 'intro' ? (
+      <button
+        type="button"
+        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
+        onClick={handleContinueIntro}
+        disabled={isStepPending}
+      >
+        {ui.continue}
+      </button>
+    ) : step?.kind === 'orient-edges-already-complete' ? (
+      <button
+        type="button"
+        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
+        onClick={handleContinueOrientEdgesComplete}
+        disabled={isStepPending}
+      >
+        {ui.continue}
+      </button>
+    ) : step?.kind === 'prerequisite' ? (
+      <div className="flex flex-col gap-3">
+        <button
+          type="button"
+          className="inline-flex w-full justify-center rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600"
+          onClick={() => setActiveLesson('white-cross')}
+        >
+          {lastLayerLesson.goToWhiteCross}
+        </button>
+        <button
+          type="button"
+          className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
+          onClick={() => setActiveLesson('white-corners')}
+        >
+          {lastLayerLesson.goToWhiteCorners}
+        </button>
+        <button
+          type="button"
+          className="inline-flex w-full justify-center rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-600"
+          onClick={() => setActiveLesson(MIDDLE_LAYER_EDGES_LESSON_ID)}
+        >
+          {lastLayerLesson.goToMiddleLayer}
+        </button>
+      </div>
+    ) : undefined;
 
   return (
-    <section className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-6">
-      <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          {isLessonComplete ? (
-            <>
-              <h1 className="text-3xl font-bold text-emerald-100">
-                {lastLayerLesson.completeTitle}
-              </h1>
-              <p className="mt-2 text-slate-300">
-                {lastLayerLesson.completeBody}
-              </p>
-            </>
-          ) : (
-            <>
-              <h1 className="text-3xl font-bold">{lastLayerLesson.title}</h1>
-              <p className="mt-1 text-sm text-violet-300">
-                {lastLayerLesson.subLessonPrefix} {subLessonLabel}
-              </p>
-              <p className="mt-1 text-slate-300">
-                Hold your cube with{' '}
-                <span className="text-slate-100">white on the bottom</span> and{' '}
-                <span className="text-slate-100">yellow on top</span>. Face{' '}
-                <span className="text-slate-100">
-                  {formatColorLabel(lessonHold.F)} toward you
-                </span>{' '}
-                . That is the <span className="text-slate-100">front (F)</span>{' '}
-                face in the diagram below.
-              </p>
-              <p className="mt-2 text-sm text-slate-400">
-                {PHYSICAL_CUBE_MATCH_NOTE}
-              </p>
-              {step &&
-              step.kind !== 'complete' &&
-              step.kind !== 'prerequisite' &&
-              step.kind !== 'intro' ? (
-                <p className="mt-2 text-sm text-slate-400">
-                  {lastLayerLesson.progressPrefix}{' '}
-                  <span className="text-slate-200">{progressLabel}</span>
-                </p>
-              ) : null}
-            </>
-          )}
-        </div>
-        <LessonHeaderActions
-          canUndo={canUndo}
-          isStepPending={isStepPending}
-          onUndo={handleUndoLessonStep}
-          onRescan={startLessonRescan}
-          onResetTips={handleRestartLessonTips}
-        />
-      </header>
-
-      <LessonCubeStage
-        isComplete={isLessonComplete}
-        cubeState={studentFrame}
-        completeCanvasKey="last-layer-lesson-complete-cube"
-        visibleDemo={visibleDemo}
-        showPreparingOverlay={showPreparingOverlay}
-        preparingSubtitle={lastLayerLesson.preparingSubtitle}
-        trailingActions={trailingActions}
-        celebrate={isLessonComplete}
-      />
-
-      {!isLessonComplete ? (
-      <article
-        className={`rounded-xl border border-slate-700 bg-slate-900/80 p-4 ${showPreparingOverlay ? 'opacity-60' : ''}`}
-      >
-        <h2 className="text-lg font-semibold text-slate-100">
-          {displayStep.title}
-        </h2>
-        {displayStep.body ? (
-          <p className="mt-2 whitespace-pre-wrap text-slate-300">
-            {displayStep.body}
-          </p>
-        ) : null}
-
-        {step?.kind === 'intro' ? (
-          <div className="mt-4">
-            <button
-              type="button"
-              className="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-600"
-              onClick={handleContinueIntro}
-              disabled={isStepPending}
-            >
-              {ui.continue}
-            </button>
-          </div>
-        ) : null}
-
-        {step?.kind === 'orient-edges-already-complete' ? (
-          <div className="mt-4">
-            <button
-              type="button"
-              className="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-600"
-              onClick={handleContinueOrientEdgesComplete}
-              disabled={isStepPending}
-            >
-              {ui.continue}
-            </button>
-          </div>
-        ) : null}
-
-        {step?.kind === 'prerequisite' ? (
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button
-              type="button"
-              className="inline-flex rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600"
-              onClick={() => setActiveLesson('white-cross')}
-            >
-              {lastLayerLesson.goToWhiteCross}
-            </button>
-            <button
-              type="button"
-              className="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-600"
-              onClick={() => setActiveLesson('white-corners')}
-            >
-              {lastLayerLesson.goToWhiteCorners}
-            </button>
-            <button
-              type="button"
-              className="inline-flex rounded-lg bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-600"
-              onClick={() => setActiveLesson(MIDDLE_LAYER_EDGES_LESSON_ID)}
-            >
-              {lastLayerLesson.goToMiddleLayer}
-            </button>
-          </div>
-        ) : null}
-
-        {step &&
-        step.kind !== 'complete' &&
-        step.kind !== 'prerequisite' &&
-        step.kind !== 'intro' &&
-        step.kind !== 'orient-edges-already-complete' ? (
-          <p className="mt-3 text-xs text-slate-500">
-            {SAME_HOLD_NOTE(
-              formatColorLabel(lessonHold.F),
-              formatColorLabel(lessonHold.U),
-              formatColorLabel(lessonHold.D),
-            )}
-          </p>
-        ) : null}
-
-        {canApplyDemo ? (
-          <LessonApplyPanel hint={applyHints.solve} />
-        ) : null}
-      </article>
-      ) : null}
-    </section>
+    <LessonViewShell
+      header={{
+        title: isLessonComplete
+          ? lastLayerLesson.completeTitle
+          : lastLayerLesson.title,
+        subtitle: isLessonComplete
+          ? undefined
+          : lastLayerLesson.subtitle,
+        titleClassName: isLessonComplete ? 'text-emerald-100' : undefined,
+        progress: showProgress
+          ? {
+              solved: solvedSlots,
+              total: 4,
+              slotLabels: LAST_LAYER_SLOTS,
+              phaseLabel: `${lastLayerLesson.subLessonPrefix} ${subLessonLabel}`,
+              ariaLabel: progressAriaLabel,
+            }
+          : undefined,
+        sessionNotesSummary: 'Lesson session & reset',
+        sessionNotes: [],
+        canUndo,
+        isStepPending,
+        onUndo: handleUndoLessonStep,
+        onRescan: startLessonRescan,
+        onResetTips: handleRestartLessonTips,
+      }}
+      step={{
+        title: isLessonComplete
+          ? lastLayerLesson.completeTitle
+          : displayStep.title,
+        body: isLessonComplete
+          ? lastLayerLesson.completeBody
+          : displayStep.body || undefined,
+        dimmed: showPreparingOverlay,
+      }}
+      cube={{
+        isComplete: isLessonComplete,
+        cubeState: studentFrame,
+        completeCanvasKey: 'last-layer-lesson-complete-cube',
+        visibleDemo,
+        showPreparingOverlay,
+        preparingSubtitle: lastLayerLesson.preparingSubtitle,
+        celebrate: isLessonComplete,
+      }}
+      demo={
+        isLessonComplete
+          ? undefined
+          : {
+              canApply: canApplyDemo,
+              applyLabel: isReorientStep ? ui.continue : ui.applyExampleContinue,
+              applyHint: canApplyDemo ? applyHints.solve : undefined,
+              onApply: handleApplyDemo,
+              alternateActions: workflowAlternateActions,
+            }
+      }
+      secondary={{
+        lessonHold,
+        showSameHoldNote:
+          step !== null &&
+          step.kind !== 'complete' &&
+          step.kind !== 'prerequisite' &&
+          step.kind !== 'intro' &&
+          step.kind !== 'orient-edges-already-complete',
+        showReorientNote: isReorientStep,
+      }}
+    />
   );
 }

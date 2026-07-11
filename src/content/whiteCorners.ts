@@ -13,6 +13,7 @@ export function formatCornerLabel(id: CornerSlotId): string {
 
 export const whiteCornersLesson = {
   title: 'Lesson: White corners',
+  subtitle: 'Solve every white corner into the front-right-bottom slot.',
   defaultStepTitle: 'White corners',
   progress: (solved: number) =>
     `Progress: ${solved}/4 white corners in place (white on D, side stickers matching their centers).`,

@@ -6,17 +6,40 @@ import { ui } from '../content/ui';
 import { useCubeStore } from '../store/cubeStore';
 import { LearningCornersView } from './LearningCornersView';
 
-vi.mock('./MoveSequenceDemo', () => ({
-  MoveSequenceDemo: ({
-    moves,
-    trailingActions,
+vi.mock('./lessons/LessonViewShell', () => ({
+  LessonViewShell: ({
+    header,
+    step,
+    cube,
+    demo,
   }: {
-    moves: string[];
-    trailingActions?: React.ReactNode;
+    header: { title: string };
+    step: { body?: string };
+    cube: {
+      isComplete: boolean;
+      visibleDemo?: { moves?: string[] } | null;
+    };
+    demo?: {
+      canApply: boolean;
+      applyLabel: string;
+      onApply: () => void;
+      alternateActions?: React.ReactNode;
+    };
   }) => (
-    <div data-testid="move-sequence-demo">
-      {moves.join(' ') || 'no-moves'}
-      {trailingActions}
+    <div>
+      <h1>{header.title}</h1>
+      {!cube.isComplete ? (
+        <div data-testid="move-sequence-demo">
+          {cube.visibleDemo?.moves?.join(' ') || 'no-moves'}
+        </div>
+      ) : null}
+      {step.body ? <p>{step.body}</p> : null}
+      {demo?.alternateActions}
+      {demo?.canApply ? (
+        <button type="button" onClick={demo.onApply}>
+          {demo.applyLabel}
+        </button>
+      ) : null}
     </div>
   ),
 }));

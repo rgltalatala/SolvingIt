@@ -2,6 +2,7 @@ import type { Color } from '../cube/cubeState';
 
 export const whiteCrossLesson = {
   title: 'Lesson: White cross',
+  subtitle: 'Build the white cross one edge at a time.',
   defaultStepTitle: 'White cross',
   progress: (solved: number) =>
     `Progress: ${solved}/4 cross edges in place (white on the bottom, side sticker matching its center).`,
