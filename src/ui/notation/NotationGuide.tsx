@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Face } from '../../cube/cubeState';
-import type { CubiePieceType } from '../../cube3d/cubeAnatomy';
+import type { CubiePieceType, CubeAnatomyHighlight } from '../../cube3d/cubeAnatomy';
 import type { CubiePosition } from '../../cube3d/cubeGeometry';
 import { CubeView } from '../../cube3d/CubeView';
 import {
@@ -38,6 +38,30 @@ const NOTATION_SECTIONS: { id: NotationSectionId; label: string }[] = [
   { id: 'faceTurns', label: notationFaceTurns.heading },
   { id: 'cubeRotations', label: notationCubeRotations.heading },
 ];
+
+function getAnatomyHighlight(options: {
+  isAnatomySection: boolean;
+  activeSection: NotationSectionId;
+  highlightedFace: Face | null;
+  highlightedCubiePosition: CubiePosition | null;
+  highlightedPieceType: CubiePieceType | null;
+}): CubeAnatomyHighlight | null {
+  const {
+    isAnatomySection,
+    activeSection,
+    highlightedFace,
+    highlightedCubiePosition,
+    highlightedPieceType,
+  } = options;
+  if (!isAnatomySection) return null;
+  if (activeSection === 'faceNames') {
+    return { mode: 'face', face: highlightedFace };
+  }
+  if (activeSection === 'positionLabels') {
+    return { mode: 'cubie', position: highlightedCubiePosition };
+  }
+  return { mode: 'pieceType', pieceType: highlightedPieceType };
+}
 
 const PIECE_TYPE_CARDS: {
   pieceType: CubiePieceType;
@@ -161,13 +185,13 @@ export function NotationGuide({
     POSITION_LABEL_EXAMPLES.find((example) => example.label === highlightedPositionLabel)
       ?.position ?? null;
 
-  const anatomyHighlight = isAnatomySection
-    ? activeSection === 'faceNames'
-      ? { mode: 'face' as const, face: highlightedFace }
-      : activeSection === 'positionLabels'
-        ? { mode: 'cubie' as const, position: highlightedCubiePosition }
-        : { mode: 'pieceType' as const, pieceType: highlightedPieceType }
-    : null;
+  const anatomyHighlight = getAnatomyHighlight({
+    isAnatomySection,
+    activeSection,
+    highlightedFace,
+    highlightedCubiePosition,
+    highlightedPieceType,
+  });
 
   const cubeFrameClass =
     'h-[320px] w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-950 lg:h-[420px] lg:sticky lg:top-6';

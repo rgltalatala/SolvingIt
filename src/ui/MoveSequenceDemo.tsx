@@ -26,6 +26,8 @@ import { MOVE_ANIMATION_PAUSE_MS } from '../cube3d/moveAnimation';
 import type { CubeMoveAnimation } from '../cube3d/CubeView';
 import { CubeView } from '../cube3d/CubeView';
 import { moveSequenceDemo } from '../content/tips';
+import { getMoveSequenceSummary } from './getMoveSequenceSummary';
+import { demoMoveChipClassName } from './lessons/demoMoveChipClassName';
 import { LessonInstructionDemo } from './LessonInstructionDemo';
 
 export type MoveAnimDirection = 'forward' | 'reverse';
@@ -202,17 +204,13 @@ function useMoveSequenceDemoState({
       }
     : null;
 
-  const summary = !hasMoves
-    ? moveSequenceDemo.noMovesSummary
-    : animating
-      ? reverseAnimating
-        ? moveSequenceDemo.undoing(moves[applied - 1])
-        : moveSequenceDemo.animating(moves[applied])
-      : applied === 0
-        ? moveSequenceDemo.startPosition
-        : applied >= moves.length
-          ? moveSequenceDemo.complete(moves.join(' '))
-          : moveSequenceDemo.applied(moves.slice(0, applied).join(' '));
+  const summary = getMoveSequenceSummary({
+    hasMoves,
+    animating,
+    reverseAnimating,
+    applied,
+    moves,
+  });
 
   const defaultHold = studentLessonHoldFaceCenters();
   const holdForCopy = hasMoves ? displayHold : defaultHold;
@@ -418,19 +416,9 @@ export function MoveSequenceDemoStepInstructions() {
                 title={
                   isRotation ? moveSequenceDemo.wholeCubeRotationTitle : undefined
                 }
-                className={`rounded px-2 py-0.5 font-mono text-xs ${
-                  isRotation
-                    ? done
-                      ? 'bg-violet-900/50 text-violet-200'
-                      : nextUp
-                        ? 'bg-violet-900/40 text-violet-100 ring-1 ring-violet-600/60'
-                        : 'bg-violet-950/60 text-violet-300/80'
-                    : done
-                      ? 'bg-emerald-900/45 text-emerald-200'
-                      : nextUp
-                        ? 'bg-amber-900/40 text-amber-100 ring-1 ring-amber-700/60'
-                        : 'bg-slate-800 text-slate-500'
-                }`}
+                className={`rounded px-2 py-0.5 font-mono text-xs ${demoMoveChipClassName(
+                  { isRotation, done, nextUp },
+                )}`}
               >
                 {label}
               </span>

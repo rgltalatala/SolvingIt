@@ -45,8 +45,15 @@ function tryDPrefixOrInsertSolveSlot(
   if (!edgeAtStart || !whiteStickerOnD(studentState, edgeAtStart)) return null;
   if (slotShowsRotateBottomPattern(studentState, id)) return null;
 
-  const dQuarterTurns = (count: number): Move[] =>
-    count === 0 ? [] : count === 1 ? ['D'] : count === 2 ? ['D2'] : ["D'"];
+  const dQuarterTurns = (count: number): Move[] => {
+    const byCount: Record<number, Move[]> = {
+      0: [],
+      1: ['D'],
+      2: ['D2'],
+      3: ["D'"],
+    };
+    return byCount[count] ?? ["D'"];
+  };
 
   const tryDemo = (dPart: Move[], extra: Move[]): Move[] | null => {
     const raw = [...dPart, ...extra];

@@ -52,6 +52,12 @@ function labelClassName(slot: LessonProgressSlot): string {
   return `${base} text-slate-500`;
 }
 
+function legacyProgressSegmentClassName(done: boolean, active: boolean): string {
+  if (done) return 'bg-emerald-600';
+  if (active) return 'bg-slate-700 ring-2 ring-inset ring-violet-400';
+  return 'bg-slate-700';
+}
+
 function ProgressSegment({ slot }: { slot: LessonProgressSlot }) {
   const colors = pieceColors(slot);
 
@@ -106,13 +112,10 @@ export function LessonProgress({ progress }: LessonProgressProps) {
                     <div
                       key={`${label}-${index}`}
                       title={label}
-                      className={`flex h-2 flex-1 rounded-full transition-colors ${
-                        done
-                          ? 'bg-emerald-600'
-                          : active
-                            ? 'bg-slate-700 ring-2 ring-inset ring-violet-400'
-                            : 'bg-slate-700'
-                      }`}
+                      className={`flex h-2 flex-1 rounded-full transition-colors ${legacyProgressSegmentClassName(
+                        done,
+                        active,
+                      )}`}
                     />
                   );
                 })}

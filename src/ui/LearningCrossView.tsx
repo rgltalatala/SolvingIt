@@ -1,4 +1,4 @@
-import { useMemo, useTransition } from 'react';
+import { useMemo, useTransition, type ReactNode } from 'react';
 import type { Move } from '../cube/cubeState';
 import {
   cubeStateToStudentFrame,
@@ -15,6 +15,47 @@ import { LessonUnavailable } from './lessons/LessonUnavailable';
 import { LessonViewShell } from './lessons/LessonViewShell';
 import { crossLessonProgress } from './lessons/lessonProgressBuilders';
 import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
+
+function getCrossAlternateActions(options: {
+  stepKind: string | undefined;
+  isLessonComplete: boolean;
+  isStepPending: boolean;
+  onContinueIntro: () => void;
+  onContinueWhiteCorners: () => void;
+}): ReactNode {
+  const {
+    stepKind,
+    isLessonComplete,
+    isStepPending,
+    onContinueIntro,
+    onContinueWhiteCorners,
+  } = options;
+
+  if (stepKind === 'intro') {
+    return (
+      <button
+        type="button"
+        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
+        onClick={onContinueIntro}
+        disabled={isStepPending}
+      >
+        {ui.continue}
+      </button>
+    );
+  }
+  if (isLessonComplete) {
+    return (
+      <button
+        type="button"
+        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
+        onClick={onContinueWhiteCorners}
+      >
+        {whiteCrossLesson.continueWhiteCorners}
+      </button>
+    );
+  }
+  return undefined;
+}
 
 export function LearningCrossView() {
   const cubeState = useCubeStore((state) => state.cubeState);
@@ -167,25 +208,13 @@ export function LearningCrossView() {
   const showProgress =
     step && step.kind !== 'complete' && step.kind !== 'intro';
 
-  const workflowAlternateActions =
-    step?.kind === 'intro' ? (
-      <button
-        type="button"
-        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
-        onClick={handleContinueIntro}
-        disabled={isStepPending}
-      >
-        {ui.continue}
-      </button>
-    ) : isLessonComplete ? (
-      <button
-        type="button"
-        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
-        onClick={() => continueToLesson('white-corners')}
-      >
-        {whiteCrossLesson.continueWhiteCorners}
-      </button>
-    ) : undefined;
+  const workflowAlternateActions = getCrossAlternateActions({
+    stepKind: step?.kind,
+    isLessonComplete,
+    isStepPending,
+    onContinueIntro: handleContinueIntro,
+    onContinueWhiteCorners: () => continueToLesson('white-corners'),
+  });
 
   return (
     <LessonViewShell

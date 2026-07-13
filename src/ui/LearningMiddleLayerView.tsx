@@ -1,4 +1,4 @@
-import { useMemo, useTransition } from 'react';
+import { useMemo, useTransition, type ReactNode } from 'react';
 import type { Color } from '../cube/cubeState';
 import type { Move } from '../cube/cubeState';
 import {
@@ -14,12 +14,13 @@ import {
 } from '../learn/studentHold';
 import type { YRotationStep } from '../learn/studentHold/types';
 import { middleLayerLesson } from '../content/middleLayer';
-import { applyHints, preparing } from '../content/tips';
+import { preparing } from '../content/tips';
 import { ui } from '../content/ui';
 import { continueToLesson } from '../learn/lessonSessionPersistence';
 import { useCubeStore } from '../store/cubeStore';
 import { LAST_LAYER_LESSON_ID } from '../learn/layers/lastLayer';
 import { useMiddleLayerLessonStep } from './lessons/middleLayer/useMiddleLayerLessonStep';
+import { getLessonApplyHint } from './lessons/getLessonApplyHint';
 import { LessonUnavailable } from './lessons/LessonUnavailable';
 import { LessonViewShell } from './lessons/LessonViewShell';
 import { middleLayerLessonProgress } from './lessons/lessonProgressBuilders';
@@ -46,6 +47,71 @@ function expandHoldReorientDemo(moves: Move[]): {
 function expandReorientDemoForPipeline(moves: Move[]) {
   const expanded = expandHoldReorientDemo(moves);
   return { ...expanded, previewMoves: moves };
+}
+
+function getMiddleLayerAlternateActions(options: {
+  stepKind: string | undefined;
+  isLessonComplete: boolean;
+  isStepPending: boolean;
+  onContinueIntro: () => void;
+  onGoToWhiteCross: () => void;
+  onGoToWhiteCorners: () => void;
+  onContinueLastLayer: () => void;
+}): ReactNode {
+  const {
+    stepKind,
+    isLessonComplete,
+    isStepPending,
+    onContinueIntro,
+    onGoToWhiteCross,
+    onGoToWhiteCorners,
+    onContinueLastLayer,
+  } = options;
+
+  if (stepKind === 'intro') {
+    return (
+      <button
+        type="button"
+        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
+        onClick={onContinueIntro}
+        disabled={isStepPending}
+      >
+        {ui.continue}
+      </button>
+    );
+  }
+  if (stepKind === 'cross-corners-prerequisite') {
+    return (
+      <div className="flex flex-col gap-3">
+        <button
+          type="button"
+          className="inline-flex w-full justify-center rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600"
+          onClick={onGoToWhiteCross}
+        >
+          {middleLayerLesson.goToWhiteCross}
+        </button>
+        <button
+          type="button"
+          className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
+          onClick={onGoToWhiteCorners}
+        >
+          {middleLayerLesson.goToWhiteCorners}
+        </button>
+      </div>
+    );
+  }
+  if (isLessonComplete) {
+    return (
+      <button
+        type="button"
+        className="inline-flex w-full justify-center rounded-lg bg-amber-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-600"
+        onClick={onContinueLastLayer}
+      >
+        {middleLayerLesson.continueLastLayer}
+      </button>
+    );
+  }
+  return undefined;
 }
 
 export function LearningMiddleLayerView() {
@@ -204,42 +270,15 @@ export function LearningMiddleLayerView() {
     step.kind !== 'cross-corners-prerequisite' &&
     step.kind !== 'intro';
 
-  const workflowAlternateActions =
-    step?.kind === 'intro' ? (
-      <button
-        type="button"
-        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
-        onClick={handleContinueIntro}
-        disabled={isStepPending}
-      >
-        {ui.continue}
-      </button>
-    ) : step?.kind === 'cross-corners-prerequisite' ? (
-      <div className="flex flex-col gap-3">
-        <button
-          type="button"
-          className="inline-flex w-full justify-center rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600"
-          onClick={() => setActiveLesson('white-cross')}
-        >
-          {middleLayerLesson.goToWhiteCross}
-        </button>
-        <button
-          type="button"
-          className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
-          onClick={() => setActiveLesson('white-corners')}
-        >
-          {middleLayerLesson.goToWhiteCorners}
-        </button>
-      </div>
-    ) : isLessonComplete ? (
-      <button
-        type="button"
-        className="inline-flex w-full justify-center rounded-lg bg-amber-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-600"
-        onClick={() => continueToLesson(LAST_LAYER_LESSON_ID)}
-      >
-        {middleLayerLesson.continueLastLayer}
-      </button>
-    ) : undefined;
+  const workflowAlternateActions = getMiddleLayerAlternateActions({
+    stepKind: step?.kind,
+    isLessonComplete,
+    isStepPending,
+    onContinueIntro: handleContinueIntro,
+    onGoToWhiteCross: () => setActiveLesson('white-cross'),
+    onGoToWhiteCorners: () => setActiveLesson('white-corners'),
+    onContinueLastLayer: () => continueToLesson(LAST_LAYER_LESSON_ID),
+  });
 
   return (
     <LessonViewShell
@@ -292,11 +331,10 @@ export function LearningMiddleLayerView() {
       demo={{
         canApply: canApplyDemo,
         applyLabel: isReorientStep ? ui.continue : ui.applyExampleContinue,
-        applyHint: canApplyDemo
-          ? isReorientStep
-            ? applyHints.reorient
-            : applyHints.solve
-          : undefined,
+        applyHint: getLessonApplyHint({
+          canApply: canApplyDemo,
+          isReorient: isReorientStep,
+        }),
         onApply: handleApplyDemo,
         alternateActions: workflowAlternateActions,
       }}

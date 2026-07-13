@@ -15,6 +15,16 @@ type NotationMoveCardProps = {
   variant?: 'face' | 'rotation';
 };
 
+function notationMoveRingClassName(options: {
+  isAnimating: boolean;
+  variant: 'face' | 'rotation';
+}): string {
+  const { isAnimating, variant } = options;
+  if (!isAnimating) return '';
+  if (variant === 'rotation') return 'ring-1 ring-violet-600/60';
+  return 'ring-1 ring-amber-700/60';
+}
+
 export function NotationMoveCard({
   move,
   kind,
@@ -27,12 +37,10 @@ export function NotationMoveCard({
   onSelect,
   variant = kind,
 }: NotationMoveCardProps) {
-  const ringClass =
-    isAnimating && variant === 'rotation'
-      ? 'ring-1 ring-violet-600/60'
-      : isAnimating
-        ? 'ring-1 ring-amber-700/60'
-        : '';
+  const ringClass = notationMoveRingClassName({
+    isAnimating,
+    variant,
+  });
 
   const borderClass = isActive
     ? 'border-cyan-300 text-cyan-100'

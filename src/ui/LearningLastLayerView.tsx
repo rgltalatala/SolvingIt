@@ -1,4 +1,4 @@
-import { useMemo, useTransition } from 'react';
+import { useMemo, useTransition, type ReactNode } from 'react';
 import type { Move } from '../cube/cubeState';
 import {
   cubeStateToStudentFrame,
@@ -19,20 +19,19 @@ import {
   type Instruction,
 } from '../learn/studentHold';
 import type { YRotationStep } from '../learn/studentHold/types';
-import {
-  LAST_LAYER_SUB_LESSON_LABELS,
-  lastLayerLesson,
-} from '../content/lastLayer';
+import { lastLayerLesson } from '../content/lastLayer';
 import { applyHints, preparing } from '../content/tips';
 import { ui } from '../content/ui';
 import { useCubeStore } from '../store/cubeStore';
 import { useLastLayerLessonStep } from './lessons/lastLayer/useLastLayerLessonStep';
+import {
+  progressLabelForLastLayerPhase,
+  resolveLastLayerProgressPhase,
+  resolveLastLayerSubLessonLabel,
+} from './lessons/lastLayer/lastLayerPhaseLabels';
 import { LessonUnavailable } from './lessons/LessonUnavailable';
 import { LessonViewShell } from './lessons/LessonViewShell';
-import {
-  lastLayerLessonProgress,
-  type LastLayerProgressPhase,
-} from './lessons/lessonProgressBuilders';
+import { lastLayerLessonProgress } from './lessons/lessonProgressBuilders';
 import { useLessonDemoPipeline } from './lessons/useLessonDemoPipeline';
 import { cornerHoldToStudentHold } from '../learn/layers/bottomLayer/corners';
 
@@ -56,6 +55,79 @@ function expandHoldReorientDemo(moves: Move[]): {
 function expandReorientDemoForPipeline(moves: Move[]) {
   const expanded = expandHoldReorientDemo(moves);
   return { ...expanded, previewMoves: moves };
+}
+
+function getLastLayerAlternateActions(options: {
+  stepKind: string | undefined;
+  isStepPending: boolean;
+  onContinueIntro: () => void;
+  onContinueOrientEdgesComplete: () => void;
+  onGoToWhiteCross: () => void;
+  onGoToWhiteCorners: () => void;
+  onGoToMiddleLayer: () => void;
+}): ReactNode {
+  const {
+    stepKind,
+    isStepPending,
+    onContinueIntro,
+    onContinueOrientEdgesComplete,
+    onGoToWhiteCross,
+    onGoToWhiteCorners,
+    onGoToMiddleLayer,
+  } = options;
+
+  if (stepKind === 'intro') {
+    return (
+      <button
+        type="button"
+        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
+        onClick={onContinueIntro}
+        disabled={isStepPending}
+      >
+        {ui.continue}
+      </button>
+    );
+  }
+  if (stepKind === 'orient-edges-already-complete') {
+    return (
+      <button
+        type="button"
+        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
+        onClick={onContinueOrientEdgesComplete}
+        disabled={isStepPending}
+      >
+        {ui.continue}
+      </button>
+    );
+  }
+  if (stepKind === 'prerequisite') {
+    return (
+      <div className="flex flex-col gap-3">
+        <button
+          type="button"
+          className="inline-flex w-full justify-center rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600"
+          onClick={onGoToWhiteCross}
+        >
+          {lastLayerLesson.goToWhiteCross}
+        </button>
+        <button
+          type="button"
+          className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
+          onClick={onGoToWhiteCorners}
+        >
+          {lastLayerLesson.goToWhiteCorners}
+        </button>
+        <button
+          type="button"
+          className="inline-flex w-full justify-center rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-600"
+          onClick={onGoToMiddleLayer}
+        >
+          {lastLayerLesson.goToMiddleLayer}
+        </button>
+      </div>
+    );
+  }
+  return undefined;
 }
 
 export function LearningLastLayerView() {
@@ -269,44 +341,22 @@ export function LearningLastLayerView() {
     });
   };
 
-  const subLessonLabel =
-    step?.kind === 'intro' && step.introId === 'overview'
-      ? lastLayerLesson.defaultStepTitle
-      : step?.kind === 'intro' && step.introId !== 'overview'
-        ? {
-            'orient-edges': LAST_LAYER_SUB_LESSON_LABELS.orientEdges,
-            'permute-edges': LAST_LAYER_SUB_LESSON_LABELS.permuteEdges,
-            'permute-corners': LAST_LAYER_SUB_LESSON_LABELS.permuteCorners,
-            'orient-corners': LAST_LAYER_SUB_LESSON_LABELS.orientCorners,
-          }[step.introId]
-        : isOrientEdgesLessonStep
-          ? LAST_LAYER_SUB_LESSON_LABELS.orientEdges
-          : cornerOrientPhase
-            ? LAST_LAYER_SUB_LESSON_LABELS.orientCorners
-            : cornerPermutePhase
-              ? LAST_LAYER_SUB_LESSON_LABELS.permuteCorners
-              : edgePermutePhase
-                ? LAST_LAYER_SUB_LESSON_LABELS.permuteEdges
-                : LAST_LAYER_SUB_LESSON_LABELS.orientEdges;
+  const phaseOptions = {
+    isOrientEdgesLessonStep,
+    cornerOrientPhase: !!cornerOrientPhase,
+    cornerPermutePhase: !!cornerPermutePhase,
+    edgePermutePhase: !!edgePermutePhase,
+  };
 
-  const lastLayerProgressPhase: LastLayerProgressPhase = isOrientEdgesLessonStep
-    ? 'orient-edges'
-    : cornerOrientPhase
-      ? 'orient-corners'
-      : cornerPermutePhase
-        ? 'permute-corners'
-        : edgePermutePhase
-          ? 'permute-edges'
-          : 'orient-edges';
+  const subLessonLabel = resolveLastLayerSubLessonLabel({
+    ...phaseOptions,
+    introId: step?.kind === 'intro' ? step.introId : undefined,
+  });
+
+  const lastLayerProgressPhase = resolveLastLayerProgressPhase(phaseOptions);
 
   const progressLabelForPhase = (solved: number) =>
-    lastLayerProgressPhase === 'orient-edges'
-      ? lastLayerLesson.progress.orientEdges(solved)
-      : lastLayerProgressPhase === 'orient-corners'
-        ? lastLayerLesson.progress.orientCorners(solved)
-        : lastLayerProgressPhase === 'permute-corners'
-          ? lastLayerLesson.progress.permuteCorners(solved)
-          : lastLayerLesson.progress.permuteEdges(solved);
+    progressLabelForLastLayerPhase(lastLayerProgressPhase, solved);
 
   const showProgress =
     !isLessonComplete &&
@@ -315,50 +365,15 @@ export function LearningLastLayerView() {
     step.kind !== 'prerequisite' &&
     step.kind !== 'intro';
 
-  const workflowAlternateActions =
-    step?.kind === 'intro' ? (
-      <button
-        type="button"
-        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
-        onClick={handleContinueIntro}
-        disabled={isStepPending}
-      >
-        {ui.continue}
-      </button>
-    ) : step?.kind === 'orient-edges-already-complete' ? (
-      <button
-        type="button"
-        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
-        onClick={handleContinueOrientEdgesComplete}
-        disabled={isStepPending}
-      >
-        {ui.continue}
-      </button>
-    ) : step?.kind === 'prerequisite' ? (
-      <div className="flex flex-col gap-3">
-        <button
-          type="button"
-          className="inline-flex w-full justify-center rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600"
-          onClick={() => setActiveLesson('white-cross')}
-        >
-          {lastLayerLesson.goToWhiteCross}
-        </button>
-        <button
-          type="button"
-          className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
-          onClick={() => setActiveLesson('white-corners')}
-        >
-          {lastLayerLesson.goToWhiteCorners}
-        </button>
-        <button
-          type="button"
-          className="inline-flex w-full justify-center rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-600"
-          onClick={() => setActiveLesson(MIDDLE_LAYER_EDGES_LESSON_ID)}
-        >
-          {lastLayerLesson.goToMiddleLayer}
-        </button>
-      </div>
-    ) : undefined;
+  const workflowAlternateActions = getLastLayerAlternateActions({
+    stepKind: step?.kind,
+    isStepPending,
+    onContinueIntro: handleContinueIntro,
+    onContinueOrientEdgesComplete: handleContinueOrientEdgesComplete,
+    onGoToWhiteCross: () => setActiveLesson('white-cross'),
+    onGoToWhiteCorners: () => setActiveLesson('white-corners'),
+    onGoToMiddleLayer: () => setActiveLesson(MIDDLE_LAYER_EDGES_LESSON_ID),
+  });
 
   return (
     <LessonViewShell

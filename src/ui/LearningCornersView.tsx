@@ -1,4 +1,4 @@
-import { useMemo, useTransition } from 'react';
+import { useMemo, useTransition, type ReactNode } from 'react';
 import type { Move } from '../cube/cubeState';
 import {
   cubeStateToStudentFrame,
@@ -14,11 +14,12 @@ import {
 } from '../learn/studentHold';
 import type { YRotationStep } from '../learn/studentHold/types';
 import { whiteCornersLesson } from '../content/whiteCorners';
-import { applyHints, preparing } from '../content/tips';
+import { preparing } from '../content/tips';
 import { ui } from '../content/ui';
 import { continueToLesson } from '../learn/lessonSessionPersistence';
 import { useCubeStore } from '../store/cubeStore';
 import { useWhiteCornerLessonStep } from './lessons/bottomLayer/useWhiteCornerLessonStep';
+import { getLessonApplyHint } from './lessons/getLessonApplyHint';
 import { LessonUnavailable } from './lessons/LessonUnavailable';
 import { LessonViewShell } from './lessons/LessonViewShell';
 import { cornersLessonProgress } from './lessons/lessonProgressBuilders';
@@ -46,6 +47,60 @@ function expandHoldReorientDemo(moves: Move[]): {
 function expandReorientDemoForPipeline(moves: Move[]) {
   const expanded = expandHoldReorientDemo(moves);
   return { ...expanded, previewMoves: moves };
+}
+
+function getCornersAlternateActions(options: {
+  stepKind: string | undefined;
+  isLessonComplete: boolean;
+  isStepPending: boolean;
+  onContinueIntro: () => void;
+  onGoToWhiteCross: () => void;
+  onContinueMiddleLayer: () => void;
+}): ReactNode {
+  const {
+    stepKind,
+    isLessonComplete,
+    isStepPending,
+    onContinueIntro,
+    onGoToWhiteCross,
+    onContinueMiddleLayer,
+  } = options;
+
+  if (stepKind === 'intro') {
+    return (
+      <button
+        type="button"
+        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
+        onClick={onContinueIntro}
+        disabled={isStepPending}
+      >
+        {ui.continue}
+      </button>
+    );
+  }
+  if (stepKind === 'cross-prerequisite') {
+    return (
+      <button
+        type="button"
+        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
+        onClick={onGoToWhiteCross}
+      >
+        {whiteCornersLesson.goToWhiteCross}
+      </button>
+    );
+  }
+  if (isLessonComplete) {
+    return (
+      <button
+        type="button"
+        className="inline-flex w-full justify-center rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-600"
+        onClick={onContinueMiddleLayer}
+      >
+        {whiteCornersLesson.continueMiddleLayer}
+      </button>
+    );
+  }
+  return undefined;
 }
 
 export function LearningCornersView() {
@@ -270,33 +325,15 @@ export function LearningCornersView() {
     step.kind !== 'cross-prerequisite' &&
     step.kind !== 'intro';
 
-  const workflowAlternateActions =
-    step?.kind === 'intro' ? (
-      <button
-        type="button"
-        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
-        onClick={handleContinueIntro}
-        disabled={isStepPending}
-      >
-        {ui.continue}
-      </button>
-    ) : step?.kind === 'cross-prerequisite' ? (
-      <button
-        type="button"
-        className="inline-flex w-full justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-600"
-        onClick={() => setActiveLesson('white-cross')}
-      >
-        {whiteCornersLesson.goToWhiteCross}
-      </button>
-    ) : isLessonComplete ? (
-      <button
-        type="button"
-        className="inline-flex w-full justify-center rounded-lg bg-sky-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-600"
-        onClick={() => continueToLesson(MIDDLE_LAYER_EDGES_LESSON_ID)}
-      >
-        {whiteCornersLesson.continueMiddleLayer}
-      </button>
-    ) : undefined;
+  const workflowAlternateActions = getCornersAlternateActions({
+    stepKind: step?.kind,
+    isLessonComplete,
+    isStepPending,
+    onContinueIntro: handleContinueIntro,
+    onGoToWhiteCross: () => setActiveLesson('white-cross'),
+    onContinueMiddleLayer: () =>
+      continueToLesson(MIDDLE_LAYER_EDGES_LESSON_ID),
+  });
 
   return (
     <LessonViewShell
@@ -349,11 +386,10 @@ export function LearningCornersView() {
       demo={{
         canApply: canApplyDemo,
         applyLabel: isReorientStep ? ui.continue : ui.applyExampleContinue,
-        applyHint: canApplyDemo
-          ? isReorientStep
-            ? applyHints.reorient
-            : applyHints.solve
-          : undefined,
+        applyHint: getLessonApplyHint({
+          canApply: canApplyDemo,
+          isReorient: isReorientStep,
+        }),
         onApply: handleApplyDemo,
         alternateActions: workflowAlternateActions,
       }}

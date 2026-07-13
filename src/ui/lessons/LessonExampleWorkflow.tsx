@@ -5,6 +5,7 @@ import { lessonLayout, moveSequenceDemo } from '../../content/tips';
 import {
   useMoveSequenceDemoContext,
 } from '../MoveSequenceDemo';
+import { demoMoveChipClassName } from './demoMoveChipClassName';
 import { LessonApplyButton } from './LessonApplyPanel';
 
 type LessonExampleWorkflowProps = {
@@ -113,19 +114,9 @@ function LessonExampleWorkflowInner({
                       ? moveSequenceDemo.wholeCubeRotationTitle
                       : undefined
                   }
-                  className={`rounded px-2 py-0.5 font-mono text-xs ${
-                    isRotation
-                      ? done
-                        ? 'bg-violet-900/50 text-violet-200'
-                        : nextUp
-                          ? 'bg-violet-900/40 text-violet-100 ring-1 ring-violet-600/60'
-                          : 'bg-violet-950/60 text-violet-300/80'
-                      : done
-                        ? 'bg-emerald-900/45 text-emerald-200'
-                        : nextUp
-                          ? 'bg-amber-900/40 text-amber-100 ring-1 ring-amber-700/60'
-                          : 'bg-slate-800 text-slate-500'
-                  }`}
+                  className={`rounded px-2 py-0.5 font-mono text-xs ${demoMoveChipClassName(
+                    { isRotation, done, nextUp },
+                  )}`}
                 >
                   {label}
                 </span>
