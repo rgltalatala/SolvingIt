@@ -7,6 +7,7 @@ export const notationIntro = {
   title: 'Cube notation & anatomy',
   subtitle:
     "Before you scan your cube, let's cover how moves are written. It'll make every lesson step clearer.",
+  openNotation: 'Explore notation',
   dontShowAgain: "Don't show this again when starting a new lesson",
   continueToScan: 'Continue to scan',
 } as const;
