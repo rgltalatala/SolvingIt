@@ -228,9 +228,9 @@ export function NotationGuide({
       }
       sidebar={
         <div className="flex min-h-0 flex-1 flex-col gap-2">
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <div className="flex shrink-0 flex-col gap-2">
             <div
-              className="flex min-w-0 flex-1 flex-wrap gap-1.5"
+              className="flex flex-wrap gap-1.5"
               role="tablist"
               aria-label="Notation topics"
             >
@@ -257,7 +257,7 @@ export function NotationGuide({
               })}
             </div>
             {showReplayCheckbox ? (
-              <label className="flex shrink-0 cursor-pointer items-center gap-2 text-xs text-slate-300">
+              <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-300">
                 <input
                   type="checkbox"
                   className="rounded border-slate-600"
