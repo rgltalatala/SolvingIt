@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { parseFaceTurnAlgToMoves } from '../cube/parseFaceTurnAlg';
 import { generateRandom333Scramble } from '../cube/random333Scramble';
 import { prepareFreshLessonStart } from '../learn/lessonSessionPersistence';
+import { lessonPath } from '../lessons/lessonLoader';
 import { practiceBar as practiceBarCopy } from '../content/ui';
 import { useCubeStore } from '../store/cubeStore';
 
@@ -9,6 +11,7 @@ import { useCubeStore } from '../store/cubeStore';
  * Skip scanning: apply a random WCA-style 3×3 scramble and jump into the white-cross lesson (practice).
  */
 export function RandomScrambleLessonBar() {
+  const navigate = useNavigate();
   const loadScrambledCubeIntoLesson = useCubeStore(
     (s) => s.loadScrambledCubeIntoLesson,
   );
@@ -24,6 +27,7 @@ export function RandomScrambleLessonBar() {
       const moves = parseFaceTurnAlgToMoves(algStr);
       prepareFreshLessonStart('white-cross');
       loadScrambledCubeIntoLesson(moves);
+      navigate(lessonPath('white-cross'), { replace: true });
       setLastAlg(algStr);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

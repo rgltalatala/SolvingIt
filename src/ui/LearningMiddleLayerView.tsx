@@ -16,7 +16,7 @@ import type { YRotationStep } from '../learn/studentHold/types';
 import { middleLayerLesson } from '../content/middleLayer';
 import { preparing } from '../content/tips';
 import { ui } from '../content/ui';
-import { continueToLesson } from '../learn/lessonSessionPersistence';
+import { useLessonNavigation } from '../lessons/useLessonNavigation';
 import { useCubeStore } from '../store/cubeStore';
 import { LAST_LAYER_LESSON_ID } from '../learn/layers/lastLayer';
 import { useMiddleLayerLessonStep } from './lessons/middleLayer/useMiddleLayerLessonStep';
@@ -115,8 +115,8 @@ function getMiddleLayerAlternateActions(options: {
 }
 
 export function LearningMiddleLayerView() {
+  const { continueToLesson, goToLesson } = useLessonNavigation();
   const cubeState = useCubeStore((state) => state.cubeState);
-  const setActiveLesson = useCubeStore((state) => state.setActiveLesson);
   const applyLessonDemoMoves = useCubeStore(
     (state) => state.applyLessonDemoMoves,
   );
@@ -275,8 +275,8 @@ export function LearningMiddleLayerView() {
     isLessonComplete,
     isStepPending,
     onContinueIntro: handleContinueIntro,
-    onGoToWhiteCross: () => setActiveLesson('white-cross'),
-    onGoToWhiteCorners: () => setActiveLesson('white-corners'),
+    onGoToWhiteCross: () => goToLesson('white-cross'),
+    onGoToWhiteCorners: () => goToLesson('white-corners'),
     onContinueLastLayer: () => continueToLesson(LAST_LAYER_LESSON_ID),
   });
 

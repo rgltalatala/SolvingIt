@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import {
   cubeStateToStudentFrame,
 } from '../cube/cubeState';
@@ -10,6 +11,7 @@ import {
   resyncLessonFromScan,
   type LessonResyncResult,
 } from '../learn/lessonResync';
+import { lessonPath } from '../lessons/lessonLoader';
 import { useCubeStore } from '../store/cubeStore';
 import { useLessonSessionStore } from '../store/lessonSessionStore';
 import { CubeView } from '../cube3d/CubeView';
@@ -20,6 +22,7 @@ type ResyncState =
   | { status: 'error'; message: string };
 
 export function LessonResyncView() {
+  const navigate = useNavigate();
   const cubeState = useCubeStore((state) => state.cubeState);
   const scanReturnContext = useCubeStore((state) => state.scanReturnContext);
   const isInitialScan = scanReturnContext === null;
@@ -35,9 +38,6 @@ export function LessonResyncView() {
   );
   const clearSessionForLesson = useLessonSessionStore(
     (state) => state.clearSessionForLesson,
-  );
-  const setLearningSection = useLessonSessionStore(
-    (state) => state.setLearningSection,
   );
   const setSession = useLessonSessionStore((state) => state.setSession);
 
@@ -89,7 +89,6 @@ export function LessonResyncView() {
 
     if (isInitialScan) {
       clearAllSessions();
-      setLearningSection('lesson');
     } else if (result.lesson !== result.previousLesson) {
       clearSessionForLesson(result.previousLesson);
     }
@@ -101,6 +100,7 @@ export function LessonResyncView() {
     clearScanReturnContext();
     setAppPhase('learning');
     saveLessonSession();
+    navigate(lessonPath(result.lesson), { replace: true });
   };
 
   const confirmTitle = isInitialScan

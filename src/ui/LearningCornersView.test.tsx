@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createSolvedCubeState, applyMoves } from '../cube/cubeState';
 import { ui } from '../content/ui';
 import { useCubeStore } from '../store/cubeStore';
+import { renderWithRouter } from '../test/renderWithRouter';
 import { LearningCornersView } from './LearningCornersView';
 
 vi.mock('./lessons/LessonViewShell', () => ({
@@ -119,7 +120,7 @@ describe('LearningCornersView', () => {
       recomputeStep,
     });
 
-    render(<LearningCornersView />);
+    renderWithRouter(<LearningCornersView />);
     expect(screen.getByText(/into FRD/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: ui.continue })).toBeEnabled();
     expect(
@@ -134,7 +135,7 @@ describe('LearningCornersView', () => {
   });
 
   it('shows apply when the step has a demo', () => {
-    render(<LearningCornersView />);
+    renderWithRouter(<LearningCornersView />);
     expect(
       screen.getByRole('button', { name: ui.applyExampleContinue }),
     ).toBeEnabled();
@@ -156,7 +157,7 @@ describe('LearningCornersView', () => {
       solvedCornerIds: ['FRD'],
     });
 
-    render(<LearningCornersView />);
+    renderWithRouter(<LearningCornersView />);
     expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled();
   });
 
@@ -171,7 +172,7 @@ describe('LearningCornersView', () => {
       },
     });
 
-    render(<LearningCornersView />);
+    renderWithRouter(<LearningCornersView />);
     expect(
       screen.getByRole('button', { name: ui.applyExampleContinue }),
     ).toBeEnabled();
@@ -207,7 +208,7 @@ describe('LearningCornersView', () => {
       solvedCornerIds: ['FRD'],
     });
 
-    render(<LearningCornersView />);
+    renderWithRouter(<LearningCornersView />);
     const demo = screen.getByTestId('move-sequence-demo');
     expect(demo).toHaveTextContent("U R U' R'");
     expect(demo).not.toHaveTextContent("U F U' F'");
@@ -222,7 +223,7 @@ describe('LearningCornersView', () => {
       },
     });
 
-    render(<LearningCornersView />);
+    renderWithRouter(<LearningCornersView />);
     expect(screen.queryByText(/front-right-bottom slot \(FRD\)/)).not.toBeInTheDocument();
     await userEvent.click(
       screen.getByRole('button', { name: 'Go to white cross lesson' }),

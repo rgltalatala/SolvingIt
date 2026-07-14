@@ -8,7 +8,7 @@ import {
 import { whiteCrossLesson } from '../content/whiteCross';
 import { applyHints, lessonAvoidBack, preparing } from '../content/tips';
 import { ui } from '../content/ui';
-import { continueToLesson } from '../learn/lessonSessionPersistence';
+import { useLessonNavigation } from '../lessons/useLessonNavigation';
 import { useCubeStore } from '../store/cubeStore';
 import { useWhiteCrossLessonStep } from './lessons/bottomLayer/useWhiteCrossLessonStep';
 import { LessonUnavailable } from './lessons/LessonUnavailable';
@@ -58,6 +58,7 @@ function getCrossAlternateActions(options: {
 }
 
 export function LearningCrossView() {
+  const { continueToLesson } = useLessonNavigation();
   const cubeState = useCubeStore((state) => state.cubeState);
   const applyLessonDemoMoves = useCubeStore(
     (state) => state.applyLessonDemoMoves,

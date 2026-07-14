@@ -1,15 +1,13 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { setNotationIntroCompleted } from '../learn/notationPreferences';
 import { notationIntro } from '../content/onboarding';
 import { useCubeStore } from '../store/cubeStore';
-import { useLessonSessionStore } from '../store/lessonSessionStore';
 
 /** Welcome copy and scan handoff shown on the Lesson tab during first-time notation intro. */
 export function NotationIntroPanel() {
+  const navigate = useNavigate();
   const setAppPhase = useCubeStore((state) => state.setAppPhase);
-  const setLearningSection = useLessonSessionStore(
-    (state) => state.setLearningSection,
-  );
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   const handleContinue = () => {
@@ -30,7 +28,7 @@ export function NotationIntroPanel() {
         <button
           type="button"
           className="rounded-xl bg-emerald-600 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-emerald-950/40 hover:bg-emerald-500"
-          onClick={() => setLearningSection('notation')}
+          onClick={() => navigate('/notation')}
         >
           {notationIntro.openNotation}
         </button>

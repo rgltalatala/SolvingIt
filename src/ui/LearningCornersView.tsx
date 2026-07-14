@@ -16,7 +16,7 @@ import type { YRotationStep } from '../learn/studentHold/types';
 import { whiteCornersLesson } from '../content/whiteCorners';
 import { preparing } from '../content/tips';
 import { ui } from '../content/ui';
-import { continueToLesson } from '../learn/lessonSessionPersistence';
+import { useLessonNavigation } from '../lessons/useLessonNavigation';
 import { useCubeStore } from '../store/cubeStore';
 import { useWhiteCornerLessonStep } from './lessons/bottomLayer/useWhiteCornerLessonStep';
 import { getLessonApplyHint } from './lessons/getLessonApplyHint';
@@ -104,8 +104,8 @@ function getCornersAlternateActions(options: {
 }
 
 export function LearningCornersView() {
+  const { continueToLesson, goToLesson } = useLessonNavigation();
   const cubeState = useCubeStore((state) => state.cubeState);
-  const setActiveLesson = useCubeStore((state) => state.setActiveLesson);
   const applyLessonDemoMoves = useCubeStore(
     (state) => state.applyLessonDemoMoves,
   );
@@ -330,7 +330,7 @@ export function LearningCornersView() {
     isLessonComplete,
     isStepPending,
     onContinueIntro: handleContinueIntro,
-    onGoToWhiteCross: () => setActiveLesson('white-cross'),
+    onGoToWhiteCross: () => goToLesson('white-cross'),
     onContinueMiddleLayer: () =>
       continueToLesson(MIDDLE_LAYER_EDGES_LESSON_ID),
   });

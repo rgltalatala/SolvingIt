@@ -1,4 +1,5 @@
-import { useMemo, useTransition, type ReactNode } from 'react';
+import { useEffect, useMemo, useTransition, type ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 import type { Move } from '../cube/cubeState';
 import {
   cubeStateToStudentFrame,
@@ -11,6 +12,7 @@ import {
   isEdgesFullyPermuted,
   isLastLayerComplete,
   isYellowCrossComplete,
+  LAST_LAYER_LESSON_ID,
 } from '../learn/layers/lastLayer';
 import { MIDDLE_LAYER_EDGES_LESSON_ID } from '../learn/layers/middleLayer/edges';
 import {
@@ -22,7 +24,10 @@ import type { YRotationStep } from '../learn/studentHold/types';
 import { lastLayerLesson } from '../content/lastLayer';
 import { applyHints, preparing } from '../content/tips';
 import { ui } from '../content/ui';
+import { deriveLastLayerSubLessonId, lessonPath } from '../lessons/lessonLoader';
+import { useLessonNavigation } from '../lessons/useLessonNavigation';
 import { useCubeStore } from '../store/cubeStore';
+import { useLessonSessionStore } from '../store/lessonSessionStore';
 import { useLastLayerLessonStep } from './lessons/lastLayer/useLastLayerLessonStep';
 import {
   progressLabelForLastLayerPhase,
@@ -131,8 +136,10 @@ function getLastLayerAlternateActions(options: {
 }
 
 export function LearningLastLayerView() {
+  const { goToLesson } = useLessonNavigation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const cubeState = useCubeStore((state) => state.cubeState);
-  const setActiveLesson = useCubeStore((state) => state.setActiveLesson);
   const applyLessonDemoMoves = useCubeStore(
     (state) => state.applyLessonDemoMoves,
   );
@@ -207,6 +214,20 @@ export function LearningLastLayerView() {
         : studentLessonHoldFaceCenters(),
     [studentFrame],
   );
+
+  const lastLayerSession = useLessonSessionStore(
+    (state) => state.sessionsByLesson[LAST_LAYER_LESSON_ID],
+  );
+
+  // Keep the URL aligned with the derived sub-lesson so refresh deep-links correctly.
+  useEffect(() => {
+    if (!studentFrame) return;
+    const derived = deriveLastLayerSubLessonId(studentFrame, lastLayerSession);
+    const target = lessonPath(LAST_LAYER_LESSON_ID, derived);
+    if (location.pathname !== target) {
+      navigate(target, { replace: true });
+    }
+  }, [studentFrame, lastLayerSession, location.pathname, navigate]);
 
   const lastSessionEntry =
     sessionUndoStack[sessionUndoStack.length - 1] ?? null;
@@ -370,9 +391,9 @@ export function LearningLastLayerView() {
     isStepPending,
     onContinueIntro: handleContinueIntro,
     onContinueOrientEdgesComplete: handleContinueOrientEdgesComplete,
-    onGoToWhiteCross: () => setActiveLesson('white-cross'),
-    onGoToWhiteCorners: () => setActiveLesson('white-corners'),
-    onGoToMiddleLayer: () => setActiveLesson(MIDDLE_LAYER_EDGES_LESSON_ID),
+    onGoToWhiteCross: () => goToLesson('white-cross'),
+    onGoToWhiteCorners: () => goToLesson('white-corners'),
+    onGoToMiddleLayer: () => goToLesson(MIDDLE_LAYER_EDGES_LESSON_ID),
   });
 
   return (

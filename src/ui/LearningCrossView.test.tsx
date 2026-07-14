@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createSolvedCubeState } from '../cube/cubeState';
 import { ui } from '../content/ui';
 import { applyHints } from '../content/tips';
 import { lessonLayout } from '../content/tips';
 import { useCubeStore } from '../store/cubeStore';
+import { renderWithRouter } from '../test/renderWithRouter';
 import { LearningCrossView } from './LearningCrossView';
 
 vi.mock('./lessons/LessonViewShell', () => ({
@@ -137,7 +138,7 @@ describe('LearningCrossView', () => {
       recomputeStep,
     });
 
-    render(<LearningCrossView />);
+    renderWithRouter(<LearningCrossView />);
     expect(screen.getByText(/white sticker/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: ui.continue })).toBeEnabled();
     expect(
@@ -152,7 +153,7 @@ describe('LearningCrossView', () => {
   });
 
   it('shows apply when the step has a demo', () => {
-    render(<LearningCrossView />);
+    renderWithRouter(<LearningCrossView />);
     expect(
       screen.getByRole('button', { name: ui.applyExampleContinue }),
     ).toBeEnabled();
@@ -171,7 +172,7 @@ describe('LearningCrossView', () => {
       solvedSlots: 1,
     });
 
-    render(<LearningCrossView />);
+    renderWithRouter(<LearningCrossView />);
     expect(screen.getByTestId('move-sequence-demo')).toHaveTextContent(
       'no-moves',
     );
@@ -190,14 +191,14 @@ describe('LearningCrossView', () => {
       ],
     });
 
-    render(<LearningCrossView />);
+    renderWithRouter(<LearningCrossView />);
     expect(
       screen.getByRole('button', { name: 'Undo last example' }),
     ).toBeEnabled();
   });
 
   it('shows apply hint and collapsible orientation panel', () => {
-    render(<LearningCrossView />);
+    renderWithRouter(<LearningCrossView />);
     expect(screen.getByText(lessonLayout.cubeOrientationPanel)).toBeInTheDocument();
     expect(screen.getByText(applyHints.default)).toBeInTheDocument();
   });

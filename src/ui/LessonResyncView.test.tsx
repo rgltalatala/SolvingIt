@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createSolvedCubeState } from '../cube/cubeState';
 import { resyncCopy } from '../content/ui';
 import { useCubeStore } from '../store/cubeStore';
+import { renderWithRouter } from '../test/renderWithRouter';
 
 vi.mock('../cube3d/CubeView', () => ({
   CubeView: () => <div data-testid="cube-view" />,
@@ -43,7 +44,7 @@ describe('LessonResyncView', () => {
   });
 
   it('shows determining state then step preview with lesson-changed note', async () => {
-    render(<LessonResyncView />);
+    renderWithRouter(<LessonResyncView />);
 
     expect(screen.getByText(resyncCopy.determiningTitle)).toBeInTheDocument();
 
@@ -60,7 +61,7 @@ describe('LessonResyncView', () => {
 
   it('resumes into the inferred lesson on confirm', async () => {
     const user = userEvent.setup();
-    render(<LessonResyncView />);
+    renderWithRouter(<LessonResyncView />);
 
     await waitFor(() => {
       expect(screen.getByText('Orient the yellow cross')).toBeInTheDocument();
@@ -82,7 +83,7 @@ describe('LessonResyncView', () => {
       activeLesson: 'white-cross',
     });
 
-    render(<LessonResyncView />);
+    renderWithRouter(<LessonResyncView />);
 
     await waitFor(() => {
       expect(screen.getByText(resyncCopy.initialConfirmTitle)).toBeInTheDocument();

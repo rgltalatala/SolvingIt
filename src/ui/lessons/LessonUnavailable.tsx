@@ -1,8 +1,10 @@
 import { learningNav } from '../../content/learningNav';
 import { lessonUnavailable, ui } from '../../content/ui';
-import { restartFromBeginning } from '../../learn/lessonSessionPersistence';
+import { useLessonNavigation } from '../../lessons/useLessonNavigation';
 
 export function LessonUnavailable() {
+  const { restartFromBeginning } = useLessonNavigation();
+
   const handleRestart = () => {
     if (!window.confirm(learningNav.restartConfirm)) return;
     restartFromBeginning();

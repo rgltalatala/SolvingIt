@@ -151,6 +151,7 @@ export {
 export {
   getLastLayerLessonStep,
   getLastLayerLessonStepAsync,
+  isOrientCornersPhase,
 } from './computeLessonStep';
 
 export {
