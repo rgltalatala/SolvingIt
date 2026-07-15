@@ -438,7 +438,7 @@ export function MoveSequenceDemoStepInstructions() {
       ) : null}
 
       {hasMoves ? (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 p-0.5">
           {moves.map((m, i) => {
             const done = reverseAnimating ? i < applied - 1 : i < applied;
             const nextUp = i === activeMoveIndex && animating;

@@ -165,7 +165,7 @@ export function LessonPracticePanel({
           {lessonLayout.algorithmHeading}
         </p>
         <div
-          className="flex flex-wrap gap-1.5"
+          className="flex flex-wrap gap-1.5 p-0.5"
           aria-label={lessonLayout.algorithmHeading}
         >
           {moves.map((m, i) => {

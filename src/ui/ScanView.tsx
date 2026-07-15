@@ -11,6 +11,10 @@ import { scanView as scanCopy } from '../content/ui';
 import { useCubeStore } from '../store/cubeStore';
 import { CubeView } from '../cube3d/CubeView';
 import { partialScansToDisplayCubeState } from '../cube3d/displayCubeState';
+import {
+  LEARNING_CUBE_FRAME_CLASS,
+  LearningSplitLayout,
+} from './lessons/LearningSplitLayout';
 import { ManualFixView } from './ManualFixView';
 import { ValidationIssuesList } from './ValidationIssuesList';
 
@@ -82,10 +86,10 @@ export function ScanView() {
     setIsCorrecting(false);
   };
 
-  return (
-    <section className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold">{scanCopy.title}</h1>
+  const sidebar = (
+    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+      <header className="shrink-0 space-y-2">
+        <h1 className="text-2xl font-bold sm:text-3xl">{scanCopy.title}</h1>
         <p className="text-slate-300">{faceInstruction}</p>
         {validationIssues.length > 0 ? (
           <div className="rounded-lg border border-rose-400/60 bg-rose-950/40 p-3 text-sm text-rose-100">
@@ -106,35 +110,55 @@ export function ScanView() {
         ) : null}
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="space-y-4">
-          {!isCorrecting || !detectedFace ? (
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        {!isCorrecting || !detectedFace ? (
+          <div className="min-h-0 flex-1 overflow-y-auto">
             <ScannerOverlay
               videoRef={videoRef}
               isReady={isReady}
               error={error}
               onCapture={handleCapture}
             />
-          ) : (
-            <CorrectionPanel
-              key={`${currentFace}-${detectedFace.join('-')}`}
-              face={currentFace}
-              detectedFace={detectedFace}
-              onConfirm={handleConfirm}
-              onRescan={() => {
-                setIsCorrecting(false);
-                setAppPhase('scanning');
-              }}
-            />
-          )}
-        </div>
-
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold">{scanCopy.livePreviewHeading}</h2>
-          <p className="text-sm text-slate-400">{scanCopy.livePreviewNote}</p>
-          <CubeView cubeState={liveCubeState} />
-        </div>
+          </div>
+        ) : (
+          <CorrectionPanel
+            key={`${currentFace}-${detectedFace.join('-')}`}
+            face={currentFace}
+            detectedFace={detectedFace}
+            onConfirm={handleConfirm}
+            onRescan={() => {
+              setIsCorrecting(false);
+              setAppPhase('scanning');
+            }}
+          />
+        )}
       </div>
+    </div>
+  );
+
+  return (
+    <section className="mx-auto flex h-full min-h-0 w-full max-w-6xl flex-col gap-2 px-3 py-2 sm:px-4">
+      <LearningSplitLayout
+        cube={
+          <div className="relative flex h-full min-h-0 flex-1 flex-col gap-2">
+            <div className="shrink-0 space-y-0.5 lg:space-y-1">
+              <h2 className="text-sm font-semibold text-slate-200 sm:text-base">
+                {scanCopy.livePreviewHeading}
+              </h2>
+              <p className="text-xs text-slate-400 sm:text-sm">
+                {scanCopy.livePreviewNote}
+              </p>
+            </div>
+            <div className="min-h-0 flex-1">
+              <CubeView
+                cubeState={liveCubeState}
+                frameClassName={LEARNING_CUBE_FRAME_CLASS}
+              />
+            </div>
+          </div>
+        }
+        sidebar={sidebar}
+      />
     </section>
   );
 }

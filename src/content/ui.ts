@@ -87,7 +87,8 @@ export const cameraErrors = {
 
 export const correction = {
   reviewFace: (face: string) => `Review ${face} face`,
-  tapSticker: 'Tap a sticker, pick a color, then confirm.',
+  tapSticker:
+    'Pick a color first, then tap the cubie you want to change.',
   centerLocked: (color: string) =>
     `The center stays locked to ${color}. Centers never move on a real cube.`,
   centerMustBe: (color: string) =>
@@ -100,8 +101,10 @@ export const manualFix = {
   title: 'Fix validation errors',
   subtitle:
     "The scan didn't pass validation. Adjust stickers below, then re-validate. Centers stay locked.",
-  faceletStringLabel:
-    'Current URFDLB facelet string (what the validator sees):',
+  paintHint:
+    'Pick a face, then a color, then tap the cubie you want to change.',
+  showFaces: 'Switch to faces',
+  showColors: 'Switch to colors',
   centerLocked: (color: string) => `Center sticker is locked to ${color}.`,
   previewHeading: 'Manual fix preview',
 } as const;
@@ -126,8 +129,11 @@ export const validation = {
   parity:
     "Corner and edge parity don't match. This is common when you've only fixed one face. Adjust at least one pair of stickers on connected faces.",
   parseError: "We couldn't read this cube layout.",
-  colorCount: (color: string, count: number) =>
-    `We're only seeing ${count} ${color.toLowerCase()} stickers. Double-check your ${color.toLowerCase()} face. One sticker may be misread.`,
+  colorCount: (color: string, count: number) => {
+    const label = color.toLowerCase();
+    const seeing = count < 9 ? `We're only seeing` : `We're seeing`;
+    return `${seeing} ${count} ${label} stickers.`;
+  },
   duplicateCenters:
     'Each face center should be a different color. Re-scan the face with the wrong center.',
   centerMismatch: (face: string, actual: string, expected: string) =>

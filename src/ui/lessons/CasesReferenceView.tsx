@@ -113,17 +113,17 @@ export function CasesReferenceView() {
                   <MoveSequenceDemoSummary />
                   <MoveSequenceDemoControls />
                 </div>
-                <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-0.5">
+                <div className="max-h-[50%] shrink-0 space-y-3 overflow-y-auto border-b border-slate-800 pb-3 pr-0.5">
                   <MoveSequenceDemoStepInstructions />
-                  <div>
-                    <p className="mb-3 text-sm text-slate-300">
-                      {learningNav.casesIntro}
-                    </p>
-                    <CaseCatalog
-                      selectedCaseId={selectedCaseId}
-                      onCaseClick={handleCaseClick}
-                    />
-                  </div>
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto pr-0.5">
+                  <p className="mb-3 text-sm text-slate-300">
+                    {learningNav.casesIntro}
+                  </p>
+                  <CaseCatalog
+                    selectedCaseId={selectedCaseId}
+                    onCaseClick={handleCaseClick}
+                  />
                 </div>
               </div>
             }

@@ -1,6 +1,10 @@
 ---
 description: Keep React components declarative by extracting nested or multi-branch conditionals
-globs: src/ui/**/*.{ts,tsx}
+globs:
+  - src/ui/**/*.{ts,tsx}
+  - src/correction/**/*.{ts,tsx}
+  - src/pages/**/*.{ts,tsx}
+  - src/scanner/**/*.{ts,tsx}
 alwaysApply: false
 ---
 

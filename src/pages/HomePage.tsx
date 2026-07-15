@@ -23,7 +23,7 @@ export function HomePage() {
 
   if (appPhase === 'scanning' || appPhase === 'correcting') {
     return (
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <ScanView />
       </div>
     );

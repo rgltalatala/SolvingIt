@@ -29,9 +29,14 @@ export function CorrectionPanel({
   const [centerError, setCenterError] = useState<string | null>(null);
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-4 rounded-xl border border-slate-600 bg-slate-900 p-5">
-      <h2 className="text-xl font-semibold">{correctionCopy.reviewFace(face)}</h2>
-      <p className="text-sm text-slate-300">{correctionCopy.tapSticker}</p>
+    <div className="flex h-full min-h-0 w-full flex-col gap-3 overflow-hidden rounded-xl border border-slate-600 bg-slate-900 p-4">
+      <h2 className="shrink-0 text-xl font-semibold">
+        {correctionCopy.reviewFace(face)}
+      </h2>
+      <p className="shrink-0 text-sm text-slate-300">{correctionCopy.tapSticker}</p>
+      <div className="shrink-0">
+        <ColorPicker activeColor={activeColor} onSelect={setActiveColor} />
+      </div>
       <FaceGrid
         faceState={draft}
         selectedIndex={selectedIndex}
@@ -43,14 +48,13 @@ export function CorrectionPanel({
           if (centerError) setCenterError(null);
         }}
       />
-      <p className="text-xs text-slate-400">
+      <p className="shrink-0 text-xs text-slate-400">
         {correctionCopy.centerLocked(expectedCenterColor)}
       </p>
-      <ColorPicker activeColor={activeColor} onSelect={setActiveColor} />
       {centerError ? (
-        <p className="text-sm font-medium text-rose-300">{centerError}</p>
+        <p className="shrink-0 text-sm font-medium text-rose-300">{centerError}</p>
       ) : null}
-      <div className="mt-2 flex gap-3">
+      <div className="relative z-10 mt-auto flex shrink-0 flex-wrap gap-3">
         <button
           type="button"
           className="rounded-md border border-slate-400 px-4 py-2 text-slate-100"

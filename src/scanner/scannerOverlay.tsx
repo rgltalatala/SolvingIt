@@ -15,7 +15,7 @@ export function ScannerOverlay({
   onCapture,
 }: ScannerOverlayProps) {
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-4">
+    <div className="flex w-full flex-col gap-4">
       <div className="relative w-full overflow-hidden rounded-xl border border-slate-600 bg-slate-950">
         <video
           ref={videoRef}
@@ -36,9 +36,7 @@ export function ScannerOverlay({
         </div>
       </div>
 
-      <p className="text-center text-xs text-slate-300">
-        {scannerCopy.lightingTip}
-      </p>
+      <p className="text-xs text-slate-300">{scannerCopy.lightingTip}</p>
 
       {error ? <p className="text-sm text-rose-300">{error}</p> : null}
       {!error && !isReady ? (
