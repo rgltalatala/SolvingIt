@@ -1,4 +1,4 @@
-const NOTATION_INTRO_COMPLETED_KEY = 'solveit.notation.introCompleted';
+const NOTATION_INTRO_COMPLETED_KEY = 'solving-it.notation.introCompleted';
 
 /** Whether the user opted out of the notation intro on future lesson starts. */
 export function getNotationIntroCompleted(): boolean {

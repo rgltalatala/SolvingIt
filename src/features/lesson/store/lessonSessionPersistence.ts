@@ -13,7 +13,7 @@ import {
   type LessonSnapshot,
 } from '@/app/store/cubeStore';
 
-const ACTIVE_SESSION_KEY = 'solveit.lesson.activeSession';
+const ACTIVE_SESSION_KEY = 'solving-it.lesson.activeSession';
 const PERSISTENCE_VERSION = 2;
 const SAVE_DEBOUNCE_MS = 300;
 

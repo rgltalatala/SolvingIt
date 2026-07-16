@@ -50,7 +50,7 @@ The lesson updates the **virtual** cube on Apply only. Before applying, confirm 
 
 ## Preferences
 
-- **`solveit.lesson.avoidBackDefault`** (`localStorage`) — when `"true"`, new B-containing examples open with avoid-back already on.
+- **`solving-it.lesson.avoidBackDefault`** (`localStorage`) — when `"true"`, new B-containing examples open with avoid-back already on.
 
 ## Phase 5 UI
 

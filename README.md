@@ -1,8 +1,8 @@
-# SolveIt
+# solving-it
 
-SolveIt is a web app that teaches beginners to solve a physical 3×3 Rubik’s Cube. Scan your cube with the device camera (or load a practice scramble), then follow personalized step-by-step lessons with animated 3D demos matched to how you hold the cube (yellow on top, white on bottom).
+solving-it is a web app that teaches beginners to solve a physical 3×3 Rubik’s Cube. Scan your cube with the device camera (or load a practice scramble), then follow personalized step-by-step lessons with animated 3D demos matched to how you hold the cube (yellow on top, white on bottom).
 
-**Live app:** [https://solve-it-ub8d.vercel.app/](https://solve-it-ub8d.vercel.app/)
+**Live app:** [https://solving-it.vercel.app/](https://solving-it.vercel.app/)
 
 ## What it covers
 
@@ -38,7 +38,7 @@ Also included:
 
 ```bash
 git clone <repository-url>
-cd solveit
+cd solving-it
 npm install
 npm run dev
 ```

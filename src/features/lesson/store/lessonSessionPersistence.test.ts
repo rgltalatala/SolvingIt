@@ -60,7 +60,7 @@ describe('lessonSessionPersistence', () => {
     });
 
     saveLessonSession();
-    expect(storage.has('solveit.lesson.activeSession')).toBe(true);
+    expect(storage.has('solving-it.lesson.activeSession')).toBe(true);
 
     useCubeStore.setState({ appPhase: 'scanning', cubeState: null });
     useLessonSessionStore.getState().clearAllSessions();
@@ -79,7 +79,7 @@ describe('lessonSessionPersistence', () => {
   it('maps legacy learningSection "lesson" to "learn" on hydrate', () => {
     const cube = createSolvedCubeState();
     storage.set(
-      'solveit.lesson.activeSession',
+      'solving-it.lesson.activeSession',
       JSON.stringify({
         version: 2,
         appPhase: 'learning',
@@ -102,7 +102,7 @@ describe('lessonSessionPersistence', () => {
   it('clearLessonSession removes persisted data', () => {
     saveLessonSession();
     clearLessonSession();
-    expect(storage.has('solveit.lesson.activeSession')).toBe(false);
+    expect(storage.has('solving-it.lesson.activeSession')).toBe(false);
     expect(hydrateLessonSession()).toBe(false);
   });
 });

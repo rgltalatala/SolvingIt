@@ -1,4 +1,4 @@
-const AVOID_BACK_DEFAULT_KEY = 'solveit.lesson.avoidBackDefault';
+const AVOID_BACK_DEFAULT_KEY = 'solving-it.lesson.avoidBackDefault';
 
 /** Whether to turn on "avoid back face" automatically when a step's demo includes B. */
 export function getAvoidBackDefaultPreference(): boolean {
