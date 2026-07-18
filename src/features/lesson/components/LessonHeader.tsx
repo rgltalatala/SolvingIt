@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { lessonLayout } from '@/content/beginner/tips';
 import { formatLessonDisplayTitle } from '@/features/lesson/utils/formatLessonTitle';
 import { LessonHeaderActions } from '@/features/lesson/components/LessonHeaderActions';
@@ -22,7 +22,7 @@ type LessonHeaderProps = {
   onRescan: () => void;
   onResetTips: () => void;
   extraSessionActions?: ReactNode;
-  /** Extra panels shown inside the overflow menu (orientation, avoid-back, etc.). */
+  /** Extra panels shown inside the overflow menu (avoid-back, etc.). */
   overflowExtra?: ReactNode;
 };
 
@@ -41,6 +41,22 @@ export function LessonHeader({
   extraSessionActions,
   overflowExtra,
 }: LessonHeaderProps) {
+  const optionsMenuRef = useRef<HTMLDetailsElement>(null);
+
+  useEffect(() => {
+    const menu = optionsMenuRef.current;
+    if (!menu) return;
+
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (!menu.open) return;
+      if (event.target instanceof Node && menu.contains(event.target)) return;
+      menu.open = false;
+    };
+
+    document.addEventListener('pointerdown', closeOnOutsidePointer);
+    return () => document.removeEventListener('pointerdown', closeOnOutsidePointer);
+  }, []);
+
   return (
     <header className="flex shrink-0 items-start gap-2">
       <div className="min-w-0 flex-1">
@@ -62,7 +78,7 @@ export function LessonHeader({
           </div>
         ) : null}
       </div>
-      <details className="relative shrink-0 text-sm">
+      <details ref={optionsMenuRef} className="relative shrink-0 text-sm">
         <summary
           className="cursor-pointer list-none rounded-lg border border-slate-700 bg-slate-900/60 px-2.5 py-1.5 text-slate-300 hover:text-slate-100 [&::-webkit-details-marker]:hidden"
           aria-label={lessonLayout.lessonOptionsMenu}

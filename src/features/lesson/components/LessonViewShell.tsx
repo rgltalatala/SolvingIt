@@ -379,9 +379,7 @@ export function LessonViewShell({
   const hasPractice = Boolean(demo) && !isIntroOnly && !cube.isComplete;
 
   const showSecondaryInOverflow =
-    !cube.isComplete &&
-    (hasHintsContent(secondary, demo?.applyHint, header.sessionNotes.length) ||
-      hasMoreContent(secondary));
+    !cube.isComplete && Boolean(secondary.avoidBack);
 
   let sidebar: ReactNode = null;
   if (cube.isComplete) {
@@ -417,7 +415,10 @@ export function LessonViewShell({
         {...header}
         overflowExtra={
           showSecondaryInOverflow ? (
-            <LessonSecondaryPanels {...secondary} />
+            <LessonSecondaryPanels
+              {...secondary}
+              showOrientationPanel={false}
+            />
           ) : undefined
         }
       />
